@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-03T17:37:20.724734+00:00",
-  "total_listings": 21575,
+  "generated_at": "2026-07-03T18:15:05.064633+00:00",
+  "total_listings": 22083,
   "zones_with_data": 11,
-  "avg_price_cop": 543216684.0,
-  "avg_price_per_m2": 5556859.0,
-  "avg_area_m2": 95.1,
+  "avg_price_cop": 542798531.0,
+  "avg_price_per_m2": 5570993.0,
+  "avg_area_m2": 94.9,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.2,
-  "avg_stratum": 3.6,
+  "avg_stratum": 4.5,
   "by_department": {
     "Cundinamarca": {
-      "listings": 4113,
-      "avg_price_cop": 335594849,
-      "avg_price_per_m2": 4552871
+      "listings": 4112,
+      "avg_price_cop": 335571891,
+      "avg_price_per_m2": 4553122
     },
     "Risaralda": {
       "listings": 3546,
@@ -29,35 +29,35 @@
       "avg_price_cop": 472286953,
       "avg_price_per_m2": 4567464
     },
+    "Caldas": {
+      "listings": 2402,
+      "avg_price_cop": 484881643,
+      "avg_price_per_m2": 5508944
+    },
     "Atlántico": {
       "listings": 2356,
       "avg_price_cop": 567748362,
       "avg_price_per_m2": 4723958
     },
-    "Caldas": {
-      "listings": 2257,
-      "avg_price_cop": 485231758,
-      "avg_price_per_m2": 5501038
-    },
     "Magdalena": {
-      "listings": 1398,
-      "avg_price_cop": 743583599,
-      "avg_price_per_m2": 7895523
+      "listings": 1575,
+      "avg_price_cop": 743489083,
+      "avg_price_per_m2": 7911946
     },
     "Quindío": {
-      "listings": 1173,
-      "avg_price_cop": 417515463,
-      "avg_price_per_m2": 5101926
+      "listings": 1319,
+      "avg_price_cop": 412480034,
+      "avg_price_per_m2": 5105126
     },
     "Norte de Santander": {
-      "listings": 612,
-      "avg_price_cop": 324612397,
-      "avg_price_per_m2": 3375232
+      "listings": 641,
+      "avg_price_cop": 322820884,
+      "avg_price_per_m2": 3387294
     },
     "Tolima": {
-      "listings": 440,
-      "avg_price_cop": 349749898,
-      "avg_price_per_m2": 4023516
+      "listings": 452,
+      "avg_price_cop": 348398131,
+      "avg_price_per_m2": 4013621
     },
     "sin especificar": {
       "listings": 54,
