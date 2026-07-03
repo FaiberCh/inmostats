@@ -1,14 +1,16 @@
 /**
  * Webhook de Telegram para InmoStats.
  *
- * Responde a /status con el progreso actual del scraper nacional, leyendo
- * el checkpoint directamente del repo publico en GitHub (sin token, sin
- * llamar a la API de GitHub) para mantenerlo simple y sin credenciales
- * extra en este worker.
+ * Responde a /status, /stats y /variables leyendo archivos publicos del
+ * repo directamente desde raw.githubusercontent.com (sin token, sin llamar
+ * a la API de GitHub) para mantenerlo simple y sin credenciales extra en
+ * este worker.
  */
 
 const CHECKPOINT_URL =
   "https://raw.githubusercontent.com/FaiberCh/inmostats/master/data/raw/.checkpoint_national.json";
+const STATS_URL =
+  "https://raw.githubusercontent.com/FaiberCh/inmostats/master/data/processed/stats_summary.json";
 
 export default {
   async fetch(request, env) {
@@ -41,15 +43,21 @@ export default {
 
     const text = message.text.trim().toLowerCase();
 
-    if (text === "/start") {
+    if (text === "/start" || text === "/help" || text === "/ayuda") {
       await sendTelegramMessage(
         env,
         chatId,
-        "👋 Hola, soy el bot de <b>InmoStats</b>. Escribe /status para ver el progreso del scraping nacional."
+        "👋 Hola, soy el bot de <b>InmoStats</b>.\n\n" +
+          "/status — progreso del scraping nacional\n" +
+          "/stats — promedios y anuncios por zona\n" +
+          "/variables — que campos se estan extrayendo"
       );
     } else if (text === "/status" || text === "/estado") {
-      const reply = await buildStatusMessage();
-      await sendTelegramMessage(env, chatId, reply);
+      await sendTelegramMessage(env, chatId, await buildStatusMessage());
+    } else if (text === "/stats" || text === "/promedios") {
+      await sendTelegramMessage(env, chatId, await buildStatsMessage());
+    } else if (text === "/variables" || text === "/campos") {
+      await sendTelegramMessage(env, chatId, buildVariablesMessage());
     }
 
     return new Response("OK");
@@ -110,7 +118,66 @@ async function buildStatusMessage() {
   );
 }
 
-export { buildStatusMessage };
+function formatCOP(amount) {
+  if (amount === null || amount === undefined) return "N/D";
+  return "$" + Math.round(amount).toLocaleString("es-CO");
+}
+
+async function buildStatsMessage() {
+  const divider = "━".repeat(21);
+
+  let stats;
+  try {
+    const res = await fetch(STATS_URL, { cf: { cacheTtl: 0 } });
+    if (!res.ok) {
+      return "⚠️ Todavia no hay estadisticas calculadas (se generan despues de la primera corrida).";
+    }
+    stats = await res.json();
+  } catch {
+    return "⚠️ No pude leer las estadisticas ahora mismo. Intenta de nuevo en un momento.";
+  }
+
+  const byDept = Object.entries(stats.by_department || {})
+    .map(([name, d]) => `  • ${name}: ${d.listings.toLocaleString("es-CO")} (${formatCOP(d.avg_price_cop)})`)
+    .join("\n");
+
+  return (
+    `📈 <b>InmoStats</b> — Estadisticas del dataset\n${divider}\n` +
+    `🏠 Total anuncios: ${stats.total_listings.toLocaleString("es-CO")}\n` +
+    `🗺 Zonas con datos: ${stats.zones_with_data}\n` +
+    `💰 Precio promedio: ${formatCOP(stats.avg_price_cop)}\n` +
+    `📐 Precio/m² promedio: ${formatCOP(stats.avg_price_per_m2)}\n` +
+    `📏 Area promedio: ${stats.avg_area_m2 ?? "N/D"} m²\n` +
+    `🛏 Habitaciones promedio: ${stats.avg_bedrooms ?? "N/D"}\n` +
+    `🚿 Baños promedio: ${stats.avg_bathrooms ?? "N/D"}\n` +
+    `🏷 Estrato promedio: ${stats.avg_stratum ?? "N/D"}\n` +
+    `${divider}\n` +
+    `Anuncios y precio promedio por zona:\n${byDept}\n` +
+    `${divider}\n` +
+    `🕒 Calculado: ${new Date(stats.generated_at).toLocaleString("es-CO", { timeZone: "America/Bogota" })}`
+  );
+}
+
+function buildVariablesMessage() {
+  const divider = "━".repeat(21);
+  return (
+    `🧬 <b>InmoStats</b> — Variables extraidas por anuncio\n${divider}\n` +
+    `<b>Identificacion</b>\n` +
+    `listing_id, title, description, address, detail_url\n\n` +
+    `<b>Ubicacion</b>\n` +
+    `department, city, neighborhood, locality, zone, latitude, longitude\n\n` +
+    `<b>Precio</b>\n` +
+    `price_cop, admin_fee_cop, price_per_m2 (calculado)\n\n` +
+    `<b>Caracteristicas</b>\n` +
+    `bedrooms, bathrooms, area_m2, area_built_m2, stratum, floor, floors_count, antiquity, construction_year, garages, amenities\n\n` +
+    `<b>Metadata del anuncio</b>\n` +
+    `is_new_project, owner_type, owner_name, image_count, main_image_url, listing_created_at, listing_updated_at\n` +
+    `${divider}\n` +
+    `Se extraen del JSON estructurado que la pagina de fincaraiz embebe, no de texto libre.`
+  );
+}
+
+export { buildStatusMessage, buildStatsMessage, buildVariablesMessage };
 
 async function sendTelegramMessage(env, chatId, text) {
   const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
