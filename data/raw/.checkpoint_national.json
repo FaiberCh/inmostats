@@ -1,0 +1,92 @@
+{
+  "output_file": "fincaraiz_apartamentos_colombia_20260703_044654.csv",
+  "started_at": "2026-07-03T04:46:54.930768+00:00",
+  "done": false,
+  "departments": {
+    "tolima": {
+      "name": "Tolima",
+      "next_page": 9,
+      "last_page": 22,
+      "done": false
+    },
+    "norte-de-santander": {
+      "name": "Norte de Santander",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "quindio": {
+      "name": "Quindío",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "magdalena": {
+      "name": "Magdalena",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "caldas": {
+      "name": "Caldas",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "santander": {
+      "name": "Santander",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "bolivar": {
+      "name": "Bolívar",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "risaralda": {
+      "name": "Risaralda",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "cundinamarca": {
+      "name": "Cundinamarca",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "atlantico": {
+      "name": "Atlántico",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "valle-del-cauca": {
+      "name": "Valle del Cauca",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "bogota-dc": {
+      "name": "Bogotá D.C.",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "antioquia": {
+      "name": "Antioquia",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "resto-de-colombia": {
+      "name": "Resto de Colombia",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    }
+  },
+  "finished_at": null
+}
