@@ -7,10 +7,8 @@ dataset listo para EDA/modelado en data/processed/.
 """
 
 import logging
-import re
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
@@ -23,14 +21,7 @@ MIN_AREA_M2 = 15
 MAX_AREA_M2 = 1_000
 MAX_BEDROOMS = 10
 MAX_BATHROOMS = 10
-
-# Los titulos siguen el patron "... en venta en {barrio}, {ciudad}" (a veces
-# sin barrio: "... en venta en {ciudad}"). La ciudad es siempre el ultimo
-# segmento separado por coma.
-NEIGHBORHOOD_AND_CITY_PATTERN = re.compile(
-    r"en\s+venta\s+en\s+(.+?),\s*([^,]+)$", re.IGNORECASE
-)
-CITY_ONLY_PATTERN = re.compile(r"en\s+venta\s+en\s+([^,]+)$", re.IGNORECASE)
+VALID_STRATUM_RANGE = (1, 6)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -51,21 +42,6 @@ def load_raw_data(raw_dir: Path = RAW_DIR) -> pd.DataFrame:
     return df
 
 
-def extract_neighborhood_and_city(title: str) -> tuple[str, str]:
-    if not isinstance(title, str):
-        return "sin especificar", "sin especificar"
-
-    match = NEIGHBORHOOD_AND_CITY_PATTERN.search(title)
-    if match:
-        return match.group(1).strip().lower(), match.group(2).strip().lower()
-
-    match = CITY_ONLY_PATTERN.search(title)
-    if match:
-        return "sin especificar", match.group(1).strip().lower()
-
-    return "sin especificar", "sin especificar"
-
-
 def clean(df: pd.DataFrame) -> pd.DataFrame:
     before = len(df)
 
@@ -76,20 +52,29 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df["bedrooms"].between(1, MAX_BEDROOMS)]
     df = df[df["bathrooms"].between(1, MAX_BATHROOMS)]
 
+    if "stratum" in df.columns:
+        invalid_stratum = ~df["stratum"].between(*VALID_STRATUM_RANGE) & df["stratum"].notna()
+        df.loc[invalid_stratum, "stratum"] = None
+
     logger.info("Registros descartados por limpieza: %d (de %d)", before - len(df), before)
     return df
 
 
 def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df[["neighborhood", "city"]] = df["title"].apply(
-        lambda t: pd.Series(extract_neighborhood_and_city(t))
-    )
-    df["is_new_project"] = df["detail_url"].str.contains("/proyectos-vivienda/", na=False)
     df["price_per_m2"] = (df["price_cop"] / df["area_m2"]).round(0)
     df["admin_fee_cop"] = df["admin_fee_cop"].fillna(0)
-    if "department" in df.columns:
-        df["department"] = df["department"].fillna("sin especificar")
+
+    # neighborhood/city/department/is_new_project ya vienen limpios del
+    # scraper (extraidos del JSON estructurado de la pagina, no de texto
+    # libre); solo rellenamos huecos que puedan venir de corridas viejas
+    # con un esquema mas chico (ver data/raw/fincaraiz_apartamentos_bogota_*).
+    for col in ("department", "city", "neighborhood", "locality", "zone", "owner_type"):
+        if col in df.columns:
+            df[col] = df[col].fillna("sin especificar")
+    if "is_new_project" in df.columns:
+        df["is_new_project"] = df["is_new_project"].fillna(False)
+
     return df
 
 

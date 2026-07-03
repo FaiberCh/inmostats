@@ -1,3 +1,4 @@
 name = "inmostats-telegram-bot"
 main = "src/index.js"
 compatibility_date = "2024-11-01"
+account_id = "619ab9baa6de9c5461fe458d7f916b25"

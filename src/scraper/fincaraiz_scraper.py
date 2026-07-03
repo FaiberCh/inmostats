@@ -10,17 +10,19 @@ crudo en data/raw/.
 Notas de implementacion:
 - fincaraiz.com.co redirige las URLs con query string (?pagina=N) a rutas
   amigables del tipo /venta/apartamentos/{zona}/paginaN, que es lo que este
-  script consume directamente. El listado es server-side rendered (el HTML
-  ya trae los datos), por lo que requests + BeautifulSoup son suficientes.
+  script consume directamente.
 - Las 14 zonas se obtuvieron de https://www.fincaraiz.com.co/cde-sitemap-
   listings-index.xml (filtrando los sitemaps "apartamento-en-venta-*"), no
   fueron adivinadas: son las unicas zonas para las que el sitio publica un
   sitemap de apartamentos en venta.
-- Cada pagina trae su propia metadata de paginacion embebida (lastPage,
-  total) en el JSON de Next.js (__NEXT_DATA__), lo que evita tener que
-  adivinar cuando parar o confiar en que una pagina vacia significa "fin
-  del listado" (en la practica el sitio nunca devuelve una pagina vacia:
-  mas alla del ultimo resultado real sigue sirviendo tarjetas).
+- Los datos NO se leen de las tarjetas HTML visibles: la pagina es un sitio
+  Next.js que embebe, para hidratacion, un bloque JSON completo con cada
+  anuncio ya limpio y tipado (script#__NEXT_DATA__ ->
+  props.pageProps.fetchResult.searchFast). Ese JSON trae muchos mas campos
+  que los visibles en la tarjeta (estrato, piso, antiguedad, parqueaderos,
+  coordenadas, amenidades, fechas de publicacion, etc.) y evita tener que
+  parsear texto con regex; tambien trae la metadata de paginacion real
+  (paginatorInfo.lastPage/total) en vez de tener que adivinar cuando parar.
 - Dado el volumen (algunas zonas superan las 1000 paginas), el scraping es
   incremental: cada pagina se escribe al CSV y se marca en un checkpoint
   apenas se procesa, para poder interrumpir el proceso y reanudarlo despues
@@ -32,7 +34,6 @@ import json
 import logging
 import os
 import random
-import re
 import time
 from dataclasses import asdict, dataclass, fields
 from datetime import datetime, timezone
@@ -83,10 +84,6 @@ MAX_RUNTIME_SECONDS = int(os.environ["MAX_RUNTIME_SECONDS"]) if os.environ.get("
 # cron cada 30 min) dispare re-scrapes completos sin parar.
 MIN_HOURS_BETWEEN_RUNS = int(os.environ.get("MIN_HOURS_BETWEEN_RUNS", "24"))
 
-# Metadata de paginacion embebida por Next.js en cada pagina, ej.:
-# ..."lastPage":22,"perPage":21,"total":457}}}
-PAGINATION_PATTERN = re.compile(r'"lastPage":(\d+),"perPage":\d+,"total":(\d+)')
-
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
@@ -128,18 +125,39 @@ def send_telegram_message(text: str) -> None:
 
 @dataclass
 class Listing:
-    listing_id: Optional[str]
+    listing_id: Optional[int]
     title: Optional[str]
-    location: Optional[str]
+    description: Optional[str]
+    address: Optional[str]
+    detail_url: Optional[str]
     department_slug: str
     department: str
+    city: Optional[str]
+    neighborhood: Optional[str]
+    locality: Optional[str]
+    zone: Optional[str]
+    latitude: Optional[float]
+    longitude: Optional[float]
     price_cop: Optional[int]
-    price_raw: Optional[str]
     admin_fee_cop: Optional[int]
     bedrooms: Optional[int]
     bathrooms: Optional[int]
     area_m2: Optional[float]
-    detail_url: Optional[str]
+    area_built_m2: Optional[float]
+    stratum: Optional[int]
+    floor: Optional[int]
+    floors_count: Optional[int]
+    antiquity: Optional[int]
+    construction_year: Optional[int]
+    garages: Optional[int]
+    amenities: Optional[str]
+    is_new_project: Optional[bool]
+    owner_type: Optional[str]
+    owner_name: Optional[str]
+    image_count: Optional[int]
+    main_image_url: Optional[str]
+    listing_created_at: Optional[str]
+    listing_updated_at: Optional[str]
     source_page: int
     scraped_at: str
 
@@ -168,102 +186,110 @@ def fetch_page(url: str) -> Optional[str]:
     return None
 
 
-def extract_pagination_info(html: str) -> tuple[Optional[int], Optional[int]]:
-    match = PAGINATION_PATTERN.search(html)
-    if not match:
-        return None, None
-    last_page, total = match.groups()
-    return int(last_page), int(total)
-
-
-def _parse_int(text: str) -> Optional[int]:
-    digits = re.sub(r"[^\d]", "", text)
-    return int(digits) if digits else None
-
-
-def _parse_float(text: str) -> Optional[float]:
-    """Parse an area like '26.25 m²' or '120,5 m²' (both '.' and ',' can act
-    as the decimal separator here; areas are small enough that neither is
-    ever a thousands separator in practice)."""
-    match = re.search(r"[\d.,]+", text)
-    if not match:
+def extract_next_data(html: str) -> Optional[dict]:
+    soup = BeautifulSoup(html, "lxml")
+    script = soup.find("script", id="__NEXT_DATA__")
+    if not script or not script.string:
         return None
-    number = match.group(0)
-    if "." in number and "," in number:
-        number = number.replace(".", "").replace(",", ".")
-    else:
-        number = number.replace(",", ".")
     try:
-        return float(number)
-    except ValueError:
+        return json.loads(script.string)
+    except json.JSONDecodeError:
         return None
 
 
-def _parse_typology(card, listing: dict) -> None:
-    for item in card.select(".lc-typologyTag__item"):
-        text = item.get_text(separator=" ", strip=True).lower()
-        if "hab" in text:
-            listing["bedrooms"] = _parse_int(text)
-        elif "ba" in text and ("bano" in text or "baño" in text):
-            listing["bathrooms"] = _parse_int(text)
-        elif "m" in text:
-            listing["area_m2"] = _parse_float(text)
+def _first_location_name(locations: dict, key: str) -> Optional[str]:
+    entries = locations.get(key) or []
+    return entries[0]["name"].strip() if entries else None
 
 
-def parse_listing_card(card, page: int, department_slug: str, department: str) -> Listing:
-    data = {
-        "listing_id": None,
-        "title": None,
-        "location": None,
-        "department_slug": department_slug,
-        "department": department,
-        "price_cop": None,
-        "price_raw": None,
-        "admin_fee_cop": None,
-        "bedrooms": None,
-        "bathrooms": None,
-        "area_m2": None,
-        "detail_url": None,
-        "source_page": page,
-        "scraped_at": datetime.now(timezone.utc).isoformat(),
-    }
+def _amenities_string(facilities: list) -> Optional[str]:
+    names = [f["name"] for f in (facilities or []) if f.get("name")]
+    return "; ".join(names) if names else None
 
-    title_el = card.select_one(".lc-title")
-    if title_el:
-        data["title"] = title_el.get_text(strip=True)
 
-    location_el = card.select_one(".lc-location")
-    if location_el:
-        data["location"] = location_el.get_text(separator=" ", strip=True)
+def parse_listing(raw: dict, page: int, department_slug: str, department: str) -> Listing:
+    locations = raw.get("locations") or {}
+    price = raw.get("price") or {}
+    common_expenses = raw.get("commonExpenses") or {}
+    owner = raw.get("owner") or {}
+    location_main = locations.get("location_main") or {}
 
-    price_el = card.select_one(".main-price")
-    if price_el:
-        data["price_raw"] = price_el.get_text(strip=True)
-        data["price_cop"] = _parse_int(data["price_raw"])
+    link = raw.get("link")
+    detail_url = urljoin(BASE_URL, link) if link else None
 
-    admin_el = card.select_one(".commonExpenses")
-    if admin_el and admin_el.get_text(strip=True):
-        data["admin_fee_cop"] = _parse_int(admin_el.get_text(strip=True))
-
-    _parse_typology(card, data)
-
-    link_el = card.find("a", href=True)
-    if link_el:
-        detail_url = urljoin(BASE_URL, link_el["href"])
-        data["detail_url"] = detail_url
-        data["listing_id"] = detail_url.rstrip("/").split("/")[-1]
-
-    return Listing(**data)
+    return Listing(
+        listing_id=raw.get("id"),
+        title=raw.get("title"),
+        description=raw.get("description"),
+        address=raw.get("address"),
+        detail_url=detail_url,
+        department_slug=department_slug,
+        department=department,
+        city=_first_location_name(locations, "city"),
+        neighborhood=location_main.get("name"),
+        locality=_first_location_name(locations, "locality"),
+        zone=_first_location_name(locations, "zone"),
+        latitude=raw.get("latitude"),
+        longitude=raw.get("longitude"),
+        price_cop=price.get("amount"),
+        admin_fee_cop=common_expenses.get("amount"),
+        bedrooms=raw.get("bedrooms"),
+        bathrooms=raw.get("bathrooms"),
+        area_m2=raw.get("m2"),
+        area_built_m2=raw.get("m2Built"),
+        stratum=raw.get("stratum"),
+        floor=raw.get("floor"),
+        floors_count=raw.get("floorsCount"),
+        antiquity=raw.get("antiquity"),
+        construction_year=raw.get("construction_year"),
+        garages=raw.get("garage"),
+        amenities=_amenities_string(raw.get("facilities")),
+        is_new_project=bool(raw.get("isProject") or raw.get("isProjectUnit")),
+        owner_type=owner.get("type"),
+        owner_name=owner.get("name"),
+        image_count=raw.get("image_count"),
+        main_image_url=raw.get("img"),
+        listing_created_at=raw.get("created_at"),
+        listing_updated_at=raw.get("updated_at"),
+        source_page=page,
+        scraped_at=datetime.now(timezone.utc).isoformat(),
+    )
 
 
 def parse_page(html: str, page: int, department_slug: str, department: str) -> list[Listing]:
-    soup = BeautifulSoup(html, "lxml")
-    cards = soup.select(".listingCard")
-    listings = [parse_listing_card(c, page, department_slug, department) for c in cards]
+    next_data = extract_next_data(html)
+    if next_data is None:
+        logger.warning("No se encontro __NEXT_DATA__ en la pagina %d de %s", page, department)
+        return []
+
+    try:
+        search_fast = next_data["props"]["pageProps"]["fetchResult"]["searchFast"]
+        raw_listings = search_fast["data"]
+    except (KeyError, TypeError):
+        logger.warning("Estructura inesperada de datos en la pagina %d de %s", page, department)
+        return []
+
+    listings = [parse_listing(r, page, department_slug, department) for r in raw_listings]
     # Las busquedas de "apartamentos" a veces incluyen anuncios de otro tipo
-    # (casas, lotes) mezclados en proyectos de vivienda; nos quedamos solo
-    # con lo que el propio titulo describe como apartamento.
-    return [l for l in listings if l.title and "apartamento" in l.title.lower()]
+    # (casas, lotes) mezclados en proyectos de vivienda; el propio dato de
+    # tipo de propiedad nos deja filtrar con precision, sin depender de
+    # texto libre del titulo.
+    return [
+        listing
+        for listing, raw in zip(listings, raw_listings)
+        if (raw.get("property_type") or {}).get("name", "").strip().lower() == "apartamento"
+    ]
+
+
+def extract_pagination_info(html: str) -> tuple[Optional[int], Optional[int]]:
+    next_data = extract_next_data(html)
+    if next_data is None:
+        return None, None
+    try:
+        paginator = next_data["props"]["pageProps"]["fetchResult"]["searchFast"]["paginatorInfo"]
+        return paginator.get("lastPage"), paginator.get("total")
+    except (KeyError, TypeError):
+        return None, None
 
 
 def _load_checkpoint_raw() -> Optional[dict]:
