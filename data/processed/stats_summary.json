@@ -1,23 +1,28 @@
 {
-  "generated_at": "2026-07-03T22:17:57.681158+00:00",
-  "total_listings": 23915,
+  "generated_at": "2026-07-03T23:21:43.966120+00:00",
+  "total_listings": 25247,
   "zones_with_data": 11,
-  "avg_price_cop": 542500777.0,
-  "avg_price_per_m2": 5575207.0,
-  "avg_area_m2": 94.8,
+  "avg_price_cop": 543973386.0,
+  "avg_price_per_m2": 5528814.0,
+  "avg_area_m2": 96.1,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.2,
   "avg_stratum": 4.4,
   "by_department": {
     "Cundinamarca": {
-      "listings": 4477,
-      "avg_price_cop": 336163837,
-      "avg_price_per_m2": 4559170
+      "listings": 4635,
+      "avg_price_cop": 335421011,
+      "avg_price_per_m2": 4555885
     },
     "Risaralda": {
       "listings": 4131,
       "avg_price_cop": 470524873,
       "avg_price_per_m2": 5274935
+    },
+    "Atlántico": {
+      "listings": 3531,
+      "avg_price_cop": 580052180,
+      "avg_price_per_m2": 4724707
     },
     "Bolívar": {
       "listings": 3502,
@@ -33,11 +38,6 @@
       "listings": 2613,
       "avg_price_cop": 485871600,
       "avg_price_per_m2": 5506298
-    },
-    "Atlántico": {
-      "listings": 2356,
-      "avg_price_cop": 567748362,
-      "avg_price_per_m2": 4723958
     },
     "Magdalena": {
       "listings": 1575,
@@ -55,9 +55,9 @@
       "avg_price_per_m2": 3387294
     },
     "Tolima": {
-      "listings": 452,
-      "avg_price_cop": 348398131,
-      "avg_price_per_m2": 4013621
+      "listings": 451,
+      "avg_price_cop": 348217195,
+      "avg_price_per_m2": 4014705
     },
     "sin especificar": {
       "listings": 54,
