@@ -99,11 +99,31 @@ USER_AGENTS = [
 DATA_RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 CHECKPOINT_PATH = DATA_RAW_DIR / ".checkpoint_national.json"
 
+# Notificaciones opcionales por Telegram (ver README para como crear el bot
+# y obtener estos valores). Si no estan configuradas, send_telegram_message
+# simplemente no hace nada.
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+
+def send_telegram_message(text: str) -> None:
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    try:
+        requests.post(
+            url,
+            data={"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"},
+            timeout=10,
+        )
+    except requests.RequestException as exc:
+        logger.warning("No se pudo enviar la notificacion a Telegram: %s", exc)
 
 
 @dataclass
@@ -323,6 +343,7 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
     is_new_file = not output_path.exists()
     fieldnames = [f.name for f in fields(Listing)]
     start_time = time.monotonic()
+    rows_written = 0
 
     def time_budget_exceeded() -> bool:
         return MAX_RUNTIME_SECONDS is not None and (time.monotonic() - start_time) >= MAX_RUNTIME_SECONDS
@@ -369,6 +390,7 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
                 rows = parse_page(html, page, slug, name)
                 for row in rows:
                     writer.writerow(asdict(row))
+                rows_written += len(rows)
                 f.flush()
 
                 dept_state["next_page"] = page + 1
@@ -389,11 +411,34 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
 
     logger.info("Corrida %s. Archivo: %s",
                 "completa" if checkpoint["done"] else "interrumpida (reanudable)", output_path)
+
+    departments_done = sum(1 for d in checkpoint["departments"].values() if d["done"])
+    total_departments = len(checkpoint["departments"])
+    if checkpoint["done"]:
+        summary = (
+            f"✅ <b>InmoStats</b>: corrida nacional completa.\n"
+            f"Zonas: {departments_done}/{total_departments}\n"
+            f"Filas nuevas esta corrida: {rows_written}\n"
+            f"Archivo: {output_path.name}"
+        )
+    else:
+        summary = (
+            f"⏳ <b>InmoStats</b>: corrida en progreso (reanudable).\n"
+            f"Zonas completadas: {departments_done}/{total_departments}\n"
+            f"Filas nuevas esta corrida: {rows_written}\n"
+            f"Archivo: {output_path.name}"
+        )
+    send_telegram_message(summary)
+
     return output_path
 
 
 def main() -> None:
-    scrape_national()
+    try:
+        scrape_national()
+    except Exception as exc:
+        send_telegram_message(f"❌ <b>InmoStats</b>: el scraper fallo con un error.\n{exc}")
+        raise
 
 
 if __name__ == "__main__":
