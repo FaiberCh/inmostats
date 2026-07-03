@@ -78,6 +78,11 @@ MAX_RETRIES_PER_PAGE = 3
 # que se van encadenando via el checkpoint. None = sin limite.
 MAX_RUNTIME_SECONDS = int(os.environ["MAX_RUNTIME_SECONDS"]) if os.environ.get("MAX_RUNTIME_SECONDS") else None
 
+# Una vez una corrida nacional completa termina, cuanto esperar antes de
+# arrancar la siguiente desde cero. Evita que un scheduler frecuente (ej.
+# cron cada 30 min) dispare re-scrapes completos sin parar.
+MIN_HOURS_BETWEEN_RUNS = int(os.environ.get("MIN_HOURS_BETWEEN_RUNS", "24"))
+
 # Metadata de paginacion embebida por Next.js en cada pagina, ej.:
 # ..."lastPage":22,"perPage":21,"total":457}}}
 PAGINATION_PATTERN = re.compile(r'"lastPage":(\d+),"perPage":\d+,"total":(\d+)')
@@ -241,14 +246,41 @@ def parse_page(html: str, page: int, department_slug: str, department: str) -> l
     return [l for l in listings if l.title and "apartamento" in l.title.lower()]
 
 
-def load_checkpoint() -> Optional[dict]:
+def _load_checkpoint_raw() -> Optional[dict]:
     if not CHECKPOINT_PATH.exists():
         return None
     with CHECKPOINT_PATH.open(encoding="utf-8") as f:
-        checkpoint = json.load(f)
-    if checkpoint.get("done"):
-        return None
-    return checkpoint
+        return json.load(f)
+
+
+def get_or_create_checkpoint() -> Optional[dict]:
+    """Resume an in-progress checkpoint, start a new run, or (if the last
+    full run finished less than MIN_HOURS_BETWEEN_RUNS ago) signal that
+    there is nothing to do yet by returning None.
+
+    Without this cooldown, a scheduler that fires every N minutes (e.g. the
+    GitHub Actions cron) would kick off a brand new multi-hour national
+    crawl immediately after the previous one finishes, forever."""
+    checkpoint = _load_checkpoint_raw()
+    if checkpoint is None:
+        return new_checkpoint()
+
+    if not checkpoint.get("done"):
+        return checkpoint
+
+    finished_at = checkpoint.get("finished_at")
+    if finished_at:
+        elapsed_hours = (
+            datetime.now(timezone.utc) - datetime.fromisoformat(finished_at)
+        ).total_seconds() / 3600
+        if elapsed_hours < MIN_HOURS_BETWEEN_RUNS:
+            logger.info(
+                "Ultima corrida completada hace %.1fh (< %dh de espera); nada que hacer todavia.",
+                elapsed_hours, MIN_HOURS_BETWEEN_RUNS,
+            )
+            return None
+
+    return new_checkpoint()
 
 
 def save_checkpoint(checkpoint: dict) -> None:
@@ -270,15 +302,22 @@ def new_checkpoint() -> dict:
     }
 
 
-def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Path:
+def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    checkpoint = load_checkpoint()
+    checkpoint = get_or_create_checkpoint()
     if checkpoint is None:
-        checkpoint = new_checkpoint()
-        logger.info("Iniciando corrida nueva -> %s", checkpoint["output_file"])
-    else:
-        logger.info("Reanudando corrida existente -> %s", checkpoint["output_file"])
+        return None
+
+    is_fresh = all(
+        d["next_page"] == 1 and d["last_page"] is None and not d["done"]
+        for d in checkpoint["departments"].values()
+    )
+    logger.info(
+        "%s -> %s",
+        "Iniciando corrida nueva" if is_fresh else "Reanudando corrida existente",
+        checkpoint["output_file"],
+    )
 
     output_path = output_dir / checkpoint["output_file"]
     is_new_file = not output_path.exists()
