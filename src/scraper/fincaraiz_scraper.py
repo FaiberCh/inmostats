@@ -412,32 +412,64 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
     logger.info("Corrida %s. Archivo: %s",
                 "completa" if checkpoint["done"] else "interrumpida (reanudable)", output_path)
 
-    departments_done = sum(1 for d in checkpoint["departments"].values() if d["done"])
-    total_departments = len(checkpoint["departments"])
-    if checkpoint["done"]:
-        summary = (
-            f"✅ <b>InmoStats</b>: corrida nacional completa.\n"
-            f"Zonas: {departments_done}/{total_departments}\n"
-            f"Filas nuevas esta corrida: {rows_written}\n"
-            f"Archivo: {output_path.name}"
-        )
-    else:
-        summary = (
-            f"⏳ <b>InmoStats</b>: corrida en progreso (reanudable).\n"
-            f"Zonas completadas: {departments_done}/{total_departments}\n"
-            f"Filas nuevas esta corrida: {rows_written}\n"
-            f"Archivo: {output_path.name}"
-        )
-    send_telegram_message(summary)
-
+    send_telegram_message(build_summary_message(checkpoint, output_path, rows_written))
     return output_path
+
+
+def _progress_bar(done: int, total: int, length: int = 10) -> str:
+    filled = round(length * done / total) if total else 0
+    return "▓" * filled + "░" * (length - filled)
+
+
+def build_summary_message(checkpoint: dict, output_path: Path, rows_written: int) -> str:
+    departments = checkpoint["departments"]
+    done_count = sum(1 for d in departments.values() if d["done"])
+    total_count = len(departments)
+    divider = "━" * 21
+
+    if checkpoint["done"]:
+        return (
+            f"🎉 <b>InmoStats</b> — ¡Corrida nacional completa!\n"
+            f"{divider}\n"
+            f"✅ {done_count}/{total_count} zonas cubiertas\n"
+            f"🆕 {rows_written} anuncios nuevos en esta corrida\n"
+            f"🗂 <code>{output_path.name}</code>\n"
+            f"{divider}\n"
+            f"😴 Cooldown de {MIN_HOURS_BETWEEN_RUNS}h antes de la proxima corrida"
+        )
+
+    current = next((d for d in departments.values() if not d["done"]), None)
+    if current and current["last_page"]:
+        pages_done = current["next_page"] - 1
+        zona_linea = f"📍 Zona actual: <b>{current['name']}</b> (pag. {pages_done}/{current['last_page']})\n"
+    elif current:
+        zona_linea = f"📍 Zona actual: <b>{current['name']}</b>\n"
+    else:
+        zona_linea = ""
+
+    return (
+        f"🏗️ <b>InmoStats</b> — Scraping en progreso\n"
+        f"{divider}\n"
+        f"{zona_linea}"
+        f"📊 Zonas completadas: {_progress_bar(done_count, total_count)} {done_count}/{total_count}\n"
+        f"🆕 {rows_written} anuncios nuevos en esta corrida\n"
+        f"🗂 <code>{output_path.name}</code>\n"
+        f"{divider}\n"
+        f"🔁 Continua en la proxima corrida programada"
+    )
 
 
 def main() -> None:
     try:
         scrape_national()
     except Exception as exc:
-        send_telegram_message(f"❌ <b>InmoStats</b>: el scraper fallo con un error.\n{exc}")
+        send_telegram_message(
+            f"🚨 <b>InmoStats</b> — Algo fallo en el scraping\n"
+            f"{'━' * 21}\n"
+            f"⚠️ <code>{exc}</code>\n"
+            f"{'━' * 21}\n"
+            f"Revisa los logs en GitHub Actions."
+        )
         raise
 
 
