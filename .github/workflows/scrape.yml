@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install requests beautifulsoup4 lxml
+      - run: pip install requests beautifulsoup4 lxml pandas
 
       - name: Scrapear un tramo de la corrida nacional
         run: python -m src.scraper.fincaraiz_scraper
@@ -37,10 +37,13 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
+      - name: Recalcular estadisticas agregadas
+        run: python -m src.pipelines.compute_stats
+
       - name: Guardar datos y checkpoint nuevos
         run: |
           git config user.name "inmostats-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/raw/
+          git add data/raw/ data/processed/stats_summary.json
           git diff --cached --quiet || git commit -m "scrape: actualiza datos crudos y checkpoint"
           git push
