@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-07-03T20:56:14.727947+00:00",
-  "total_listings": 23224,
+  "generated_at": "2026-07-03T22:17:57.681158+00:00",
+  "total_listings": 23915,
   "zones_with_data": 11,
-  "avg_price_cop": 546753698.0,
-  "avg_price_per_m2": 5594628.0,
-  "avg_area_m2": 95.3,
+  "avg_price_cop": 542500777.0,
+  "avg_price_per_m2": 5575207.0,
+  "avg_area_m2": 94.8,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.2,
-  "avg_stratum": 4.6,
+  "avg_stratum": 4.4,
   "by_department": {
     "Cundinamarca": {
-      "listings": 4112,
-      "avg_price_cop": 335571891,
-      "avg_price_per_m2": 4553122
+      "listings": 4477,
+      "avg_price_cop": 336163837,
+      "avg_price_per_m2": 4559170
     },
     "Risaralda": {
-      "listings": 3805,
-      "avg_price_cop": 471162666,
-      "avg_price_per_m2": 5276819
+      "listings": 4131,
+      "avg_price_cop": 470524873,
+      "avg_price_per_m2": 5274935
     },
     "Bolívar": {
       "listings": 3502,
