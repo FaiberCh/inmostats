@@ -60,24 +60,37 @@ Puntos clave del diseño:
   nuevo" del lado del scraper); la deduplicación ocurre al consolidar.
 - Rota el User-Agent, reintenta hasta 3 veces ante fallos de red/timeout,
   y espera 2-4.5s entre peticiones para no saturar el sitio.
+- **Los datos vienen del JSON estructurado que la pagina embebe para
+  hidratacion** (`script#__NEXT_DATA__` -> `fetchResult.searchFast`), no de
+  raspar el HTML visible de la tarjeta. Esto da campos limpios y tipados
+  (sin regex sobre texto libre) y es mas resistente a cambios de diseño del
+  sitio, ya que solo se rompe si cambia la forma de los datos, no el CSS.
+
+Variables extraidas por anuncio: `listing_id`, `title`, `description`,
+`address`, `detail_url`, `department`/`department_slug` (zona consultada),
+`city`, `neighborhood`, `locality` (localidad, solo Bogotá), `zone`,
+`latitude`/`longitude`, `price_cop`, `admin_fee_cop`, `bedrooms`,
+`bathrooms`, `area_m2`, `area_built_m2`, `stratum`, `floor`,
+`floors_count`, `antiquity`, `construction_year`, `garages`, `amenities`,
+`is_new_project`, `owner_type`/`owner_name`, `image_count`,
+`main_image_url`, `listing_created_at`/`listing_updated_at`,
+`source_page`, `scraped_at`.
 
 ## Fase 2: Limpieza y feature engineering
 
 Consolida todos los CSV crudos, deduplica por `listing_id`, descarta
-outliers de dominio (precio, área, habitaciones/baños fuera de rango) y
-agrega features derivadas:
+outliers de dominio (precio, área, habitaciones/baños, estrato fuera de
+rango) y agrega features derivadas:
 
 ```bash
 python -m src.pipelines.clean_data
 ```
 
 Features agregadas:
-- `neighborhood` / `city`: barrio y ciudad extraídos del título (ej.
-  "niza" / "bogotá", "el poblado" / "medellín").
-- `is_new_project`: si el anuncio es un proyecto de vivienda nueva.
 - `price_per_m2`: precio de venta dividido por área.
 
-`department` / `department_slug` vienen directamente del scraper (no se
-infieren), ya que corresponden a la zona nacional consultada.
+`department`, `city`, `neighborhood`, `is_new_project`, etc. ya vienen
+limpios directo del scraper (ver Fase 1); el pipeline solo rellena huecos
+para CSV historicos con un esquema mas chico.
 
 Genera `data/processed/apartamentos_colombia_processed.csv`.
