@@ -1,0 +1,23 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# data/raw/*.csv and the scraper checkpoint ARE versioned on purpose: the
+# GitHub Actions workflow runs on ephemeral runners and relies on git as the
+# persistence layer to resume the national scrape across scheduled runs.
+data/processed/*.csv
+models/*.pkl
+models/*.joblib
+
+# Environment variables
+.env
+
+# OS / IDE
+.DS_Store
+.vscode/
