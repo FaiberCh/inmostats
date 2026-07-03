@@ -5,32 +5,32 @@
   "departments": {
     "tolima": {
       "name": "Tolima",
-      "next_page": 9,
+      "next_page": 23,
       "last_page": 22,
-      "done": false
+      "done": true
     },
     "norte-de-santander": {
       "name": "Norte de Santander",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 33,
+      "last_page": 32,
+      "done": true
     },
     "quindio": {
       "name": "Quindío",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 67,
+      "last_page": 66,
+      "done": true
     },
     "magdalena": {
       "name": "Magdalena",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 78,
+      "last_page": 77,
+      "done": true
     },
     "caldas": {
       "name": "Caldas",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 55,
+      "last_page": 130,
       "done": false
     },
     "santander": {
