@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-07-03T17:30:01.619984+00:00",
-  "total_listings": 21568,
+  "generated_at": "2026-07-03T17:37:20.724734+00:00",
+  "total_listings": 21575,
   "zones_with_data": 11,
-  "avg_price_cop": 543338079.0,
-  "avg_price_per_m2": 5557582.0,
+  "avg_price_cop": 543216684.0,
+  "avg_price_per_m2": 5556859.0,
   "avg_area_m2": 95.1,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.2,
-  "avg_stratum": null,
+  "avg_stratum": 3.6,
   "by_department": {
     "Cundinamarca": {
       "listings": 4113,
@@ -55,9 +55,9 @@
       "avg_price_per_m2": 3375232
     },
     "Tolima": {
-      "listings": 433,
-      "avg_price_cop": 352668990,
-      "avg_price_per_m2": 4034728
+      "listings": 440,
+      "avg_price_cop": 349749898,
+      "avg_price_per_m2": 4023516
     },
     "sin especificar": {
       "listings": 54,
