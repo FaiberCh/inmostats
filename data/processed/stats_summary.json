@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-04T10:50:46.559235+00:00",
-  "total_listings": 40260,
+  "generated_at": "2026-07-04T12:21:57.887656+00:00",
+  "total_listings": 40262,
   "zones_with_data": 13,
-  "avg_price_cop": 625656013.0,
-  "avg_price_per_m2": 5800505.0,
+  "avg_price_cop": 625706648.0,
+  "avg_price_per_m2": 5800549.0,
   "avg_area_m2": 103.1,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.3,
   "avg_stratum": 4.5,
   "by_department": {
     "Bogotá D.C.": {
-      "listings": 8155,
-      "avg_price_cop": 940293189,
-      "avg_price_per_m2": 7483473
+      "listings": 8157,
+      "avg_price_cop": 940465975,
+      "avg_price_per_m2": 7483279
     },
     "Valle del Cauca": {
       "listings": 6232,
