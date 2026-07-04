@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-03T23:21:43.966120+00:00",
-  "total_listings": 25247,
-  "zones_with_data": 11,
-  "avg_price_cop": 543973386.0,
-  "avg_price_per_m2": 5528814.0,
-  "avg_area_m2": 96.1,
+  "generated_at": "2026-07-04T01:25:29.052077+00:00",
+  "total_listings": 28992,
+  "zones_with_data": 12,
+  "avg_price_cop": 545196506.0,
+  "avg_price_per_m2": 5437250.0,
+  "avg_area_m2": 97.8,
   "avg_bedrooms": 2.7,
-  "avg_bathrooms": 2.2,
+  "avg_bathrooms": 2.3,
   "avg_stratum": 4.4,
   "by_department": {
     "Cundinamarca": {
@@ -14,20 +14,25 @@
       "avg_price_cop": 335421011,
       "avg_price_per_m2": 4555885
     },
+    "Atlántico": {
+      "listings": 4181,
+      "avg_price_cop": 584452884,
+      "avg_price_per_m2": 4710525
+    },
     "Risaralda": {
       "listings": 4131,
       "avg_price_cop": 470524873,
       "avg_price_per_m2": 5274935
     },
-    "Atlántico": {
-      "listings": 3531,
-      "avg_price_cop": 580052180,
-      "avg_price_per_m2": 4724707
-    },
     "Bolívar": {
       "listings": 3502,
       "avg_price_cop": 994488503,
       "avg_price_per_m2": 8337533
+    },
+    "Valle del Cauca": {
+      "listings": 3095,
+      "avg_price_cop": 541908810,
+      "avg_price_per_m2": 4859135
     },
     "Santander": {
       "listings": 2795,
