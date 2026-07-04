@@ -1,83 +1,88 @@
 {
-  "generated_at": "2026-07-04T20:39:16.989616+00:00",
-  "total_listings": 48114,
-  "zones_with_data": 14,
-  "avg_price_cop": 652448611.0,
-  "avg_price_per_m2": 6050795.0,
-  "avg_area_m2": 103.8,
+  "generated_at": "2026-07-04T21:46:56.739620+00:00",
+  "total_listings": 48365,
+  "zones_with_data": 15,
+  "avg_price_cop": 652254736.0,
+  "avg_price_per_m2": 6054985.0,
+  "avg_area_m2": 103.7,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
-    "Bogotá D.C.": {
-      "listings": 8164,
-      "avg_price_cop": 940613640,
-      "avg_price_per_m2": 7482660
-    },
     "Antioquia": {
-      "listings": 7845,
-      "avg_price_cop": 789282674,
-      "avg_price_per_m2": 7334469
+      "listings": 7553,
+      "avg_price_cop": 791597993,
+      "avg_price_per_m2": 7327822
+    },
+    "Bogotá D.C.": {
+      "listings": 7362,
+      "avg_price_cop": 952988920,
+      "avg_price_per_m2": 7489799
     },
     "Valle del Cauca": {
-      "listings": 6232,
-      "avg_price_cop": 547900897,
-      "avg_price_per_m2": 4830383
+      "listings": 5958,
+      "avg_price_cop": 549429966,
+      "avg_price_per_m2": 4813532
     },
     "Cundinamarca": {
-      "listings": 4632,
-      "avg_price_cop": 333944848,
-      "avg_price_per_m2": 4551150
+      "listings": 4435,
+      "avg_price_cop": 334068211,
+      "avg_price_per_m2": 4545972
     },
     "Atlántico": {
-      "listings": 4181,
-      "avg_price_cop": 584452884,
-      "avg_price_per_m2": 4710525
+      "listings": 4100,
+      "avg_price_cop": 584678556,
+      "avg_price_per_m2": 4702399
     },
     "Risaralda": {
-      "listings": 4131,
-      "avg_price_cop": 470524873,
-      "avg_price_per_m2": 5274935
+      "listings": 4014,
+      "avg_price_cop": 469824719,
+      "avg_price_per_m2": 5273899
     },
     "Bolívar": {
-      "listings": 3502,
-      "avg_price_cop": 994488503,
-      "avg_price_per_m2": 8337533
+      "listings": 3424,
+      "avg_price_cop": 997378451,
+      "avg_price_per_m2": 8334238
     },
     "Santander": {
-      "listings": 2795,
-      "avg_price_cop": 473595921,
-      "avg_price_per_m2": 4568039
+      "listings": 2634,
+      "avg_price_cop": 471084953,
+      "avg_price_per_m2": 4557341
     },
     "Caldas": {
-      "listings": 2613,
-      "avg_price_cop": 485871600,
-      "avg_price_per_m2": 5506298
+      "listings": 2551,
+      "avg_price_cop": 484888828,
+      "avg_price_per_m2": 5488185
+    },
+    "Resto de Colombia": {
+      "listings": 2399,
+      "avg_price_cop": 651428366,
+      "avg_price_per_m2": 6469957
     },
     "Magdalena": {
-      "listings": 1575,
-      "avg_price_cop": 743489083,
-      "avg_price_per_m2": 7911946
+      "listings": 1554,
+      "avg_price_cop": 744629928,
+      "avg_price_per_m2": 7915643
     },
     "Quindío": {
-      "listings": 1319,
-      "avg_price_cop": 412480034,
-      "avg_price_per_m2": 5105126
+      "listings": 1289,
+      "avg_price_cop": 412290536,
+      "avg_price_per_m2": 5097804
     },
     "Norte de Santander": {
-      "listings": 641,
-      "avg_price_cop": 322820884,
-      "avg_price_per_m2": 3387294
+      "listings": 633,
+      "avg_price_cop": 323211986,
+      "avg_price_per_m2": 3370638
     },
     "Tolima": {
-      "listings": 451,
-      "avg_price_cop": 348217195,
-      "avg_price_per_m2": 4014705
+      "listings": 427,
+      "avg_price_cop": 351757103,
+      "avg_price_per_m2": 4013563
     },
     "sin especificar": {
-      "listings": 33,
-      "avg_price_cop": 518817907,
-      "avg_price_per_m2": 9112819
+      "listings": 32,
+      "avg_price_cop": 447530966,
+      "avg_price_per_m2": 9096908
     }
   }
 }
