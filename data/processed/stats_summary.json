@@ -1,14 +1,19 @@
 {
-  "generated_at": "2026-07-04T01:25:29.052077+00:00",
-  "total_listings": 28992,
-  "zones_with_data": 12,
-  "avg_price_cop": 545196506.0,
-  "avg_price_per_m2": 5437250.0,
-  "avg_area_m2": 97.8,
+  "generated_at": "2026-07-04T05:22:07.908044+00:00",
+  "total_listings": 33339,
+  "zones_with_data": 13,
+  "avg_price_cop": 556033510.0,
+  "avg_price_per_m2": 5446074.0,
+  "avg_area_m2": 99.3,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.3,
-  "avg_stratum": 4.4,
+  "avg_stratum": 4.5,
   "by_department": {
+    "Valle del Cauca": {
+      "listings": 6232,
+      "avg_price_cop": 547900897,
+      "avg_price_per_m2": 4830383
+    },
     "Cundinamarca": {
       "listings": 4635,
       "avg_price_cop": 335421011,
@@ -28,11 +33,6 @@
       "listings": 3502,
       "avg_price_cop": 994488503,
       "avg_price_per_m2": 8337533
-    },
-    "Valle del Cauca": {
-      "listings": 3095,
-      "avg_price_cop": 541908810,
-      "avg_price_per_m2": 4859135
     },
     "Santander": {
       "listings": 2795,
@@ -54,6 +54,11 @@
       "avg_price_cop": 412480034,
       "avg_price_per_m2": 5105126
     },
+    "Bogotá D.C.": {
+      "listings": 1231,
+      "avg_price_cop": 819607832,
+      "avg_price_per_m2": 7335893
+    },
     "Norte de Santander": {
       "listings": 641,
       "avg_price_cop": 322820884,
@@ -65,9 +70,9 @@
       "avg_price_per_m2": 4014705
     },
     "sin especificar": {
-      "listings": 54,
-      "avg_price_cop": 594532369,
-      "avg_price_per_m2": 8614913
+      "listings": 33,
+      "avg_price_cop": 518817907,
+      "avg_price_per_m2": 9112819
     }
   }
 }
