@@ -102,18 +102,38 @@ async function buildStatusMessage() {
   let zonaLinea = "";
   if (current && current.last_page) {
     const pagesDone = current.next_page - 1;
-    zonaLinea = `📍 Zona actual: <b>${current.name}</b> (pag. ${pagesDone}/${current.last_page})\n`;
+    const pct = Math.round((pagesDone / current.last_page) * 100);
+    zonaLinea = `📍 Zona actual: <b>${current.name}</b> (pag. ${pagesDone}/${current.last_page} — ${pct}%)\n`;
   } else if (current) {
-    zonaLinea = `📍 Zona actual: <b>${current.name}</b>\n`;
+    zonaLinea = `📍 Zona actual: <b>${current.name}</b> (aun sin iniciar, calculando total de paginas...)\n`;
   }
 
+  const zonesPct = total ? Math.round((doneCount / total) * 100) : 0;
   const filled = total ? Math.round((doneCount / total) * 10) : 0;
   const bar = "▓".repeat(filled) + "░".repeat(10 - filled);
+
+  // Progreso nacional por paginas (mas representativo que el conteo de
+  // zonas, ya que algunas zonas son muchisimo mas grandes que otras).
+  // Solo cuenta zonas cuyo total de paginas ya se conoce (las que no han
+  // arrancado, como "resto-de-colombia" antes de su primera pagina, quedan
+  // fuera del calculo hasta que se sepa su tamano real).
+  const known = departments.filter((d) => d.last_page);
+  const totalPages = known.reduce((sum, d) => sum + d.last_page, 0);
+  const donePages = known.reduce(
+    (sum, d) => sum + (d.done ? d.last_page : d.next_page - 1),
+    0
+  );
+  const notStarted = departments.filter((d) => !d.done && !d.last_page).length;
+  const nationalPct = totalPages ? Math.round((donePages / totalPages) * 100) : 0;
+  const nationalNote = notStarted
+    ? ` (sin contar ${notStarted} zona${notStarted > 1 ? "s" : ""} aun sin iniciar)`
+    : "";
 
   return (
     `🏗️ <b>InmoStats</b> — Scraping en progreso\n${divider}\n` +
     zonaLinea +
-    `📊 Zonas completadas: ${bar} ${doneCount}/${total}\n${divider}\n` +
+    `📊 Zonas completadas: ${bar} ${doneCount}/${total} (${zonesPct}%)\n` +
+    `📈 Avance nacional por paginas: ${nationalPct}%${nationalNote}\n${divider}\n` +
     `🔁 El checkpoint se actualiza cada ~30 min via GitHub Actions`
   );
 }

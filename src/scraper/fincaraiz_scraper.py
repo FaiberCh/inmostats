@@ -479,17 +479,33 @@ def build_summary_message(checkpoint: dict, output_path: Path, rows_written: int
     current = next((d for d in departments.values() if not d["done"]), None)
     if current and current["last_page"]:
         pages_done = current["next_page"] - 1
-        zona_linea = f"📍 Zona actual: <b>{current['name']}</b> (pag. {pages_done}/{current['last_page']})\n"
+        pct = round(pages_done / current["last_page"] * 100)
+        zona_linea = (
+            f"📍 Zona actual: <b>{current['name']}</b> "
+            f"(pag. {pages_done}/{current['last_page']} — {pct}%)\n"
+        )
     elif current:
-        zona_linea = f"📍 Zona actual: <b>{current['name']}</b>\n"
+        zona_linea = f"📍 Zona actual: <b>{current['name']}</b> (aun sin iniciar)\n"
     else:
         zona_linea = ""
+
+    # Avance nacional por paginas (mas representativo que el conteo de
+    # zonas, ya que algunas zonas son muchisimo mas grandes que otras).
+    # Solo cuenta zonas cuyo total de paginas ya se conoce.
+    known = [d for d in departments.values() if d["last_page"]]
+    total_pages = sum(d["last_page"] for d in known)
+    done_pages = sum(d["last_page"] if d["done"] else d["next_page"] - 1 for d in known)
+    not_started = sum(1 for d in departments.values() if not d["done"] and not d["last_page"])
+    national_pct = round(done_pages / total_pages * 100) if total_pages else 0
+    national_note = f" (sin contar {not_started} zona(s) aun sin iniciar)" if not_started else ""
+    zones_pct = round(done_count / total_count * 100) if total_count else 0
 
     return (
         f"🏗️ <b>InmoStats</b> — Scraping en progreso\n"
         f"{divider}\n"
         f"{zona_linea}"
-        f"📊 Zonas completadas: {_progress_bar(done_count, total_count)} {done_count}/{total_count}\n"
+        f"📊 Zonas completadas: {_progress_bar(done_count, total_count)} {done_count}/{total_count} ({zones_pct}%)\n"
+        f"📈 Avance nacional por paginas: {national_pct}%{national_note}\n"
         f"🆕 {rows_written} anuncios nuevos en esta corrida\n"
         f"🗂 <code>{output_path.name}</code>\n"
         f"{divider}\n"
