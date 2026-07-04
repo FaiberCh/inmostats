@@ -84,6 +84,13 @@ MAX_RUNTIME_SECONDS = int(os.environ["MAX_RUNTIME_SECONDS"]) if os.environ.get("
 # cron cada 30 min) dispare re-scrapes completos sin parar.
 MIN_HOURS_BETWEEN_RUNS = int(os.environ.get("MIN_HOURS_BETWEEN_RUNS", "24"))
 
+# Red de seguridad adicional: GitHub rechaza archivos de mas de 100MB en
+# commits normales (sin Git LFS). Cada invocacion ya escribe su propio CSV
+# nuevo (no se re-abre uno viejo para seguir anexando), pero por si acaso
+# se corre con un MAX_RUNTIME_SECONDS muy alto, cortamos antes de acercarnos
+# al limite real.
+MAX_FILE_SIZE_BYTES = 80 * 1024 * 1024
+
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
@@ -336,9 +343,7 @@ def save_checkpoint(checkpoint: dict) -> None:
 
 
 def new_checkpoint() -> dict:
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     return {
-        "output_file": f"fincaraiz_apartamentos_colombia_{timestamp}.csv",
         "started_at": datetime.now(timezone.utc).isoformat(),
         "done": False,
         "departments": {
@@ -359,14 +364,19 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
         d["next_page"] == 1 and d["last_page"] is None and not d["done"]
         for d in checkpoint["departments"].values()
     )
+
+    # Cada invocacion escribe su propio CSV nuevo (nunca se re-abre uno viejo
+    # para seguir anexando). Antes se reusaba un solo archivo por toda la
+    # corrida nacional (dias de ejecucion, encadenados via checkpoint) y
+    # termino superando el limite de 100MB de GitHub para archivos normales,
+    # lo que tumbaba el push en cada corrida siguiente sin poder recuperarse.
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    output_path = output_dir / f"fincaraiz_apartamentos_colombia_{timestamp}.csv"
     logger.info(
         "%s -> %s",
         "Iniciando corrida nueva" if is_fresh else "Reanudando corrida existente",
-        checkpoint["output_file"],
+        output_path.name,
     )
-
-    output_path = output_dir / checkpoint["output_file"]
-    is_new_file = not output_path.exists()
     fieldnames = [f.name for f in fields(Listing)]
     start_time = time.monotonic()
     rows_written = 0
@@ -374,14 +384,16 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
     def time_budget_exceeded() -> bool:
         return MAX_RUNTIME_SECONDS is not None and (time.monotonic() - start_time) >= MAX_RUNTIME_SECONDS
 
-    with output_path.open("a", newline="", encoding="utf-8-sig") as f:
+    def file_too_big() -> bool:
+        return output_path.exists() and output_path.stat().st_size >= MAX_FILE_SIZE_BYTES
+
+    with output_path.open("w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
-        if is_new_file:
-            writer.writeheader()
+        writer.writeheader()
 
         for slug, name in LOCATIONS:
-            if time_budget_exceeded():
-                logger.info("Tiempo maximo (%ds) alcanzado; se detiene aqui.", MAX_RUNTIME_SECONDS)
+            if time_budget_exceeded() or file_too_big():
+                logger.info("Tiempo maximo o tamano maximo alcanzado; se detiene aqui.")
                 break
 
             dept_state = checkpoint["departments"][slug]
@@ -391,8 +403,8 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
 
             page = dept_state["next_page"]
             while dept_state["last_page"] is None or page <= dept_state["last_page"]:
-                if time_budget_exceeded():
-                    logger.info("Tiempo maximo (%ds) alcanzado; se detiene aqui.", MAX_RUNTIME_SECONDS)
+                if time_budget_exceeded() or file_too_big():
+                    logger.info("Tiempo maximo o tamano maximo alcanzado; se detiene aqui.")
                     break
 
                 url = build_page_url(slug, page)
