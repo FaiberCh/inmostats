@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-07-04T05:22:07.908044+00:00",
-  "total_listings": 33339,
+  "generated_at": "2026-07-04T08:28:30.327375+00:00",
+  "total_listings": 38212,
   "zones_with_data": 13,
-  "avg_price_cop": 556033510.0,
-  "avg_price_per_m2": 5446074.0,
-  "avg_area_m2": 99.3,
+  "avg_price_cop": 600368287.0,
+  "avg_price_per_m2": 5693914.0,
+  "avg_area_m2": 101.5,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.3,
   "avg_stratum": 4.5,
@@ -14,10 +14,15 @@
       "avg_price_cop": 547900897,
       "avg_price_per_m2": 4830383
     },
+    "Bogotá D.C.": {
+      "listings": 6106,
+      "avg_price_cop": 886505409,
+      "avg_price_per_m2": 7377572
+    },
     "Cundinamarca": {
-      "listings": 4635,
-      "avg_price_cop": 335421011,
-      "avg_price_per_m2": 4555885
+      "listings": 4633,
+      "avg_price_cop": 335480982,
+      "avg_price_per_m2": 4556168
     },
     "Atlántico": {
       "listings": 4181,
@@ -53,11 +58,6 @@
       "listings": 1319,
       "avg_price_cop": 412480034,
       "avg_price_per_m2": 5105126
-    },
-    "Bogotá D.C.": {
-      "listings": 1231,
-      "avg_price_cop": 819607832,
-      "avg_price_per_m2": 7335893
     },
     "Norte de Santander": {
       "listings": 641,
