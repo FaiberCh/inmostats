@@ -69,11 +69,24 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     # scraper (extraidos del JSON estructurado de la pagina, no de texto
     # libre); solo rellenamos huecos que puedan venir de corridas viejas
     # con un esquema mas chico (ver data/raw/fincaraiz_apartamentos_bogota_*).
-    for col in ("department", "city", "neighborhood", "locality", "zone", "owner_type"):
+    for col in ("department", "department_real", "city", "neighborhood", "locality", "zone", "owner_type"):
         if col in df.columns:
             df[col] = df[col].fillna("sin especificar")
     if "is_new_project" in df.columns:
         df["is_new_project"] = df["is_new_project"].fillna(False)
+
+    # "department" es la zona de busqueda; para el bucket "resto-de-colombia"
+    # eso NO es un departamento real (trae anuncios de cualquier parte del
+    # pais). department_final usa el departamento real del anuncio
+    # (department_real) cuando se conoce, y cae de vuelta a "department"
+    # solo si no hay dato real disponible - esta es la columna que conviene
+    # usar para agrupar/analizar por departamento.
+    if "department_real" in df.columns:
+        df["department_final"] = df["department_real"].where(
+            df["department_real"] != "sin especificar", df["department"]
+        )
+    else:
+        df["department_final"] = df["department"]
 
     return df
 

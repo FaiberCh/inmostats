@@ -21,8 +21,14 @@ STATS_PATH = PROCESSED_DIR / "stats_summary.json"
 
 
 def compute_stats(df: pd.DataFrame) -> dict:
+    # department_final resuelve el departamento real del anuncio (en vez de
+    # la zona de busqueda) - importante porque "resto-de-colombia" mezcla
+    # anuncios de cualquier departamento. Cae de vuelta a "department" para
+    # CSV viejos que no tengan la columna.
+    group_col = "department_final" if "department_final" in df.columns else "department"
+
     by_department = (
-        df.groupby("department")
+        df.groupby(group_col)
         .agg(
             listings=("listing_id", "count"),
             avg_price_cop=("price_cop", "mean"),
@@ -43,7 +49,7 @@ def compute_stats(df: pd.DataFrame) -> dict:
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "total_listings": int(len(df)),
-        "zones_with_data": int(df["department"].nunique()),
+        "zones_with_data": int(df[group_col].nunique()),
         "avg_price_cop": safe_round(df["price_cop"]),
         "avg_price_per_m2": safe_round(df["price_per_m2"]),
         "avg_area_m2": safe_round(df["area_m2"], 1),

@@ -139,6 +139,7 @@ class Listing:
     detail_url: Optional[str]
     department_slug: str
     department: str
+    department_real: Optional[str]
     city: Optional[str]
     neighborhood: Optional[str]
     locality: Optional[str]
@@ -232,6 +233,15 @@ def parse_listing(raw: dict, page: int, department_slug: str, department: str) -
         detail_url=detail_url,
         department_slug=department_slug,
         department=department,
+        # "department" es la zona de busqueda (fija segun la URL scrapeada);
+        # para la mayoria de zonas coincide con el departamento real del
+        # anuncio, pero "resto-de-colombia" es un bucket mixto que en la
+        # practica trae anuncios de CUALQUIER departamento (Bogota,
+        # Cundinamarca, Santander, etc.) etiquetados como "Resto de
+        # Colombia". department_real usa el dato propio del anuncio
+        # (locations.state) para saber su ubicacion real sin importar bajo
+        # que zona de busqueda se encontro.
+        department_real=_first_location_name(locations, "state"),
         city=_first_location_name(locations, "city"),
         neighborhood=location_main.get("name"),
         locality=_first_location_name(locations, "locality"),
