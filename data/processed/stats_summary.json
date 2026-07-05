@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-05T12:30:12.169967+00:00",
-  "total_listings": 48904,
+  "generated_at": "2026-07-05T14:35:22.725037+00:00",
+  "total_listings": 48905,
   "zones_with_data": 31,
-  "avg_price_cop": 652620496.0,
-  "avg_price_per_m2": 6057597.0,
+  "avg_price_cop": 652623510.0,
+  "avg_price_per_m2": 6057595.0,
   "avg_area_m2": 103.7,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -35,9 +35,9 @@
       "avg_price_per_m2": 4560125
     },
     "Atlántico": {
-      "listings": 3910,
-      "avg_price_cop": 588710307,
-      "avg_price_per_m2": 4707913
+      "listings": 3909,
+      "avg_price_cop": 588733001,
+      "avg_price_per_m2": 4707189
     },
     "Risaralda": {
       "listings": 3895,
@@ -70,9 +70,9 @@
       "avg_price_per_m2": 5082133
     },
     "Bogotá, d.c.": {
-      "listings": 839,
-      "avg_price_cop": 721269956,
-      "avg_price_per_m2": 7115417
+      "listings": 840,
+      "avg_price_cop": 721363682,
+      "avg_price_per_m2": 7114054
     },
     "Norte de Santander": {
       "listings": 620,
@@ -90,9 +90,9 @@
       "avg_price_per_m2": 4732476
     },
     "Atlantico": {
-      "listings": 87,
-      "avg_price_cop": 526333333,
-      "avg_price_per_m2": 4419897
+      "listings": 88,
+      "avg_price_cop": 526034091,
+      "avg_price_per_m2": 4455318
     },
     "Bolivar": {
       "listings": 72,
