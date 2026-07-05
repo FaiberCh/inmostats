@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-05T18:20:21.346355+00:00",
-  "total_listings": 48910,
+  "generated_at": "2026-07-05T19:44:00.721189+00:00",
+  "total_listings": 48911,
   "zones_with_data": 31,
-  "avg_price_cop": 652603900.0,
-  "avg_price_per_m2": 6057696.0,
+  "avg_price_cop": 652596650.0,
+  "avg_price_per_m2": 6057665.0,
   "avg_area_m2": 103.7,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 7125,
-      "avg_price_cop": 794580111,
-      "avg_price_per_m2": 7321591
+      "listings": 7126,
+      "avg_price_cop": 794510425,
+      "avg_price_per_m2": 7321197
     },
     "Resto de Colombia": {
       "listings": 6332,
