@@ -1,0 +1,12 @@
+{
+  "started_at": "2026-07-06T16:34:28.445581+00:00",
+  "done": false,
+  "departments": {
+    "resto-de-colombia": {
+      "name": "Resto de Colombia",
+      "next_page": 371,
+      "last_page": 3791,
+      "done": false
+    }
+  }
+}
