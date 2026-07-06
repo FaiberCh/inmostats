@@ -26,7 +26,7 @@ from sklearn.metrics import (
     r2_score,
     root_mean_squared_error,
 )
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold, cross_val_predict, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, TargetEncoder
 from xgboost import XGBRegressor
@@ -115,6 +115,34 @@ def evaluate(pipe: Pipeline, X_test, y_test_raw) -> dict:
     }
 
 
+def cross_validate(model, X, y_log, y_raw, amenity_columns, n_splits: int = 5) -> dict:
+    """Evalua con K-fold en vez de un solo split 80/20: cada fila del
+    dataset termina en el set de prueba exactamente una vez, asi el
+    resultado no depende de que particion aleatoria le toco a que fila
+    (relevante con ~47k filas, donde un split unico puede ser optimista o
+    pesimista solo por azar)."""
+    cv = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+    pipe = Pipeline([("prep", build_preprocessor(amenity_columns)), ("model", model)])
+    pred_log = cross_val_predict(pipe, X, y_log, cv=cv, n_jobs=-1)
+    pred = np.expm1(pred_log)
+    return {
+        "RMSE_COP": round(root_mean_squared_error(y_raw, pred), 0),
+        "MAE_COP": round(mean_absolute_error(y_raw, pred), 0),
+        "MAPE_%": round(mean_absolute_percentage_error(y_raw, pred) * 100, 2),
+        "R2": round(r2_score(y_raw, pred), 4),
+    }
+
+
+def top_feature_importances(pipe: Pipeline, top_n: int = 15) -> list[tuple[str, float]]:
+    """Importancias del modelo final, mapeadas a nombres de columna legibles
+    (target encoding y one-hot dejan nombres tecnicos tipo 'onehot__x0_Bogota';
+    get_feature_names_out() del ColumnTransformer ya resuelve eso)."""
+    names = pipe.named_steps["prep"].get_feature_names_out()
+    importances = pipe.named_steps["model"].feature_importances_
+    ranked = sorted(zip(names, importances), key=lambda pair: pair[1], reverse=True)
+    return ranked[:top_n]
+
+
 def build_models() -> dict:
     return {
         "LinearRegression": LinearRegression(),
@@ -166,6 +194,16 @@ def main() -> None:
     else:
         best_name = best_by_rmse
     logger.info("Modelo elegido: %s (%s)", best_name, results[best_name])
+
+    # El split 80/20 de arriba usa una sola particion aleatoria; se confirma
+    # con 5-fold CV que el resultado no fue solo suerte con ese split.
+    cv_metrics = cross_validate(build_models()[best_name], X, y_log, y_raw, amenity_columns)
+    logger.info("%s -> %s (5-fold CV, todas las filas como test una vez)", best_name, cv_metrics)
+
+    importances = top_feature_importances(fitted[best_name])
+    logger.info("Top features por importancia (%s):", best_name)
+    for name, importance in importances:
+        logger.info("  %s: %.4f", name, importance)
 
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     output_path = MODELS_DIR / "price_model.joblib"
