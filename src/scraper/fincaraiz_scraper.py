@@ -354,6 +354,12 @@ def get_or_create_checkpoint() -> Optional[dict]:
     return new_checkpoint()
 
 
+def run_started_at_tag(started_at: str) -> str:
+    """Version compacta y apta para nombre de archivo de un started_at ISO,
+    ej. '2026-07-03T17:36:47.742614+00:00' -> 'run20260703T173647'."""
+    return "run" + datetime.fromisoformat(started_at).strftime("%Y%m%dT%H%M%S")
+
+
 def save_checkpoint(checkpoint: dict) -> None:
     CHECKPOINT_PATH.parent.mkdir(parents=True, exist_ok=True)
     with CHECKPOINT_PATH.open("w", encoding="utf-8") as f:
@@ -398,8 +404,14 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
     # corrida nacional (dias de ejecucion, encadenados via checkpoint) y
     # termino superando el limite de 100MB de GitHub para archivos normales,
     # lo que tumbaba el push en cada corrida siguiente sin poder recuperarse.
+    #
+    # El nombre incluye el tag de la corrida (run_tag, derivado de
+    # started_at) ademas del timestamp del propio archivo, para poder
+    # filtrar por corrida via un glob simple sin tener que abrir ningun
+    # archivo (ver clean_data.load_raw_data(run_started_at=...)).
+    run_tag = run_started_at_tag(checkpoint["started_at"])
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    output_path = output_dir / f"fincaraiz_apartamentos_colombia_{timestamp}.csv"
+    output_path = output_dir / f"fincaraiz_apartamentos_colombia_{run_tag}_{timestamp}.csv"
     logger.info(
         "%s -> %s",
         "Iniciando corrida nueva" if is_fresh else "Reanudando corrida existente",

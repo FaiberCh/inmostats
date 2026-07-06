@@ -9,8 +9,11 @@ dataset listo para EDA/modelado en data/processed/.
 import logging
 import unicodedata
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
+
+from src.scraper.fincaraiz_scraper import run_started_at_tag
 
 RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
 PROCESSED_DIR = Path(__file__).resolve().parents[2] / "data" / "processed"
@@ -59,14 +62,22 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 
-def load_raw_data(raw_dir: Path = RAW_DIR) -> pd.DataFrame:
+def load_raw_data(raw_dir: Path = RAW_DIR, run_started_at: Optional[str] = None) -> pd.DataFrame:
+    """Carga y consolida los CSV crudos. Si se pasa run_started_at (el
+    started_at de una corrida nacional, ej. del checkpoint), solo carga los
+    archivos de esa corrida especifica -sin abrir el resto- gracias al tag
+    de corrida que el scraper ya incluye en cada nombre de archivo."""
     # rglob (no glob) para tambien recoger CSV dentro de subcarpetas, como
     # data/raw/resto_de_colombia_backfill/ (re-scrapes puntuales de una
     # zona especifica se guardan aparte para no mezclarse con el historial
     # principal, pero igual deben consolidarse aqui).
-    csv_files = sorted(raw_dir.rglob("fincaraiz_apartamentos_*.csv"))
+    if run_started_at:
+        pattern = f"fincaraiz_apartamentos_*_{run_started_at_tag(run_started_at)}_*.csv"
+    else:
+        pattern = "fincaraiz_apartamentos_*.csv"
+    csv_files = sorted(raw_dir.rglob(pattern))
     if not csv_files:
-        raise FileNotFoundError(f"No se encontraron CSV crudos en {raw_dir}")
+        raise FileNotFoundError(f"No se encontraron CSV crudos en {raw_dir} (patron: {pattern})")
 
     logger.info("Cargando %d archivo(s) crudo(s)", len(csv_files))
     frames = [pd.read_csv(f, encoding="utf-8-sig") for f in csv_files]
