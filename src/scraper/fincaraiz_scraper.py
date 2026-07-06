@@ -168,6 +168,7 @@ class Listing:
     listing_updated_at: Optional[str]
     source_page: int
     scraped_at: str
+    run_started_at: str
 
 
 def build_page_url(department_slug: str, page: int) -> str:
@@ -215,7 +216,9 @@ def _amenities_string(facilities: list) -> Optional[str]:
     return "; ".join(names) if names else None
 
 
-def parse_listing(raw: dict, page: int, department_slug: str, department: str) -> Listing:
+def parse_listing(
+    raw: dict, page: int, department_slug: str, department: str, run_started_at: str
+) -> Listing:
     locations = raw.get("locations") or {}
     price = raw.get("price") or {}
     common_expenses = raw.get("commonExpenses") or {}
@@ -270,10 +273,13 @@ def parse_listing(raw: dict, page: int, department_slug: str, department: str) -
         listing_updated_at=raw.get("updated_at"),
         source_page=page,
         scraped_at=datetime.now(timezone.utc).isoformat(),
+        run_started_at=run_started_at,
     )
 
 
-def parse_page(html: str, page: int, department_slug: str, department: str) -> list[Listing]:
+def parse_page(
+    html: str, page: int, department_slug: str, department: str, run_started_at: str
+) -> list[Listing]:
     next_data = extract_next_data(html)
     if next_data is None:
         logger.warning("No se encontro __NEXT_DATA__ en la pagina %d de %s", page, department)
@@ -286,7 +292,9 @@ def parse_page(html: str, page: int, department_slug: str, department: str) -> l
         logger.warning("Estructura inesperada de datos en la pagina %d de %s", page, department)
         return []
 
-    listings = [parse_listing(r, page, department_slug, department) for r in raw_listings]
+    listings = [
+        parse_listing(r, page, department_slug, department, run_started_at) for r in raw_listings
+    ]
     # Las busquedas de "apartamentos" a veces incluyen anuncios de otro tipo
     # (casas, lotes) mezclados en proyectos de vivienda; el propio dato de
     # tipo de propiedad nos deja filtrar con precision, sin depender de
@@ -445,7 +453,7 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
                     logger.info("[%s] total anuncios: %s, paginas: %s",
                                 name, total, dept_state["last_page"])
 
-                rows = parse_page(html, page, slug, name)
+                rows = parse_page(html, page, slug, name, checkpoint["started_at"])
                 for row in rows:
                     writer.writerow(asdict(row))
                 rows_written += len(rows)
