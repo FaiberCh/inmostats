@@ -49,6 +49,20 @@ BOOL_FEATURES = ["is_new_project"]
 TARGET = "price_cop"
 N_AMENITY_FEATURES = 15
 
+# "amenities" viene de facilities (lista estructurada); estas palabras se
+# buscan en el texto libre de title+description, que no se usaba para nada
+# en el modelo. Elegidas a mano revisando anuncios reales de precio alto
+# (ver conversacion): describen atributos de acabados/diseno que el estrato
+# y el area no capturan (un apto de 250m2 estrato 6 puede o no tener
+# chimenea, techos altos, terraza, etc.), justo el tipo de variable que
+# faltaba para diferenciar mejor el segmento de lujo.
+LUXURY_KEYWORDS = [
+    "penthouse", "duplex", "chimenea", "vista panoramica", "techos altos",
+    "doble altura", "vestier", "walk in closet", "terraza", "club house",
+    "zona bbq", "jardin interior", "ventanas termoacusticas", "remodelado",
+    "a estrenar", "exclusivo", "lujo", "sky lounge", "piso de madera",
+]
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
@@ -77,13 +91,32 @@ def _slugify(text: str) -> str:
     return "".join(c if c.isalnum() else "_" for c in text.lower()).strip("_")
 
 
-def build_preprocessor(amenity_columns: list[str]) -> ColumnTransformer:
+def _normalize_text(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    return text.lower()
+
+
+def add_text_keyword_flags(df, keywords: list[str]):
+    """Una columna binaria por palabra clave de lujo/acabados presente en el
+    texto libre (title + description). Igual que add_amenity_flags, el
+    vocabulario esta fijo de antemano (no se deriva del precio), asi que no
+    hay leakage del target hacia el set de prueba."""
+    text = (df["title"].fillna("") + " " + df["description"].fillna("")).apply(_normalize_text)
+    flags = {}
+    for keyword in keywords:
+        col = "txt_" + _slugify(keyword)
+        flags[col] = text.str.contains(keyword, regex=False).astype(int)
+    return pd.DataFrame(flags, index=df.index)
+
+
+def build_preprocessor(extra_columns: list[str]) -> ColumnTransformer:
     return ColumnTransformer(
         transformers=[
             ("num", SimpleImputer(strategy="median"), NUMERIC_FEATURES),
             ("onehot", OneHotEncoder(handle_unknown="ignore"), ONEHOT_FEATURES),
             ("target_enc", TargetEncoder(target_type="continuous"), TARGET_ENCODE_FEATURES),
-            ("bool", "passthrough", BOOL_FEATURES + amenity_columns),
+            ("bool", "passthrough", BOOL_FEATURES + extra_columns),
         ]
     )
 
@@ -96,13 +129,15 @@ def load_dataset():
 
     amenities = top_amenities(df)
     amenity_df = add_amenity_flags(df, amenities)
+    text_flags_df = add_text_keyword_flags(df, LUXURY_KEYWORDS)
 
     features = NUMERIC_FEATURES + ONEHOT_FEATURES + TARGET_ENCODE_FEATURES + BOOL_FEATURES
-    X = pd.concat([df[features].copy(), amenity_df], axis=1)
+    X = pd.concat([df[features].copy(), amenity_df, text_flags_df], axis=1)
     X["is_new_project"] = X["is_new_project"].astype(int)
     y_log = np.log1p(df[TARGET])
     y_raw = df[TARGET]
-    return X, y_log, y_raw, amenity_df.columns.tolist()
+    extra_columns = amenity_df.columns.tolist() + text_flags_df.columns.tolist()
+    return X, y_log, y_raw, extra_columns
 
 
 def evaluate(pipe: Pipeline, X_test, y_test_raw) -> dict:
@@ -115,13 +150,13 @@ def evaluate(pipe: Pipeline, X_test, y_test_raw) -> dict:
     }
 
 
-def cross_val_predictions(model, X, y_log, amenity_columns, n_splits: int = 5) -> np.ndarray:
+def cross_val_predictions(model, X, y_log, extra_columns, n_splits: int = 5) -> np.ndarray:
     """Predicciones out-of-fold en COP: cada fila se predice con un modelo
     que no la vio en entrenamiento, sin tocar el modelo final ya ajustado
     con todos los datos. Base tanto para las metricas agregadas de CV como
     para el desglose de error por segmento."""
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=42)
-    pipe = Pipeline([("prep", build_preprocessor(amenity_columns)), ("model", model)])
+    pipe = Pipeline([("prep", build_preprocessor(extra_columns)), ("model", model)])
     pred_log = cross_val_predict(pipe, X, y_log, cv=cv, n_jobs=-1)
     return np.expm1(pred_log)
 
@@ -181,14 +216,14 @@ def build_models() -> dict:
     }
 
 
-def train_and_compare(X, y_log, y_raw, amenity_columns, test_size: float = 0.2, random_state: int = 42):
+def train_and_compare(X, y_log, y_raw, extra_columns, test_size: float = 0.2, random_state: int = 42):
     X_train, X_test, y_train_log, y_test_log, y_train_raw, y_test_raw = train_test_split(
         X, y_log, y_raw, test_size=test_size, random_state=random_state
     )
 
     results, fitted = {}, {}
     for name, model in build_models().items():
-        pipe = Pipeline([("prep", build_preprocessor(amenity_columns)), ("model", model)])
+        pipe = Pipeline([("prep", build_preprocessor(extra_columns)), ("model", model)])
         pipe.fit(X_train, y_train_log)
         metrics = evaluate(pipe, X_test, y_test_raw)
         results[name] = metrics
@@ -199,10 +234,10 @@ def train_and_compare(X, y_log, y_raw, amenity_columns, test_size: float = 0.2, 
 
 
 def main() -> None:
-    X, y_log, y_raw, amenity_columns = load_dataset()
+    X, y_log, y_raw, extra_columns = load_dataset()
     logger.info("Dataset de entrenamiento: %d filas, %d features", len(X), X.shape[1])
 
-    results, fitted, _ = train_and_compare(X, y_log, y_raw, amenity_columns)
+    results, fitted, _ = train_and_compare(X, y_log, y_raw, extra_columns)
 
     # RandomForest y XGBoost quedan practicamente empatados en RMSE (la
     # diferencia esta dentro del ruido entre corridas), pero el archivo
@@ -219,7 +254,7 @@ def main() -> None:
 
     # El split 80/20 de arriba usa una sola particion aleatoria; se confirma
     # con 5-fold CV que el resultado no fue solo suerte con ese split.
-    cv_pred = cross_val_predictions(build_models()[best_name], X, y_log, amenity_columns)
+    cv_pred = cross_val_predictions(build_models()[best_name], X, y_log, extra_columns)
     cv_metrics = metrics_from_predictions(y_raw, cv_pred)
     logger.info("%s -> %s (5-fold CV, todas las filas como test una vez)", best_name, cv_metrics)
 

@@ -30,11 +30,11 @@ PARAM_DISTRIBUTIONS = {
 
 
 def main(n_iter: int = 30, cv: int = 3) -> None:
-    X, y_log, y_raw, amenity_columns = load_dataset()
+    X, y_log, y_raw, extra_columns = load_dataset()
     logger.info("Dataset: %d filas, %d features", len(X), X.shape[1])
 
     pipe = Pipeline([
-        ("prep", build_preprocessor(amenity_columns)),
+        ("prep", build_preprocessor(extra_columns)),
         ("model", XGBRegressor(n_jobs=-1, random_state=42)),
     ])
 
