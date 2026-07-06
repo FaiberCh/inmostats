@@ -7,6 +7,7 @@ dataset listo para EDA/modelado en data/processed/.
 """
 
 import logging
+import unicodedata
 from pathlib import Path
 
 import pandas as pd
@@ -22,6 +23,37 @@ MAX_AREA_M2 = 1_000
 MAX_BEDROOMS = 10
 MAX_BATHROOMS = 10
 VALID_STRATUM_RANGE = (1, 6)
+
+# department_real viene tal cual lo entrega fincaraiz (locations.state del
+# propio anuncio), y no siempre trae tildes/formato consistente (ej.
+# "Atlantico" vs "Atlántico", "Bogotá, d.c." vs "Bogotá D.C."). Normalizamos
+# a un nombre canonico por departamento para no contar el mismo lugar dos
+# veces al agrupar.
+CANONICAL_DEPARTMENTS = [
+    "Amazonas", "Antioquia", "Arauca", "Atlántico", "Bogotá D.C.", "Bolívar",
+    "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", "Cesar", "Chocó",
+    "Córdoba", "Cundinamarca", "Guainía", "Guaviare", "Huila", "La Guajira",
+    "Magdalena", "Meta", "Nariño", "Norte de Santander", "Putumayo",
+    "Quindío", "Risaralda", "San Andrés y Providencia", "Santander",
+    "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada",
+]
+
+
+def _normalize_key(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    text = text.lower().replace(",", " ").replace(".", " ")
+    return " ".join(text.split())
+
+
+DEPARTMENT_NAME_LOOKUP = {_normalize_key(name): name for name in CANONICAL_DEPARTMENTS}
+DEPARTMENT_NAME_LOOKUP[_normalize_key("Archipielago de San Andres")] = "San Andrés y Providencia"
+
+
+def normalize_department(name):
+    if not isinstance(name, str) or not name.strip():
+        return name
+    return DEPARTMENT_NAME_LOOKUP.get(_normalize_key(name), name)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -87,6 +119,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
         )
     else:
         df["department_final"] = df["department"]
+    df["department_final"] = df["department_final"].apply(normalize_department)
 
     return df
 
