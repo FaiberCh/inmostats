@@ -375,6 +375,16 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
         for d in checkpoint["departments"].values()
     )
 
+    if is_fresh:
+        divider = "━" * 21
+        send_telegram_message(
+            f"🚀 <b>InmoStats</b> — Corrida nacional iniciada\n"
+            f"{divider}\n"
+            f"🗺 {len(checkpoint['departments'])} zonas por cubrir\n"
+            f"{divider}\n"
+            f"Te aviso el progreso cada ~30 min y el tiempo total cuando termine."
+        )
+
     # Cada invocacion escribe su propio CSV nuevo (nunca se re-abre uno viejo
     # para seguir anexando). Antes se reusaba un solo archivo por toda la
     # corrida nacional (dias de ejecucion, encadenados via checkpoint) y
@@ -469,6 +479,22 @@ def _progress_bar(done: int, total: int, length: int = 10) -> str:
     return "▓" * filled + "░" * (length - filled)
 
 
+def _format_duration(start_iso: str, end_iso: str) -> str:
+    start = datetime.fromisoformat(start_iso)
+    end = datetime.fromisoformat(end_iso)
+    total_seconds = int((end - start).total_seconds())
+    days, rem = divmod(total_seconds, 86400)
+    hours, rem = divmod(rem, 3600)
+    minutes, _ = divmod(rem, 60)
+    parts = []
+    if days:
+        parts.append(f"{days}d")
+    if days or hours:
+        parts.append(f"{hours}h")
+    parts.append(f"{minutes}m")
+    return " ".join(parts)
+
+
 def build_summary_message(checkpoint: dict, output_path: Path, rows_written: int) -> str:
     departments = checkpoint["departments"]
     done_count = sum(1 for d in departments.values() if d["done"])
@@ -476,10 +502,12 @@ def build_summary_message(checkpoint: dict, output_path: Path, rows_written: int
     divider = "━" * 21
 
     if checkpoint["done"]:
+        duration = _format_duration(checkpoint["started_at"], checkpoint["finished_at"])
         return (
             f"🎉 <b>InmoStats</b> — ¡Corrida nacional completa!\n"
             f"{divider}\n"
             f"✅ {done_count}/{total_count} zonas cubiertas\n"
+            f"⏱ Tiempo total: {duration}\n"
             f"🆕 {rows_written} anuncios nuevos en esta corrida\n"
             f"🗂 <code>{output_path.name}</code>\n"
             f"{divider}\n"

@@ -90,10 +90,12 @@ async function buildStatusMessage() {
       hoursLeft > 0
         ? `😴 Cooldown: ${hoursLeft.toFixed(1)}h restantes antes de la proxima corrida`
         : "🔁 Cooldown terminado, deberia arrancar una corrida nueva pronto";
+    const duration = formatDuration(checkpoint.started_at, checkpoint.finished_at);
 
     return (
       `🎉 <b>InmoStats</b> — ultima corrida nacional: completa\n${divider}\n` +
       `✅ ${doneCount}/${total} zonas cubiertas\n` +
+      `⏱ Tiempo total: ${duration}\n` +
       `${cooldownLine}\n${divider}`
     );
   }
@@ -141,6 +143,18 @@ async function buildStatusMessage() {
 function formatCOP(amount) {
   if (amount === null || amount === undefined) return "N/D";
   return "$" + Math.round(amount).toLocaleString("es-CO");
+}
+
+function formatDuration(startIso, endIso) {
+  const totalSeconds = Math.floor((new Date(endIso).getTime() - new Date(startIso).getTime()) / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const parts = [];
+  if (days) parts.push(`${days}d`);
+  if (days || hours) parts.push(`${hours}h`);
+  parts.push(`${minutes}m`);
+  return parts.join(" ");
 }
 
 async function buildStatsMessage() {
