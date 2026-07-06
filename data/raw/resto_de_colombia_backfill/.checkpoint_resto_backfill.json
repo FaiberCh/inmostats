@@ -4,9 +4,10 @@
   "departments": {
     "resto-de-colombia": {
       "name": "Resto de Colombia",
-      "next_page": 1979,
+      "next_page": 3367,
       "last_page": 3791,
       "done": false
     }
-  }
+  },
+  "finished_at": null
 }
