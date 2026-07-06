@@ -60,7 +60,11 @@ logger = logging.getLogger(__name__)
 
 
 def load_raw_data(raw_dir: Path = RAW_DIR) -> pd.DataFrame:
-    csv_files = sorted(raw_dir.glob("fincaraiz_apartamentos_*.csv"))
+    # rglob (no glob) para tambien recoger CSV dentro de subcarpetas, como
+    # data/raw/resto_de_colombia_backfill/ (re-scrapes puntuales de una
+    # zona especifica se guardan aparte para no mezclarse con el historial
+    # principal, pero igual deben consolidarse aqui).
+    csv_files = sorted(raw_dir.rglob("fincaraiz_apartamentos_*.csv"))
     if not csv_files:
         raise FileNotFoundError(f"No se encontraron CSV crudos en {raw_dir}")
 
@@ -120,7 +124,38 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df["department_final"] = df["department"]
     df["department_final"] = df["department_final"].apply(normalize_department)
+    df = infer_department_from_city(df)
 
+    return df
+
+
+# Filas cuyo department_final no es un departamento real (son el fallback
+# de la zona de busqueda "resto-de-colombia", scrapeada antes de que
+# department_real existiera, o filas de esquemas viejos sin ese campo).
+UNKNOWN_DEPARTMENT_LABELS = {"Resto de Colombia", "sin especificar"}
+
+
+def infer_department_from_city(df: pd.DataFrame) -> pd.DataFrame:
+    """Para filas sin departamento real, infiere el departamento a partir de
+    la ciudad, usando como referencia las propias filas del dataset que ya
+    tienen un departamento confiable (en vez de una tabla externa de
+    ciudades de Colombia armada de memoria, con riesgo de errores)."""
+    unknown_mask = df["department_final"].isin(UNKNOWN_DEPARTMENT_LABELS)
+    known = df[~unknown_mask]
+    if known.empty or not unknown_mask.any():
+        return df
+
+    city_to_department = known.groupby("city")["department_final"].agg(
+        lambda s: s.mode().iat[0]
+    )
+
+    mapped = df["city"].map(city_to_department)
+    fillable = unknown_mask & mapped.notna()
+    df.loc[fillable, "department_final"] = mapped[fillable]
+    logger.info(
+        "department_final inferido por ciudad para %d/%d filas sin departamento real",
+        fillable.sum(), unknown_mask.sum(),
+    )
     return df
 
 
