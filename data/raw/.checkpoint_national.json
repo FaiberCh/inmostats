@@ -1,7 +1,7 @@
 {
   "output_file": "fincaraiz_apartamentos_colombia_20260703_173647.csv",
   "started_at": "2026-07-03T17:36:47.742614+00:00",
-  "done": false,
+  "done": true,
   "departments": {
     "tolima": {
       "name": "Tolima",
@@ -83,10 +83,10 @@
     },
     "resto-de-colombia": {
       "name": "Resto de Colombia",
-      "next_page": 3592,
+      "next_page": 3773,
       "last_page": 3772,
-      "done": false
+      "done": true
     }
   },
-  "finished_at": null
+  "finished_at": "2026-07-06T03:43:40.478574+00:00"
 }

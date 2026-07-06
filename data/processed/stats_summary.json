@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-06T00:18:44.903395+00:00",
-  "total_listings": 48929,
+  "generated_at": "2026-07-06T03:43:44.797686+00:00",
+  "total_listings": 48933,
   "zones_with_data": 31,
-  "avg_price_cop": 652765430.0,
-  "avg_price_per_m2": 6057870.0,
+  "avg_price_cop": 652791158.0,
+  "avg_price_per_m2": 6057963.0,
   "avg_area_m2": 103.7,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 7131,
-      "avg_price_cop": 794636277,
-      "avg_price_per_m2": 7321856
+      "listings": 7132,
+      "avg_price_cop": 794658061,
+      "avg_price_per_m2": 7321591
     },
     "Resto de Colombia": {
       "listings": 6332,
@@ -25,9 +25,9 @@
       "avg_price_per_m2": 4827251
     },
     "Bogotá D.C.": {
-      "listings": 5131,
-      "avg_price_cop": 1053277193,
-      "avg_price_per_m2": 7638873
+      "listings": 5130,
+      "avg_price_cop": 1053273934,
+      "avg_price_per_m2": 7638276
     },
     "Cundinamarca": {
       "listings": 4063,
@@ -35,9 +35,9 @@
       "avg_price_per_m2": 4560125
     },
     "Atlántico": {
-      "listings": 3898,
-      "avg_price_cop": 588458414,
-      "avg_price_per_m2": 4707359
+      "listings": 3897,
+      "avg_price_cop": 588398999,
+      "avg_price_per_m2": 4707802
     },
     "Risaralda": {
       "listings": 3895,
@@ -70,9 +70,9 @@
       "avg_price_per_m2": 5077541
     },
     "Bogotá, d.c.": {
-      "listings": 852,
-      "avg_price_cop": 731276283,
-      "avg_price_per_m2": 7129282
+      "listings": 856,
+      "avg_price_cop": 732520319,
+      "avg_price_per_m2": 7135739
     },
     "Norte de Santander": {
       "listings": 620,
@@ -90,9 +90,9 @@
       "avg_price_per_m2": 4722979
     },
     "Atlantico": {
-      "listings": 103,
-      "avg_price_cop": 546431068,
-      "avg_price_per_m2": 4445066
+      "listings": 104,
+      "avg_price_cop": 549061538,
+      "avg_price_per_m2": 4430996
     },
     "Bolivar": {
       "listings": 73,
