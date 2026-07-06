@@ -36,15 +36,18 @@ from src.pipelines.clean_data import clean, engineer_features, load_raw_data
 MODELS_DIR = Path(__file__).resolve().parents[2] / "models"
 
 # department_final: cardinalidad chica (~15-25) -> one-hot esta bien.
-# city: cientos de valores distintos -> one-hot explotaria en columnas;
-# se usa target encoding (con cross-fitting interno de sklearn, evita
-# leakage) en vez de agrupar a mano "top-N + otra".
+# city/neighborhood: cientos o miles de valores distintos -> one-hot
+# explotaria en columnas; se usa target encoding (con cross-fitting interno
+# de sklearn, evita leakage) en vez de agrupar a mano "top-N + otra".
+# neighborhood en particular es donde vive la prima de zonas exclusivas
+# (Bocagrande, El Poblado, Chico) que title/description solo mencionan a
+# veces -el dato estructurado es mas confiable que buscarlo en texto libre.
 NUMERIC_FEATURES = [
     "area_m2", "bedrooms", "bathrooms", "stratum", "floor", "antiquity", "garages",
     "latitude", "longitude",
 ]
 ONEHOT_FEATURES = ["department_final", "owner_type"]
-TARGET_ENCODE_FEATURES = ["city"]
+TARGET_ENCODE_FEATURES = ["city", "neighborhood"]
 BOOL_FEATURES = ["is_new_project"]
 TARGET = "price_cop"
 N_AMENITY_FEATURES = 15
