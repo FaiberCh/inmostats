@@ -19,7 +19,7 @@ pydantic==2.7.1
 
 # --- Dashboard ---
 streamlit==1.33.0
-plotly==5.21.0
+plotly==5.24.1
 
 # --- Notebooks / EDA ---
 jupyter==1.0.0
