@@ -115,22 +115,44 @@ def evaluate(pipe: Pipeline, X_test, y_test_raw) -> dict:
     }
 
 
-def cross_validate(model, X, y_log, y_raw, amenity_columns, n_splits: int = 5) -> dict:
-    """Evalua con K-fold en vez de un solo split 80/20: cada fila del
-    dataset termina en el set de prueba exactamente una vez, asi el
-    resultado no depende de que particion aleatoria le toco a que fila
-    (relevante con ~47k filas, donde un split unico puede ser optimista o
-    pesimista solo por azar)."""
+def cross_val_predictions(model, X, y_log, amenity_columns, n_splits: int = 5) -> np.ndarray:
+    """Predicciones out-of-fold en COP: cada fila se predice con un modelo
+    que no la vio en entrenamiento, sin tocar el modelo final ya ajustado
+    con todos los datos. Base tanto para las metricas agregadas de CV como
+    para el desglose de error por segmento."""
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=42)
     pipe = Pipeline([("prep", build_preprocessor(amenity_columns)), ("model", model)])
     pred_log = cross_val_predict(pipe, X, y_log, cv=cv, n_jobs=-1)
-    pred = np.expm1(pred_log)
+    return np.expm1(pred_log)
+
+
+def metrics_from_predictions(y_raw, pred) -> dict:
     return {
         "RMSE_COP": round(root_mean_squared_error(y_raw, pred), 0),
         "MAE_COP": round(mean_absolute_error(y_raw, pred), 0),
         "MAPE_%": round(mean_absolute_percentage_error(y_raw, pred) * 100, 2),
         "R2": round(r2_score(y_raw, pred), 4),
     }
+
+
+def residual_breakdown(segment: pd.Series, y_raw: pd.Series, pred: np.ndarray, min_count: int = 100) -> pd.DataFrame:
+    """MAPE y error promedio por segmento (departamento, cuartil de precio,
+    etc.) usando las predicciones out-of-fold de cross_val_predictions.
+    Segmentos con pocas filas se excluyen -su MAPE es ruidoso y no dice
+    mucho sobre si el modelo tiene un sesgo sistematico ahi."""
+    df = pd.DataFrame({
+        "segment": segment.values,
+        "y_raw": y_raw.values,
+        "pred": pred,
+    })
+    df["pct_error"] = (df["pred"] - df["y_raw"]) / df["y_raw"] * 100
+    grouped = df.groupby("segment").agg(
+        n=("y_raw", "size"),
+        mape=("pct_error", lambda s: s.abs().mean()),
+        bias_pct=("pct_error", "mean"),
+    )
+    grouped = grouped[grouped["n"] >= min_count].sort_values("mape", ascending=False)
+    return grouped.round(2)
 
 
 def top_feature_importances(pipe: Pipeline, top_n: int = 15) -> list[tuple[str, float]]:
@@ -197,8 +219,17 @@ def main() -> None:
 
     # El split 80/20 de arriba usa una sola particion aleatoria; se confirma
     # con 5-fold CV que el resultado no fue solo suerte con ese split.
-    cv_metrics = cross_validate(build_models()[best_name], X, y_log, y_raw, amenity_columns)
+    cv_pred = cross_val_predictions(build_models()[best_name], X, y_log, amenity_columns)
+    cv_metrics = metrics_from_predictions(y_raw, cv_pred)
     logger.info("%s -> %s (5-fold CV, todas las filas como test una vez)", best_name, cv_metrics)
+
+    # Un MAPE agregado puede esconder que el modelo falla mucho en un
+    # segmento especifico y compensa acertando en otro mas grande. Se
+    # desglosa por departamento y por cuartil de precio sobre las mismas
+    # predicciones out-of-fold (nada de esto reentrena ni usa el modelo final).
+    price_quartile = pd.qcut(y_raw, q=4, labels=["Q1 (mas barato)", "Q2", "Q3", "Q4 (mas caro)"])
+    logger.info("Error por cuartil de precio:\n%s", residual_breakdown(price_quartile, y_raw, cv_pred))
+    logger.info("Error por departamento (min. 100 anuncios):\n%s", residual_breakdown(X["department_final"], y_raw, cv_pred))
 
     importances = top_feature_importances(fitted[best_name])
     logger.info("Top features por importancia (%s):", best_name)
