@@ -26,6 +26,13 @@ MAX_AREA_M2 = 1_000
 MAX_BEDROOMS = 10
 MAX_BATHROOMS = 10
 VALID_STRATUM_RANGE = (1, 6)
+# floor/garages vienen tal cual del JSON de fincaraiz, sin validar por su
+# parte -algunos anuncios traen valores imposibles (ej. piso 812, 127
+# garajes), que de resto pasarian de largo por clean() y luego actuan como
+# puntos de apalancamiento extremos en modelos lineales (los de arbol no
+# se ven afectados, pero LinearRegression si se desestabiliza con ellos).
+VALID_FLOOR_RANGE = (-2, 60)
+VALID_GARAGES_RANGE = (0, 10)
 
 # department_real viene tal cual lo entrega fincaraiz (locations.state del
 # propio anuncio), y no siempre trae tildes/formato consistente (ej.
@@ -102,6 +109,14 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     if "stratum" in df.columns:
         invalid_stratum = ~df["stratum"].between(*VALID_STRATUM_RANGE) & df["stratum"].notna()
         df.loc[invalid_stratum, "stratum"] = None
+
+    if "floor" in df.columns:
+        invalid_floor = ~df["floor"].between(*VALID_FLOOR_RANGE) & df["floor"].notna()
+        df.loc[invalid_floor, "floor"] = None
+
+    if "garages" in df.columns:
+        invalid_garages = ~df["garages"].between(*VALID_GARAGES_RANGE) & df["garages"].notna()
+        df.loc[invalid_garages, "garages"] = None
 
     logger.info("Registros descartados por limpieza: %d (de %d)", before - len(df), before)
     return df

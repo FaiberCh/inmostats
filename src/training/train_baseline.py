@@ -10,10 +10,12 @@ interpretables.
 """
 
 import logging
+import unicodedata
 from pathlib import Path
 
 import joblib
 import numpy as np
+import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.impute import SimpleImputer
@@ -37,23 +39,51 @@ MODELS_DIR = Path(__file__).resolve().parents[2] / "models"
 # city: cientos de valores distintos -> one-hot explotaria en columnas;
 # se usa target encoding (con cross-fitting interno de sklearn, evita
 # leakage) en vez de agrupar a mano "top-N + otra".
-NUMERIC_FEATURES = ["area_m2", "bedrooms", "bathrooms", "stratum", "floor", "antiquity", "garages"]
+NUMERIC_FEATURES = [
+    "area_m2", "bedrooms", "bathrooms", "stratum", "floor", "antiquity", "garages",
+    "latitude", "longitude",
+]
 ONEHOT_FEATURES = ["department_final", "owner_type"]
 TARGET_ENCODE_FEATURES = ["city"]
 BOOL_FEATURES = ["is_new_project"]
 TARGET = "price_cop"
+N_AMENITY_FEATURES = 15
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def build_preprocessor() -> ColumnTransformer:
+def top_amenities(df, n: int = N_AMENITY_FEATURES) -> list[str]:
+    exploded = df["amenities"].dropna().str.split("; ").explode().str.strip()
+    return exploded.value_counts().head(n).index.tolist()
+
+
+def add_amenity_flags(df, amenities: list[str]):
+    """Una columna binaria por amenidad (esta presente o no en el anuncio).
+    Que amenidades usar se decide sobre todo el dataset (no solo train):
+    es solo vocabulario de features, no usa el precio, asi que no hay
+    leakage real del target hacia el set de prueba."""
+    amenities_text = df["amenities"].fillna("")
+    flags = {}
+    for amenity in amenities:
+        col = "amenity_" + _slugify(amenity)
+        flags[col] = amenities_text.str.contains(amenity, regex=False).astype(int)
+    return pd.DataFrame(flags, index=df.index)
+
+
+def _slugify(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(c for c in text if not unicodedata.combining(c))
+    return "".join(c if c.isalnum() else "_" for c in text.lower()).strip("_")
+
+
+def build_preprocessor(amenity_columns: list[str]) -> ColumnTransformer:
     return ColumnTransformer(
         transformers=[
             ("num", SimpleImputer(strategy="median"), NUMERIC_FEATURES),
             ("onehot", OneHotEncoder(handle_unknown="ignore"), ONEHOT_FEATURES),
             ("target_enc", TargetEncoder(target_type="continuous"), TARGET_ENCODE_FEATURES),
-            ("bool", "passthrough", BOOL_FEATURES),
+            ("bool", "passthrough", BOOL_FEATURES + amenity_columns),
         ]
     )
 
@@ -64,12 +94,15 @@ def load_dataset():
     df = engineer_features(df)
     df = df.dropna(subset=[TARGET]).copy()
 
+    amenities = top_amenities(df)
+    amenity_df = add_amenity_flags(df, amenities)
+
     features = NUMERIC_FEATURES + ONEHOT_FEATURES + TARGET_ENCODE_FEATURES + BOOL_FEATURES
-    X = df[features].copy()
+    X = pd.concat([df[features].copy(), amenity_df], axis=1)
     X["is_new_project"] = X["is_new_project"].astype(int)
     y_log = np.log1p(df[TARGET])
     y_raw = df[TARGET]
-    return X, y_log, y_raw
+    return X, y_log, y_raw, amenity_df.columns.tolist()
 
 
 def evaluate(pipe: Pipeline, X_test, y_test_raw) -> dict:
@@ -89,19 +122,23 @@ def build_models() -> dict:
             n_estimators=300, max_depth=16, min_samples_leaf=3, n_jobs=-1, random_state=42
         ),
         "XGBoost": XGBRegressor(
-            n_estimators=500, max_depth=6, learning_rate=0.05, n_jobs=-1, random_state=42
+            # Hiperparametros de src/training/tune_xgboost.py (RandomizedSearchCV,
+            # 30 combinaciones x 3 folds, optimizado por RMSE de log-precio).
+            n_estimators=846, max_depth=6, learning_rate=0.0555,
+            subsample=0.842, colsample_bytree=0.724, min_child_weight=4,
+            n_jobs=-1, random_state=42,
         ),
     }
 
 
-def train_and_compare(X, y_log, y_raw, test_size: float = 0.2, random_state: int = 42):
+def train_and_compare(X, y_log, y_raw, amenity_columns, test_size: float = 0.2, random_state: int = 42):
     X_train, X_test, y_train_log, y_test_log, y_train_raw, y_test_raw = train_test_split(
         X, y_log, y_raw, test_size=test_size, random_state=random_state
     )
 
     results, fitted = {}, {}
     for name, model in build_models().items():
-        pipe = Pipeline([("prep", build_preprocessor()), ("model", model)])
+        pipe = Pipeline([("prep", build_preprocessor(amenity_columns)), ("model", model)])
         pipe.fit(X_train, y_train_log)
         metrics = evaluate(pipe, X_test, y_test_raw)
         results[name] = metrics
@@ -112,10 +149,10 @@ def train_and_compare(X, y_log, y_raw, test_size: float = 0.2, random_state: int
 
 
 def main() -> None:
-    X, y_log, y_raw = load_dataset()
+    X, y_log, y_raw, amenity_columns = load_dataset()
     logger.info("Dataset de entrenamiento: %d filas, %d features", len(X), X.shape[1])
 
-    results, fitted, _ = train_and_compare(X, y_log, y_raw)
+    results, fitted, _ = train_and_compare(X, y_log, y_raw, amenity_columns)
 
     # RandomForest y XGBoost quedan practicamente empatados en RMSE (la
     # diferencia esta dentro del ruido entre corridas), pero el archivo
