@@ -1,0 +1,140 @@
+"""
+Entrena y compara modelos baseline para predecir precio de apartamentos
+en Colombia: Regresion Lineal (baseline simple), Random Forest y XGBoost.
+
+Usa el mismo pipeline de limpieza que el EDA (src/pipelines/clean_data.py),
+no una copia aparte. El modelo se entrena sobre log(price_cop) -la
+distribucion de precio viene sesgada a la derecha, ver notebooks/01_eda.ipynb
+seccion 3- y las metricas se reportan de vuelta en COP para que sean
+interpretables.
+"""
+
+import logging
+from pathlib import Path
+
+import joblib
+import numpy as np
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import (
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    r2_score,
+    root_mean_squared_error,
+)
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, TargetEncoder
+from xgboost import XGBRegressor
+
+from src.pipelines.clean_data import clean, engineer_features, load_raw_data
+
+MODELS_DIR = Path(__file__).resolve().parents[2] / "models"
+
+# department_final: cardinalidad chica (~15-25) -> one-hot esta bien.
+# city: cientos de valores distintos -> one-hot explotaria en columnas;
+# se usa target encoding (con cross-fitting interno de sklearn, evita
+# leakage) en vez de agrupar a mano "top-N + otra".
+NUMERIC_FEATURES = ["area_m2", "bedrooms", "bathrooms", "stratum", "floor", "antiquity", "garages"]
+ONEHOT_FEATURES = ["department_final", "owner_type"]
+TARGET_ENCODE_FEATURES = ["city"]
+BOOL_FEATURES = ["is_new_project"]
+TARGET = "price_cop"
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger(__name__)
+
+
+def build_preprocessor() -> ColumnTransformer:
+    return ColumnTransformer(
+        transformers=[
+            ("num", SimpleImputer(strategy="median"), NUMERIC_FEATURES),
+            ("onehot", OneHotEncoder(handle_unknown="ignore"), ONEHOT_FEATURES),
+            ("target_enc", TargetEncoder(target_type="continuous"), TARGET_ENCODE_FEATURES),
+            ("bool", "passthrough", BOOL_FEATURES),
+        ]
+    )
+
+
+def load_dataset():
+    df = load_raw_data()
+    df = clean(df)
+    df = engineer_features(df)
+    df = df.dropna(subset=[TARGET]).copy()
+
+    features = NUMERIC_FEATURES + ONEHOT_FEATURES + TARGET_ENCODE_FEATURES + BOOL_FEATURES
+    X = df[features].copy()
+    X["is_new_project"] = X["is_new_project"].astype(int)
+    y_log = np.log1p(df[TARGET])
+    y_raw = df[TARGET]
+    return X, y_log, y_raw
+
+
+def evaluate(pipe: Pipeline, X_test, y_test_raw) -> dict:
+    pred = np.expm1(pipe.predict(X_test))
+    return {
+        "RMSE_COP": round(root_mean_squared_error(y_test_raw, pred), 0),
+        "MAE_COP": round(mean_absolute_error(y_test_raw, pred), 0),
+        "MAPE_%": round(mean_absolute_percentage_error(y_test_raw, pred) * 100, 2),
+        "R2": round(r2_score(y_test_raw, pred), 4),
+    }
+
+
+def build_models() -> dict:
+    return {
+        "LinearRegression": LinearRegression(),
+        "RandomForest": RandomForestRegressor(
+            n_estimators=300, max_depth=16, min_samples_leaf=3, n_jobs=-1, random_state=42
+        ),
+        "XGBoost": XGBRegressor(
+            n_estimators=500, max_depth=6, learning_rate=0.05, n_jobs=-1, random_state=42
+        ),
+    }
+
+
+def train_and_compare(X, y_log, y_raw, test_size: float = 0.2, random_state: int = 42):
+    X_train, X_test, y_train_log, y_test_log, y_train_raw, y_test_raw = train_test_split(
+        X, y_log, y_raw, test_size=test_size, random_state=random_state
+    )
+
+    results, fitted = {}, {}
+    for name, model in build_models().items():
+        pipe = Pipeline([("prep", build_preprocessor()), ("model", model)])
+        pipe.fit(X_train, y_train_log)
+        metrics = evaluate(pipe, X_test, y_test_raw)
+        results[name] = metrics
+        fitted[name] = pipe
+        logger.info("%s -> %s", name, metrics)
+
+    return results, fitted, (X_test, y_test_raw)
+
+
+def main() -> None:
+    X, y_log, y_raw = load_dataset()
+    logger.info("Dataset de entrenamiento: %d filas, %d features", len(X), X.shape[1])
+
+    results, fitted, _ = train_and_compare(X, y_log, y_raw)
+
+    # RandomForest y XGBoost quedan practicamente empatados en RMSE (la
+    # diferencia esta dentro del ruido entre corridas), pero el archivo
+    # serializado de RandomForest pesa ~200MB contra ~2MB de XGBoost (100x)
+    # -inviable para versionar en git o servir desde una API mas adelante.
+    # Se prefiere XGBoost salvo que otro modelo sea claramente mejor (>10%
+    # menos RMSE), no solo marginalmente.
+    best_by_rmse = min(results, key=lambda n: results[n]["RMSE_COP"])
+    if "XGBoost" in results and results["XGBoost"]["RMSE_COP"] <= results[best_by_rmse]["RMSE_COP"] * 1.10:
+        best_name = "XGBoost"
+    else:
+        best_name = best_by_rmse
+    logger.info("Modelo elegido: %s (%s)", best_name, results[best_name])
+
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = MODELS_DIR / "price_model.joblib"
+    joblib.dump(fitted[best_name], output_path)
+    logger.info("Guardado modelo en %s (%.1f MB)", output_path, output_path.stat().st_size / 1e6)
+
+
+if __name__ == "__main__":
+    main()
