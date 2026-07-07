@@ -16,9 +16,21 @@ import plotly.express as px
 import requests
 import streamlit as st
 
+from src.pipelines.clean_data import clean, engineer_features, load_raw_data, save_processed
 from src.pipelines.geo import load_department_geojson, match_city_features
 
-API_BASE_URL = os.environ.get("INMOSTATS_API_URL", "http://localhost:8000")
+
+def _get_api_base_url() -> str:
+    env_value = os.environ.get("INMOSTATS_API_URL")
+    if env_value:
+        return env_value
+    try:
+        return st.secrets["INMOSTATS_API_URL"]
+    except Exception:
+        return "http://localhost:8000"
+
+
+API_BASE_URL = _get_api_base_url()
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 PROCESSED_PATH = DATA_DIR / "processed" / "apartamentos_colombia_processed.csv"
 
@@ -27,6 +39,14 @@ st.set_page_config(page_title="InmoStats", page_icon="🏠", layout="wide")
 
 @st.cache_data
 def load_processed_data() -> pd.DataFrame:
+    # data/processed/*.csv esta gitignored (se regenera de data/raw/, que si
+    # esta versionado). Streamlit Community Cloud no tiene un build command
+    # como Render para correr clean_data.py antes de servir la app, asi que
+    # se genera aqui mismo en el primer acceso si todavia no existe.
+    if not PROCESSED_PATH.exists():
+        df_raw = load_raw_data()
+        df_clean = engineer_features(clean(df_raw))
+        save_processed(df_clean)
     return pd.read_csv(PROCESSED_PATH, encoding="utf-8-sig")
 
 
