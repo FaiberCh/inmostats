@@ -9,7 +9,14 @@ Correr localmente (con la API ya corriendo en otra terminal):
 """
 
 import os
+import sys
 from pathlib import Path
+
+# Streamlit Community Cloud ejecuta este script sin agregar la raiz del
+# repo a sys.path (a diferencia de "streamlit run" desde la raiz en
+# local), y los imports de abajo son absolutos (from src...). Se agrega
+# a mano antes de esos imports para que funcione en ambos casos.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import pandas as pd
 import plotly.express as px
