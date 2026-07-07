@@ -9,8 +9,10 @@ seccion 3- y las metricas se reportan de vuelta en COP para que sean
 interpretables.
 """
 
+import json
 import logging
 import unicodedata
+from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
@@ -140,7 +142,7 @@ def load_dataset():
     y_log = np.log1p(df[TARGET])
     y_raw = df[TARGET]
     extra_columns = amenity_df.columns.tolist() + text_flags_df.columns.tolist()
-    return X, y_log, y_raw, extra_columns
+    return X, y_log, y_raw, extra_columns, amenities
 
 
 def evaluate(pipe: Pipeline, X_test, y_test_raw) -> dict:
@@ -237,7 +239,7 @@ def train_and_compare(X, y_log, y_raw, extra_columns, test_size: float = 0.2, ra
 
 
 def main() -> None:
-    X, y_log, y_raw, extra_columns = load_dataset()
+    X, y_log, y_raw, extra_columns, amenities = load_dataset()
     logger.info("Dataset de entrenamiento: %d filas, %d features", len(X), X.shape[1])
 
     results, fitted, _ = train_and_compare(X, y_log, y_raw, extra_columns)
@@ -278,6 +280,28 @@ def main() -> None:
     output_path = MODELS_DIR / "price_model.joblib"
     joblib.dump(fitted[best_name], output_path)
     logger.info("Guardado modelo en %s (%.1f MB)", output_path, output_path.stat().st_size / 1e6)
+
+    # La API (src/api/) necesita reconstruir columnas amenity_*/txt_* de forma
+    # identica a como se armaron aqui para poder llamar pipe.predict(). El
+    # vocabulario de amenidades sale de top_amenities(df) -depende de los
+    # datos de esta corrida-, mientras que LUXURY_KEYWORDS es fijo en codigo
+    # pero se guarda igual para que la API no dependa de importar train_baseline.
+    feature_config = {
+        "model_name": best_name,
+        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "n_rows": len(X),
+        "metrics_holdout": results[best_name],
+        "metrics_cv": cv_metrics,
+        "amenities": amenities,
+        "luxury_keywords": LUXURY_KEYWORDS,
+        "numeric_features": NUMERIC_FEATURES,
+        "onehot_features": ONEHOT_FEATURES,
+        "target_encode_features": TARGET_ENCODE_FEATURES,
+        "bool_features": BOOL_FEATURES,
+    }
+    config_path = MODELS_DIR / "feature_config.json"
+    config_path.write_text(json.dumps(feature_config, indent=2, ensure_ascii=False), encoding="utf-8")
+    logger.info("Guardada configuracion de features en %s", config_path)
 
 
 if __name__ == "__main__":

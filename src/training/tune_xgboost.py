@@ -30,7 +30,7 @@ PARAM_DISTRIBUTIONS = {
 
 
 def main(n_iter: int = 30, cv: int = 3) -> None:
-    X, y_log, y_raw, extra_columns = load_dataset()
+    X, y_log, y_raw, extra_columns, amenities = load_dataset()
     logger.info("Dataset: %d filas, %d features", len(X), X.shape[1])
 
     pipe = Pipeline([

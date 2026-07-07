@@ -14,6 +14,7 @@ env/
 data/processed/*.csv
 models/*.pkl
 models/*.joblib
+models/feature_config.json
 
 # Environment variables
 .env
