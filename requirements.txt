@@ -20,7 +20,8 @@ uvicorn[standard]==0.50.2
 pydantic==2.13.4
 
 # --- Dashboard ---
-streamlit==1.33.0
+# streamlit==1.33.0 forzaba un numpy que no compila en Python 3.14.
+streamlit==1.59.0
 plotly==5.24.1
 
 # --- Notebooks / EDA ---
