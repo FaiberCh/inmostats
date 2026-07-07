@@ -214,7 +214,8 @@ with tab_resumen:
             lat_mediana=("latitude", "median"),
             lon_mediana=("longitude", "median"),
         ).query("anuncios >= 30")
-        city_geojson, matched_city_names, _ = match_city_features(city_stats_all)
+        city_geojson, matched_city_names, unmatched_cities = match_city_features(city_stats_all)
+        st.caption(f"Diagnostico temporal: {len(matched_city_names)}/{len(city_stats_all)} ciudades matcheadas. Sin match: {unmatched_cities}")
         plot_df = city_stats_all.reset_index()
         plot_df = plot_df[plot_df["city"].isin(matched_city_names)]
         fig_map_city = px.choropleth_map(
