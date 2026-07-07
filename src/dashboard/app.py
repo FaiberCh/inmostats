@@ -185,49 +185,48 @@ with tab_resumen:
     fig_hist.update_layout(margin={"r": 0, "t": 10, "b": 0, "l": 0})
     st.plotly_chart(fig_hist, width="stretch")
 
-    col_map1, col_map2 = st.columns(2)
+    st.subheader("Precio/m² mediano por departamento")
+    depto_geojson = load_department_geojson()
+    depto_stats = (
+        df.groupby("department_final")
+        .agg(anuncios=("listing_id", "count"), precio_m2_mediana=("price_per_m2", "median"))
+        .reset_index()
+    )
+    fig_map_dept = px.choropleth_map(
+        depto_stats, geojson=depto_geojson, locations="department_final",
+        featureidkey="properties.department_final", color="precio_m2_mediana",
+        color_continuous_scale="YlOrRd", map_style="carto-positron",
+        center={"lat": 4.5, "lon": -74.0}, zoom=4.3, height=550,
+        hover_data={"anuncios": True},
+        labels={"precio_m2_mediana": "Precio/m² mediano (COP)", "department_final": "Departamento"},
+    )
+    fig_map_dept.update_layout(margin={"r": 0, "t": 10, "b": 0, "l": 0})
+    st.plotly_chart(fig_map_dept, width="stretch")
 
-    with col_map1:
-        st.subheader("Precio/m² mediano por departamento")
-        depto_geojson = load_department_geojson()
-        depto_stats = (
-            df.groupby("department_final")
-            .agg(anuncios=("listing_id", "count"), precio_m2_mediana=("price_per_m2", "median"))
-            .reset_index()
-        )
-        fig_map_dept = px.choropleth_map(
-            depto_stats, geojson=depto_geojson, locations="department_final",
-            featureidkey="properties.department_final", color="precio_m2_mediana",
-            color_continuous_scale="YlOrRd", map_style="carto-positron",
-            center={"lat": 4.5, "lon": -74.0}, zoom=3.8, height=500,
-            hover_data={"anuncios": True},
-            labels={"precio_m2_mediana": "Precio/m² mediano (COP)", "department_final": "Departamento"},
-        )
-        fig_map_dept.update_layout(margin={"r": 0, "t": 10, "b": 0, "l": 0})
-        st.plotly_chart(fig_map_dept, width="stretch")
-
-    with col_map2:
-        st.subheader("Precio/m² mediano por ciudad (min. 30 anuncios)")
-        city_stats_all = df.groupby("city").agg(
-            anuncios=("listing_id", "count"),
-            precio_m2_mediana=("price_per_m2", "median"),
-            lat_mediana=("latitude", "median"),
-            lon_mediana=("longitude", "median"),
-        ).query("anuncios >= 30")
-        city_geojson, matched_city_names, unmatched_cities = match_city_features(city_stats_all)
-        st.caption(f"Diagnostico temporal: {len(matched_city_names)}/{len(city_stats_all)} ciudades matcheadas. Sin match: {unmatched_cities}")
-        plot_df = city_stats_all.reset_index()
-        plot_df = plot_df[plot_df["city"].isin(matched_city_names)]
-        fig_map_city = px.choropleth_map(
-            plot_df, geojson=city_geojson, locations="city",
-            featureidkey="properties.city_matched", color="precio_m2_mediana",
-            color_continuous_scale="YlOrRd", map_style="carto-positron",
-            center={"lat": 4.5, "lon": -74.0}, zoom=3.8, height=500,
-            hover_data={"anuncios": True},
-            labels={"precio_m2_mediana": "Precio/m² mediano (COP)", "city": "Ciudad"},
-        )
-        fig_map_city.update_layout(margin={"r": 0, "t": 10, "b": 0, "l": 0})
-        st.plotly_chart(fig_map_city, width="stretch")
+    # A diferencia de los departamentos (poligonos grandes), los municipios
+    # son mucho mas chicos -Bogota/Medellin/Cali casi no se ven a media
+    # columna, aunque el matching este perfecto (57/58 verificado). Se le
+    # da ancho completo y mas zoom para que sean visibles.
+    st.subheader("Precio/m² mediano por ciudad (min. 30 anuncios)")
+    city_stats_all = df.groupby("city").agg(
+        anuncios=("listing_id", "count"),
+        precio_m2_mediana=("price_per_m2", "median"),
+        lat_mediana=("latitude", "median"),
+        lon_mediana=("longitude", "median"),
+    ).query("anuncios >= 30")
+    city_geojson, matched_city_names, _ = match_city_features(city_stats_all)
+    plot_df = city_stats_all.reset_index()
+    plot_df = plot_df[plot_df["city"].isin(matched_city_names)]
+    fig_map_city = px.choropleth_map(
+        plot_df, geojson=city_geojson, locations="city",
+        featureidkey="properties.city_matched", color="precio_m2_mediana",
+        color_continuous_scale="YlOrRd", map_style="carto-positron",
+        center={"lat": 4.5, "lon": -74.0}, zoom=4.8, height=650,
+        hover_data={"anuncios": True},
+        labels={"precio_m2_mediana": "Precio/m² mediano (COP)", "city": "Ciudad"},
+    )
+    fig_map_city.update_layout(margin={"r": 0, "t": 10, "b": 0, "l": 0})
+    st.plotly_chart(fig_map_city, width="stretch")
 
     col_bar, col_box = st.columns(2)
 
