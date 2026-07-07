@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-07T20:44:07.951936+00:00",
-  "total_listings": 51931,
+  "generated_at": "2026-07-07T22:11:23.379152+00:00",
+  "total_listings": 53134,
   "zones_with_data": 24,
-  "avg_price_cop": 647848257.0,
-  "avg_price_per_m2": 6006697.0,
-  "avg_area_m2": 103.9,
+  "avg_price_cop": 656259226.0,
+  "avg_price_per_m2": 6040045.0,
+  "avg_area_m2": 104.5,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Bogotá D.C.": {
-      "listings": 8805,
-      "avg_price_cop": 930214002,
-      "avg_price_per_m2": 7466872
+      "listings": 9992,
+      "avg_price_cop": 941512426,
+      "avg_price_per_m2": 7472355
     },
     "Antioquia": {
       "listings": 8090,
@@ -20,9 +20,9 @@
       "avg_price_per_m2": 7329500
     },
     "Valle del Cauca": {
-      "listings": 7415,
-      "avg_price_cop": 543529186,
-      "avg_price_per_m2": 4824178
+      "listings": 7432,
+      "avg_price_cop": 543564440,
+      "avg_price_per_m2": 4824483
     },
     "Atlántico": {
       "listings": 5158,
@@ -75,9 +75,9 @@
       "avg_price_per_m2": 4028768
     },
     "Meta": {
-      "listings": 56,
-      "avg_price_cop": 382844821,
-      "avg_price_per_m2": 4478922
+      "listings": 55,
+      "avg_price_cop": 384532909,
+      "avg_price_per_m2": 4482817
     },
     "Boyacá": {
       "listings": 44,
