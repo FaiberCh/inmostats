@@ -1,4 +1,19 @@
+---
+title: InmoStats API
+emoji: 🏠
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # InmoStats
+
+> El bloque YAML de arriba es metadata que requiere Hugging Face Spaces
+> para desplegar la API (ver Fase 5) como Docker Space; GitHub lo ignora
+> y lo muestra como texto plano al inicio del README, no afecta el resto
+> de la documentacion.
 
 Sistema extremo a extremo de analítica avanzada y predicción de precios de
 vivienda en Colombia, con datos extraídos de `fincaraiz.com.co`: scraping
@@ -223,3 +238,17 @@ Requiere la API corriendo (`INMOSTATS_API_URL`, default
 por departamento/ciudad/estrato, correlaciones, mapas interactivos
 (scatter y coropletas reales con `plotly`), regresión precio-vs-área por
 departamento, heatmap departamento×estrato y análisis de amenidades.
+
+## Fase 7: Despliegue
+
+- **API → Hugging Face Spaces** (tipo Docker, `Dockerfile` en la raíz).
+  El build entrena el modelo desde cero (`data/raw/*.csv` sí está
+  versionado) porque `models/*.joblib` y `feature_config.json` son
+  gitignored a propósito. No requiere tarjeta de crédito, a diferencia de
+  la mayoría de plataformas con "free tier" (Render, Railway).
+- **Dashboard → Streamlit Community Cloud**, apuntando a la API vía el
+  secret `INMOSTATS_API_URL` (`src/dashboard/app.py` lo lee de
+  `st.secrets` si no hay variable de entorno). Como Streamlit Cloud no
+  tiene un build command propio, `load_processed_data()` genera
+  `data/processed/*.csv` sola la primera vez que la app arranca sin ese
+  archivo.

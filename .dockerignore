@@ -1,0 +1,13 @@
+.venv/
+.git/
+.github/
+.claude/
+__pycache__/
+*.pyc
+notebooks/
+scripts/
+workers/
+data/processed/
+data/reference/
+models/*.joblib
+models/feature_config.json
