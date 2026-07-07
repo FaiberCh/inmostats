@@ -1,0 +1,17 @@
+# Dependencias minimas para src/dashboard/app.py (Streamlit Community
+# Cloud). El dashboard NO necesita scikit-learn/xgboost (entrenamiento),
+# fastapi/uvicorn/pydantic (API, corre en Hugging Face Spaces aparte) ni
+# jupyter/matplotlib/seaborn (notebooks) -requirements.txt completo trae
+# esas ~149 dependencias resueltas igual, lo que hace el build mucho mas
+# lento y le suma riesgo de que alguna falle sin necesidad.
+#
+# beautifulsoup4/lxml aparecen porque src/pipelines/clean_data.py importa
+# run_started_at_tag de src/scraper/fincaraiz_scraper.py (que usa
+# BeautifulSoup con parser "lxml"), aunque el dashboard no scrapea nada.
+requests==2.31.0
+beautifulsoup4==4.12.3
+lxml==6.1.1
+pandas==2.3.3
+numpy==2.5.1
+streamlit==1.59.0
+plotly==5.24.1
