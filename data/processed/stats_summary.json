@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-08T18:17:51.596819+00:00",
-  "total_listings": 59881,
+  "generated_at": "2026-07-08T19:36:48.907223+00:00",
+  "total_listings": 59884,
   "zones_with_data": 23,
-  "avg_price_cop": 682750203.0,
-  "avg_price_per_m2": 6197871.0,
+  "avg_price_cop": 682737324.0,
+  "avg_price_per_m2": 6197829.0,
   "avg_area_m2": 105.9,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -15,9 +15,9 @@
       "avg_price_per_m2": 7347622
     },
     "Bogotá D.C.": {
-      "listings": 12356,
-      "avg_price_cop": 963253527,
-      "avg_price_per_m2": 7496916
+      "listings": 12357,
+      "avg_price_cop": 963221864,
+      "avg_price_per_m2": 7496860
     },
     "Valle del Cauca": {
       "listings": 7457,
@@ -80,9 +80,9 @@
       "avg_price_per_m2": 4548508
     },
     "Boyacá": {
-      "listings": 50,
-      "avg_price_cop": 315865880,
-      "avg_price_per_m2": 4013310
+      "listings": 52,
+      "avg_price_cop": 317274885,
+      "avg_price_per_m2": 4037080
     },
     "Córdoba": {
       "listings": 17,
