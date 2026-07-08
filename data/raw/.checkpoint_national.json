@@ -76,14 +76,14 @@
     },
     "antioquia": {
       "name": "Antioquia",
-      "next_page": 1022,
+      "next_page": 1059,
       "last_page": 1058,
-      "done": false
+      "done": true
     },
     "resto-de-colombia": {
       "name": "Resto de Colombia",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 220,
+      "last_page": 3791,
       "done": false
     }
   },
