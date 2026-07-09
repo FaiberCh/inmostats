@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-07-09T01:29:15.140306+00:00",
-  "total_listings": 59891,
+  "generated_at": "2026-07-09T05:51:31.699509+00:00",
+  "total_listings": 59893,
   "zones_with_data": 23,
-  "avg_price_cop": 682765305.0,
-  "avg_price_per_m2": 6197852.0,
+  "avg_price_cop": 682779341.0,
+  "avg_price_per_m2": 6197946.0,
   "avg_area_m2": 105.9,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 12366,
-      "avg_price_cop": 794871416,
-      "avg_price_per_m2": 7347657
+      "listings": 12367,
+      "avg_price_cop": 794944605,
+      "avg_price_per_m2": 7347911
     },
     "Bogotá D.C.": {
-      "listings": 12360,
-      "avg_price_cop": 963350937,
-      "avg_price_per_m2": 7496723
+      "listings": 12361,
+      "avg_price_cop": 963313949,
+      "avg_price_per_m2": 7496728
     },
     "Valle del Cauca": {
       "listings": 7457,
