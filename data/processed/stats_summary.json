@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-08T23:31:21.765782+00:00",
-  "total_listings": 59887,
+  "generated_at": "2026-07-09T01:29:15.140306+00:00",
+  "total_listings": 59891,
   "zones_with_data": 23,
-  "avg_price_cop": 682778014.0,
-  "avg_price_per_m2": 6197866.0,
+  "avg_price_cop": 682765305.0,
+  "avg_price_per_m2": 6197852.0,
   "avg_area_m2": 105.9,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 12365,
-      "avg_price_cop": 794879089,
-      "avg_price_per_m2": 7347622
+      "listings": 12366,
+      "avg_price_cop": 794871416,
+      "avg_price_per_m2": 7347657
     },
     "Bogotá D.C.": {
       "listings": 12360,
@@ -35,9 +35,9 @@
       "avg_price_per_m2": 4570305
     },
     "Risaralda": {
-      "listings": 4174,
-      "avg_price_cop": 470805127,
-      "avg_price_per_m2": 5268828
+      "listings": 4176,
+      "avg_price_cop": 470749665,
+      "avg_price_per_m2": 5268680
     },
     "Bolívar": {
       "listings": 3570,
@@ -50,9 +50,9 @@
       "avg_price_per_m2": 4578028
     },
     "Caldas": {
-      "listings": 2663,
-      "avg_price_cop": 487989471,
-      "avg_price_per_m2": 5520749
+      "listings": 2664,
+      "avg_price_cop": 488016502,
+      "avg_price_per_m2": 5521012
     },
     "Magdalena": {
       "listings": 1647,
