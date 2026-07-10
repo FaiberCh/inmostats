@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-10T00:20:08.851176+00:00",
-  "total_listings": 59905,
+  "generated_at": "2026-07-10T03:38:57.949764+00:00",
+  "total_listings": 59906,
   "zones_with_data": 23,
-  "avg_price_cop": 682802037.0,
-  "avg_price_per_m2": 6198273.0,
+  "avg_price_cop": 682796315.0,
+  "avg_price_per_m2": 6198229.0,
   "avg_area_m2": 105.9,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -45,9 +45,9 @@
       "avg_price_per_m2": 8337471
     },
     "Santander": {
-      "listings": 2844,
-      "avg_price_cop": 471971975,
-      "avg_price_per_m2": 4578028
+      "listings": 2845,
+      "avg_price_cop": 471925588,
+      "avg_price_per_m2": 4577658
     },
     "Caldas": {
       "listings": 2664,
