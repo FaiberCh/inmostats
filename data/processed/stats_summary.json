@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-11T12:07:01.925263+00:00",
-  "total_listings": 60895,
+  "generated_at": "2026-07-11T13:19:29.860347+00:00",
+  "total_listings": 61252,
   "zones_with_data": 23,
-  "avg_price_cop": 680141993.0,
-  "avg_price_per_m2": 6188017.0,
+  "avg_price_cop": 679218082.0,
+  "avg_price_per_m2": 6180804.0,
   "avg_area_m2": 105.6,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -25,14 +25,14 @@
       "avg_price_per_m2": 4828571
     },
     "Atlántico": {
-      "listings": 5168,
-      "avg_price_cop": 589606640,
-      "avg_price_per_m2": 4733095
+      "listings": 5395,
+      "avg_price_cop": 588912107,
+      "avg_price_per_m2": 4742656
     },
     "Cundinamarca": {
-      "listings": 4979,
-      "avg_price_cop": 334915630,
-      "avg_price_per_m2": 4568224
+      "listings": 5109,
+      "avg_price_cop": 337379225,
+      "avg_price_per_m2": 4577504
     },
     "Risaralda": {
       "listings": 4361,
