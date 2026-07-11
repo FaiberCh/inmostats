@@ -64,14 +64,14 @@
     },
     "valle-del-cauca": {
       "name": "Valle del Cauca",
-      "next_page": 139,
+      "next_page": 366,
       "last_page": 365,
-      "done": false
+      "done": true
     },
     "bogota-dc": {
       "name": "Bogotá D.C.",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 23,
+      "last_page": 923,
       "done": false
     },
     "antioquia": {
