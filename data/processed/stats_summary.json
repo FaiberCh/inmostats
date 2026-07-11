@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-11T09:26:44.134573+00:00",
-  "total_listings": 60454,
+  "generated_at": "2026-07-11T11:01:23.246336+00:00",
+  "total_listings": 60641,
   "zones_with_data": 23,
-  "avg_price_cop": 680845865.0,
-  "avg_price_per_m2": 6188566.0,
+  "avg_price_cop": 681358057.0,
+  "avg_price_per_m2": 6193148.0,
   "avg_area_m2": 105.8,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -35,14 +35,14 @@
       "avg_price_per_m2": 4570305
     },
     "Risaralda": {
-      "listings": 4176,
-      "avg_price_cop": 470749665,
-      "avg_price_per_m2": 5268680
+      "listings": 4240,
+      "avg_price_cop": 470469811,
+      "avg_price_per_m2": 5274804
     },
     "Bolívar": {
-      "listings": 3590,
-      "avg_price_cop": 991907929,
-      "avg_price_per_m2": 8343973
+      "listings": 3713,
+      "avg_price_cop": 993909537,
+      "avg_price_per_m2": 8356277
     },
     "Santander": {
       "listings": 3015,
