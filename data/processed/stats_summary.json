@@ -1,38 +1,38 @@
 {
-  "generated_at": "2026-07-12T05:40:57.448871+00:00",
-  "total_listings": 67161,
+  "generated_at": "2026-07-12T08:01:35.177509+00:00",
+  "total_listings": 67257,
   "zones_with_data": 23,
-  "avg_price_cop": 695412547.0,
-  "avg_price_per_m2": 6278799.0,
+  "avg_price_cop": 695651016.0,
+  "avg_price_per_m2": 6280135.0,
   "avg_area_m2": 106.4,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 15323,
-      "avg_price_cop": 792868762,
-      "avg_price_per_m2": 7353732
+      "listings": 15373,
+      "avg_price_cop": 792722457,
+      "avg_price_per_m2": 7354178
     },
     "Bogotá D.C.": {
-      "listings": 14762,
-      "avg_price_cop": 976725203,
-      "avg_price_per_m2": 7540753
+      "listings": 14794,
+      "avg_price_cop": 977334895,
+      "avg_price_per_m2": 7542203
     },
     "Valle del Cauca": {
-      "listings": 7832,
-      "avg_price_cop": 540671101,
-      "avg_price_per_m2": 4826692
+      "listings": 7833,
+      "avg_price_cop": 540628886,
+      "avg_price_per_m2": 4826465
     },
     "Atlántico": {
-      "listings": 5547,
-      "avg_price_cop": 587825305,
-      "avg_price_per_m2": 4741429
+      "listings": 5550,
+      "avg_price_cop": 587824679,
+      "avg_price_per_m2": 4741364
     },
     "Cundinamarca": {
-      "listings": 5121,
-      "avg_price_cop": 337449472,
-      "avg_price_per_m2": 4579023
+      "listings": 5123,
+      "avg_price_cop": 337382538,
+      "avg_price_per_m2": 4578561
     },
     "Risaralda": {
       "listings": 4363,
@@ -75,24 +75,24 @@
       "avg_price_per_m2": 3926430
     },
     "Meta": {
-      "listings": 62,
-      "avg_price_cop": 375436452,
-      "avg_price_per_m2": 4504149
+      "listings": 64,
+      "avg_price_cop": 375094687,
+      "avg_price_per_m2": 4497440
     },
     "Boyacá": {
-      "listings": 55,
-      "avg_price_cop": 330692618,
-      "avg_price_per_m2": 4061622
+      "listings": 59,
+      "avg_price_cop": 329086339,
+      "avg_price_per_m2": 4010892
+    },
+    "Nariño": {
+      "listings": 17,
+      "avg_price_cop": 339330353,
+      "avg_price_per_m2": 3757926
     },
     "Córdoba": {
       "listings": 17,
       "avg_price_cop": 394852941,
       "avg_price_per_m2": 3473078
-    },
-    "Nariño": {
-      "listings": 16,
-      "avg_price_cop": 336788500,
-      "avg_price_per_m2": 3764431
     },
     "Sucre": {
       "listings": 10,
@@ -115,9 +115,9 @@
       "avg_price_per_m2": 3790959
     },
     "Casanare": {
-      "listings": 4,
-      "avg_price_cop": 196000000,
-      "avg_price_per_m2": 3326537
+      "listings": 5,
+      "avg_price_cop": 254800000,
+      "avg_price_per_m2": 3886229
     },
     "San Andrés y Providencia": {
       "listings": 2,
