@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-13T04:55:00.204452+00:00",
-  "total_listings": 67266,
+  "generated_at": "2026-07-13T08:29:27.600747+00:00",
+  "total_listings": 67269,
   "zones_with_data": 23,
-  "avg_price_cop": 695719151.0,
-  "avg_price_per_m2": 6280247.0,
+  "avg_price_cop": 695720085.0,
+  "avg_price_per_m2": 6280271.0,
   "avg_area_m2": 106.4,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -15,9 +15,9 @@
       "avg_price_per_m2": 7353724
     },
     "Bogotá D.C.": {
-      "listings": 14798,
-      "avg_price_cop": 977592745,
-      "avg_price_per_m2": 7542481
+      "listings": 14800,
+      "avg_price_cop": 977518070,
+      "avg_price_per_m2": 7542297
     },
     "Valle del Cauca": {
       "listings": 7833,
@@ -85,9 +85,9 @@
       "avg_price_per_m2": 4010892
     },
     "Nariño": {
-      "listings": 17,
-      "avg_price_cop": 339330353,
-      "avg_price_per_m2": 3757926
+      "listings": 18,
+      "avg_price_cop": 392700889,
+      "avg_price_per_m2": 3997738
     },
     "Córdoba": {
       "listings": 17,

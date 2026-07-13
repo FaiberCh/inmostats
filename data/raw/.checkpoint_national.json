@@ -1,6 +1,6 @@
 {
   "started_at": "2026-07-11T07:09:24.570110+00:00",
-  "done": false,
+  "done": true,
   "departments": {
     "tolima": {
       "name": "Tolima",
@@ -82,10 +82,10 @@
     },
     "resto-de-colombia": {
       "name": "Resto de Colombia",
-      "next_page": 3597,
+      "next_page": 3774,
       "last_page": 3773,
-      "done": false
+      "done": true
     }
   },
-  "finished_at": null
+  "finished_at": "2026-07-13T08:29:15.672244+00:00"
 }
