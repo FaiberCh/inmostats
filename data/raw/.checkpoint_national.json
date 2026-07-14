@@ -1,6 +1,6 @@
 {
-  "started_at": "2026-07-11T07:09:24.570110+00:00",
-  "done": true,
+  "started_at": "2026-07-14T09:24:10.630573+00:00",
+  "done": false,
   "departments": {
     "tolima": {
       "name": "Tolima",
@@ -28,64 +28,64 @@
     },
     "caldas": {
       "name": "Caldas",
-      "next_page": 129,
+      "next_page": 26,
       "last_page": 128,
-      "done": true
+      "done": false
     },
     "santander": {
       "name": "Santander",
-      "next_page": 140,
-      "last_page": 139,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "bolivar": {
       "name": "Bolívar",
-      "next_page": 176,
-      "last_page": 175,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "risaralda": {
       "name": "Risaralda",
-      "next_page": 207,
-      "last_page": 206,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "cundinamarca": {
       "name": "Cundinamarca",
-      "next_page": 230,
-      "last_page": 229,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "atlantico": {
       "name": "Atlántico",
-      "next_page": 255,
-      "last_page": 254,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "valle-del-cauca": {
       "name": "Valle del Cauca",
-      "next_page": 366,
-      "last_page": 365,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "bogota-dc": {
       "name": "Bogotá D.C.",
-      "next_page": 924,
-      "last_page": 923,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "antioquia": {
       "name": "Antioquia",
-      "next_page": 1045,
-      "last_page": 1044,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "resto-de-colombia": {
       "name": "Resto de Colombia",
-      "next_page": 3774,
-      "last_page": 3773,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     }
   },
-  "finished_at": "2026-07-13T08:29:15.672244+00:00"
+  "finished_at": null
 }
