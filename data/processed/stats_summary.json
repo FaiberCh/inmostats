@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-14T09:44:22.640082+00:00",
-  "total_listings": 67312,
+  "generated_at": "2026-07-14T11:24:58.743458+00:00",
+  "total_listings": 67351,
   "zones_with_data": 23,
-  "avg_price_cop": 695565162.0,
-  "avg_price_per_m2": 6280375.0,
+  "avg_price_cop": 695489649.0,
+  "avg_price_per_m2": 6280001.0,
   "avg_area_m2": 106.4,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -45,14 +45,14 @@
       "avg_price_per_m2": 8356179
     },
     "Santander": {
-      "listings": 3019,
-      "avg_price_cop": 473395603,
-      "avg_price_per_m2": 4598269
+      "listings": 3048,
+      "avg_price_cop": 474441422,
+      "avg_price_per_m2": 4610429
     },
     "Caldas": {
-      "listings": 2737,
-      "avg_price_cop": 487434940,
-      "avg_price_per_m2": 5527528
+      "listings": 2747,
+      "avg_price_cop": 487526186,
+      "avg_price_per_m2": 5525386
     },
     "Magdalena": {
       "listings": 1726,
