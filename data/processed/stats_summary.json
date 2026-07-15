@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-15T22:51:26.369399+00:00",
-  "total_listings": 71432,
+  "generated_at": "2026-07-15T23:51:28.457995+00:00",
+  "total_listings": 71435,
   "zones_with_data": 24,
-  "avg_price_cop": 706485011.0,
-  "avg_price_per_m2": 6342406.0,
+  "avg_price_cop": 706465517.0,
+  "avg_price_per_m2": 6342269.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -25,9 +25,9 @@
       "avg_price_per_m2": 4824806
     },
     "Atlántico": {
-      "listings": 5660,
-      "avg_price_cop": 588145638,
-      "avg_price_per_m2": 4748743
+      "listings": 5662,
+      "avg_price_cop": 588013287,
+      "avg_price_per_m2": 4747952
     },
     "Cundinamarca": {
       "listings": 5223,
@@ -84,15 +84,15 @@
       "avg_price_cop": 329031727,
       "avg_price_per_m2": 4063037
     },
+    "Córdoba": {
+      "listings": 18,
+      "avg_price_cop": 389583333,
+      "avg_price_per_m2": 3514871
+    },
     "Nariño": {
       "listings": 18,
       "avg_price_cop": 392700889,
       "avg_price_per_m2": 3997738
-    },
-    "Córdoba": {
-      "listings": 17,
-      "avg_price_cop": 394852941,
-      "avg_price_per_m2": 3473078
     },
     "Sucre": {
       "listings": 12,
