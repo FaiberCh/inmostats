@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-15T09:27:18.689023+00:00",
-  "total_listings": 71295,
+  "generated_at": "2026-07-15T11:28:50.364910+00:00",
+  "total_listings": 71334,
   "zones_with_data": 23,
-  "avg_price_cop": 706578225.0,
-  "avg_price_per_m2": 6341790.0,
+  "avg_price_cop": 706509393.0,
+  "avg_price_per_m2": 6342507.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -15,49 +15,49 @@
       "avg_price_per_m2": 7356320
     },
     "Bogotá D.C.": {
-      "listings": 16482,
-      "avg_price_cop": 987777627,
-      "avg_price_per_m2": 7577877
+      "listings": 16492,
+      "avg_price_cop": 987570776,
+      "avg_price_per_m2": 7578761
     },
     "Valle del Cauca": {
-      "listings": 7950,
-      "avg_price_cop": 539503143,
-      "avg_price_per_m2": 4825686
+      "listings": 7953,
+      "avg_price_cop": 539387670,
+      "avg_price_per_m2": 4825424
     },
     "Atlántico": {
-      "listings": 5645,
-      "avg_price_cop": 588201914,
-      "avg_price_per_m2": 4745930
+      "listings": 5650,
+      "avg_price_cop": 587988870,
+      "avg_price_per_m2": 4747101
     },
     "Cundinamarca": {
-      "listings": 5209,
-      "avg_price_cop": 336495630,
-      "avg_price_per_m2": 4577177
+      "listings": 5216,
+      "avg_price_cop": 336502555,
+      "avg_price_per_m2": 4578634
     },
     "Risaralda": {
-      "listings": 4407,
-      "avg_price_cop": 470896422,
-      "avg_price_per_m2": 5287225
+      "listings": 4409,
+      "avg_price_cop": 470794178,
+      "avg_price_per_m2": 5286885
     },
     "Bolívar": {
-      "listings": 3747,
-      "avg_price_cop": 993356156,
-      "avg_price_per_m2": 8364441
+      "listings": 3748,
+      "avg_price_cop": 993305230,
+      "avg_price_per_m2": 8366710
     },
     "Santander": {
-      "listings": 3050,
-      "avg_price_cop": 474409002,
-      "avg_price_per_m2": 4611057
+      "listings": 3053,
+      "avg_price_cop": 475019808,
+      "avg_price_per_m2": 4611485
     },
     "Caldas": {
-      "listings": 2747,
-      "avg_price_cop": 487526186,
-      "avg_price_per_m2": 5525386
+      "listings": 2749,
+      "avg_price_cop": 487880841,
+      "avg_price_per_m2": 5526995
     },
     "Magdalena": {
-      "listings": 1726,
-      "avg_price_cop": 751341493,
-      "avg_price_per_m2": 8062684
+      "listings": 1732,
+      "avg_price_cop": 751521314,
+      "avg_price_per_m2": 8074681
     },
     "Quindío": {
       "listings": 1404,
