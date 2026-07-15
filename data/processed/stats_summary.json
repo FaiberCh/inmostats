@@ -1,28 +1,28 @@
 {
-  "generated_at": "2026-07-15T11:28:50.364910+00:00",
-  "total_listings": 71334,
+  "generated_at": "2026-07-15T13:11:00.497367+00:00",
+  "total_listings": 71351,
   "zones_with_data": 23,
-  "avg_price_cop": 706509393.0,
-  "avg_price_per_m2": 6342507.0,
+  "avg_price_cop": 706450044.0,
+  "avg_price_per_m2": 6342297.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 17267,
-      "avg_price_cop": 794702011,
-      "avg_price_per_m2": 7356320
+      "listings": 17269,
+      "avg_price_cop": 794692201,
+      "avg_price_per_m2": 7356257
     },
     "Bogotá D.C.": {
-      "listings": 16492,
-      "avg_price_cop": 987570776,
-      "avg_price_per_m2": 7578761
+      "listings": 16496,
+      "avg_price_cop": 987406058,
+      "avg_price_per_m2": 7578243
     },
     "Valle del Cauca": {
-      "listings": 7953,
-      "avg_price_cop": 539387670,
-      "avg_price_per_m2": 4825424
+      "listings": 7956,
+      "avg_price_cop": 539431893,
+      "avg_price_per_m2": 4825110
     },
     "Atlántico": {
       "listings": 5650,
@@ -30,19 +30,19 @@
       "avg_price_per_m2": 4747101
     },
     "Cundinamarca": {
-      "listings": 5216,
-      "avg_price_cop": 336502555,
-      "avg_price_per_m2": 4578634
+      "listings": 5220,
+      "avg_price_cop": 336398913,
+      "avg_price_per_m2": 4577762
     },
     "Risaralda": {
       "listings": 4409,
-      "avg_price_cop": 470794178,
-      "avg_price_per_m2": 5286885
+      "avg_price_cop": 470796446,
+      "avg_price_per_m2": 5286910
     },
     "Bolívar": {
-      "listings": 3748,
-      "avg_price_cop": 993305230,
-      "avg_price_per_m2": 8366710
+      "listings": 3750,
+      "avg_price_cop": 993039467,
+      "avg_price_per_m2": 8365995
     },
     "Santander": {
       "listings": 3053,
@@ -50,14 +50,14 @@
       "avg_price_per_m2": 4611485
     },
     "Caldas": {
-      "listings": 2749,
-      "avg_price_cop": 487880841,
-      "avg_price_per_m2": 5526995
+      "listings": 2750,
+      "avg_price_cop": 488055430,
+      "avg_price_per_m2": 5528040
     },
     "Magdalena": {
-      "listings": 1732,
-      "avg_price_cop": 751521314,
-      "avg_price_per_m2": 8074681
+      "listings": 1733,
+      "avg_price_cop": 751318474,
+      "avg_price_per_m2": 8075499
     },
     "Quindío": {
       "listings": 1404,
@@ -81,8 +81,8 @@
     },
     "Boyacá": {
       "listings": 59,
-      "avg_price_cop": 329086339,
-      "avg_price_per_m2": 4010892
+      "avg_price_cop": 328747356,
+      "avg_price_per_m2": 4005413
     },
     "Nariño": {
       "listings": 18,
