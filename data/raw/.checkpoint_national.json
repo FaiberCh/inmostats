@@ -1,6 +1,6 @@
 {
-  "started_at": "2026-07-14T09:24:10.630573+00:00",
-  "done": true,
+  "started_at": "2026-07-17T20:01:53.458749+00:00",
+  "done": false,
   "departments": {
     "tolima": {
       "name": "Tolima",
@@ -10,14 +10,14 @@
     },
     "norte-de-santander": {
       "name": "Norte de Santander",
-      "next_page": 40,
-      "last_page": 39,
+      "next_page": 41,
+      "last_page": 40,
       "done": true
     },
     "quindio": {
       "name": "Quindío",
-      "next_page": 66,
-      "last_page": 65,
+      "next_page": 63,
+      "last_page": 62,
       "done": true
     },
     "magdalena": {
@@ -28,64 +28,64 @@
     },
     "caldas": {
       "name": "Caldas",
-      "next_page": 129,
+      "next_page": 46,
       "last_page": 128,
-      "done": true
+      "done": false
     },
     "santander": {
       "name": "Santander",
-      "next_page": 137,
-      "last_page": 136,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "bolivar": {
       "name": "Bolívar",
-      "next_page": 172,
-      "last_page": 171,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "risaralda": {
       "name": "Risaralda",
-      "next_page": 207,
-      "last_page": 206,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "cundinamarca": {
       "name": "Cundinamarca",
-      "next_page": 222,
-      "last_page": 221,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "atlantico": {
       "name": "Atlántico",
-      "next_page": 256,
-      "last_page": 255,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "valle-del-cauca": {
       "name": "Valle del Cauca",
-      "next_page": 366,
-      "last_page": 365,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "bogota-dc": {
       "name": "Bogotá D.C.",
-      "next_page": 925,
-      "last_page": 924,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "antioquia": {
       "name": "Antioquia",
-      "next_page": 1057,
-      "last_page": 1056,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "resto-de-colombia": {
       "name": "Resto de Colombia",
-      "next_page": 3795,
-      "last_page": 3794,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     }
   },
-  "finished_at": "2026-07-16T19:08:17.934826+00:00"
+  "finished_at": null
 }
