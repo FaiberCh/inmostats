@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-17T23:03:07.758544+00:00",
-  "total_listings": 71916,
+  "generated_at": "2026-07-18T00:05:40.735645+00:00",
+  "total_listings": 72063,
   "zones_with_data": 24,
-  "avg_price_cop": 705065484.0,
-  "avg_price_per_m2": 6337175.0,
+  "avg_price_cop": 704474901.0,
+  "avg_price_per_m2": 6333460.0,
   "avg_area_m2": 106.8,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 17288,
-      "avg_price_cop": 794878217,
-      "avg_price_per_m2": 7356059
+      "listings": 17287,
+      "avg_price_cop": 794913786,
+      "avg_price_per_m2": 7356237
     },
     "Bogotá D.C.": {
       "listings": 16535,
@@ -25,14 +25,14 @@
       "avg_price_per_m2": 4824806
     },
     "Atlántico": {
-      "listings": 5666,
-      "avg_price_cop": 587974096,
-      "avg_price_per_m2": 4747483
+      "listings": 5720,
+      "avg_price_cop": 587302283,
+      "avg_price_per_m2": 4753615
     },
     "Cundinamarca": {
-      "listings": 5300,
-      "avg_price_cop": 336660099,
-      "avg_price_per_m2": 4583221
+      "listings": 5394,
+      "avg_price_cop": 336977413,
+      "avg_price_per_m2": 4573186
     },
     "Risaralda": {
       "listings": 4482,
