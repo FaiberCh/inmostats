@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-19T02:13:09.429598+00:00",
-  "total_listings": 75253,
+  "generated_at": "2026-07-19T05:37:25.844499+00:00",
+  "total_listings": 75259,
   "zones_with_data": 24,
-  "avg_price_cop": 710852852.0,
-  "avg_price_per_m2": 6377362.0,
+  "avg_price_cop": 710882349.0,
+  "avg_price_per_m2": 6377289.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -15,9 +15,9 @@
       "avg_price_per_m2": 7358375
     },
     "Bogotá D.C.": {
-      "listings": 17921,
-      "avg_price_cop": 988748494,
-      "avg_price_per_m2": 7592602
+      "listings": 17923,
+      "avg_price_cop": 988919922,
+      "avg_price_per_m2": 7592696
     },
     "Valle del Cauca": {
       "listings": 8119,
@@ -25,9 +25,9 @@
       "avg_price_per_m2": 4823468
     },
     "Atlántico": {
-      "listings": 5766,
-      "avg_price_cop": 586788044,
-      "avg_price_per_m2": 4755844
+      "listings": 5768,
+      "avg_price_cop": 586724144,
+      "avg_price_per_m2": 4756030
     },
     "Cundinamarca": {
       "listings": 5400,
@@ -94,15 +94,15 @@
       "avg_price_cop": 392700889,
       "avg_price_per_m2": 3997738
     },
+    "Huila": {
+      "listings": 12,
+      "avg_price_cop": 276697083,
+      "avg_price_per_m2": 3229274
+    },
     "Sucre": {
       "listings": 12,
       "avg_price_cop": 698555000,
       "avg_price_per_m2": 6563190
-    },
-    "Huila": {
-      "listings": 10,
-      "avg_price_cop": 269036500,
-      "avg_price_per_m2": 3342301
     },
     "Cesar": {
       "listings": 9,
