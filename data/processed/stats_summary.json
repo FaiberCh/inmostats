@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-20T19:12:22.618073+00:00",
-  "total_listings": 75313,
+  "generated_at": "2026-07-20T20:39:13.462640+00:00",
+  "total_listings": 75345,
   "zones_with_data": 24,
-  "avg_price_cop": 710770220.0,
-  "avg_price_per_m2": 6377840.0,
+  "avg_price_cop": 710651463.0,
+  "avg_price_per_m2": 6377318.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -40,19 +40,19 @@
       "avg_price_per_m2": 5290915
     },
     "Bolívar": {
-      "listings": 3813,
-      "avg_price_cop": 991607658,
-      "avg_price_per_m2": 8369254
+      "listings": 3814,
+      "avg_price_cop": 991452976,
+      "avg_price_per_m2": 8369871
     },
     "Santander": {
-      "listings": 3164,
-      "avg_price_cop": 472530608,
-      "avg_price_per_m2": 4612269
+      "listings": 3187,
+      "avg_price_cop": 472278030,
+      "avg_price_per_m2": 4610731
     },
     "Caldas": {
-      "listings": 2802,
-      "avg_price_cop": 487062995,
-      "avg_price_per_m2": 5532190
+      "listings": 2810,
+      "avg_price_cop": 486862104,
+      "avg_price_per_m2": 5535253
     },
     "Magdalena": {
       "listings": 1793,
