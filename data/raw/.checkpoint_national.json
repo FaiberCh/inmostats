@@ -40,14 +40,14 @@
     },
     "bolivar": {
       "name": "Bolívar",
-      "next_page": 11,
+      "next_page": 176,
       "last_page": 175,
-      "done": false
+      "done": true
     },
     "risaralda": {
       "name": "Risaralda",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 82,
+      "last_page": 191,
       "done": false
     },
     "cundinamarca": {
