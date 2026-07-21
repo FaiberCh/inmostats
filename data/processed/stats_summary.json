@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-21T16:40:50.285762+00:00",
-  "total_listings": 76936,
+  "generated_at": "2026-07-21T18:14:05.793069+00:00",
+  "total_listings": 77487,
   "zones_with_data": 24,
-  "avg_price_cop": 714737549.0,
-  "avg_price_per_m2": 6398548.0,
+  "avg_price_cop": 715520021.0,
+  "avg_price_per_m2": 6406014.0,
   "avg_area_m2": 107.2,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 19377,
-      "avg_price_cop": 794831694,
-      "avg_price_per_m2": 7361068
+      "listings": 19929,
+      "avg_price_cop": 795825458,
+      "avg_price_per_m2": 7363772
     },
     "Bogotá D.C.": {
       "listings": 18807,
@@ -45,9 +45,9 @@
       "avg_price_per_m2": 8368245
     },
     "Santander": {
-      "listings": 3187,
-      "avg_price_cop": 472278030,
-      "avg_price_per_m2": 4610731
+      "listings": 3186,
+      "avg_price_cop": 471139386,
+      "avg_price_per_m2": 4608080
     },
     "Caldas": {
       "listings": 2810,
