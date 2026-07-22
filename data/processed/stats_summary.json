@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-22T02:13:05.605926+00:00",
-  "total_listings": 77610,
+  "generated_at": "2026-07-22T05:24:58.402884+00:00",
+  "total_listings": 77611,
   "zones_with_data": 24,
-  "avg_price_cop": 715272099.0,
-  "avg_price_per_m2": 6405466.0,
+  "avg_price_cop": 715269196.0,
+  "avg_price_per_m2": 6405447.0,
   "avg_area_m2": 107.2,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -80,9 +80,9 @@
       "avg_price_per_m2": 4388669
     },
     "Boyacá": {
-      "listings": 74,
-      "avg_price_cop": 319777492,
-      "avg_price_per_m2": 4081822
+      "listings": 75,
+      "avg_price_cop": 322047125,
+      "avg_price_per_m2": 4092731
     },
     "Córdoba": {
       "listings": 24,
