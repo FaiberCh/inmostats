@@ -1,53 +1,53 @@
 {
-  "generated_at": "2026-07-21T23:13:03.110239+00:00",
-  "total_listings": 77535,
+  "generated_at": "2026-07-22T00:13:35.965722+00:00",
+  "total_listings": 77610,
   "zones_with_data": 24,
-  "avg_price_cop": 715450818.0,
-  "avg_price_per_m2": 6406008.0,
+  "avg_price_cop": 715272099.0,
+  "avg_price_per_m2": 6405466.0,
   "avg_area_m2": 107.2,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 19941,
-      "avg_price_cop": 795894358,
-      "avg_price_per_m2": 7364153
+      "listings": 19955,
+      "avg_price_cop": 795904505,
+      "avg_price_per_m2": 7364612
     },
     "Bogotá D.C.": {
-      "listings": 18828,
-      "avg_price_cop": 991546505,
-      "avg_price_per_m2": 7599906
+      "listings": 18854,
+      "avg_price_cop": 990950275,
+      "avg_price_per_m2": 7598374
     },
     "Valle del Cauca": {
-      "listings": 8177,
-      "avg_price_cop": 538118364,
-      "avg_price_per_m2": 4826764
+      "listings": 8182,
+      "avg_price_cop": 538210690,
+      "avg_price_per_m2": 4827294
     },
     "Atlántico": {
-      "listings": 5795,
-      "avg_price_cop": 586089166,
-      "avg_price_per_m2": 4758290
+      "listings": 5805,
+      "avg_price_cop": 585679882,
+      "avg_price_per_m2": 4756761
     },
     "Cundinamarca": {
-      "listings": 5470,
-      "avg_price_cop": 336472900,
-      "avg_price_per_m2": 4577294
+      "listings": 5474,
+      "avg_price_cop": 336417020,
+      "avg_price_per_m2": 4576402
     },
     "Risaralda": {
-      "listings": 4499,
-      "avg_price_cop": 469655643,
-      "avg_price_per_m2": 5292996
+      "listings": 4502,
+      "avg_price_cop": 469600120,
+      "avg_price_per_m2": 5292480
     },
     "Bolívar": {
-      "listings": 3833,
-      "avg_price_cop": 990093814,
-      "avg_price_per_m2": 8367971
+      "listings": 3835,
+      "avg_price_cop": 989719580,
+      "avg_price_per_m2": 8365978
     },
     "Santander": {
-      "listings": 3188,
-      "avg_price_cop": 471161436,
-      "avg_price_per_m2": 4608847
+      "listings": 3187,
+      "avg_price_cop": 471240244,
+      "avg_price_per_m2": 4609187
     },
     "Caldas": {
       "listings": 2810,
@@ -70,24 +70,24 @@
       "avg_price_per_m2": 3449963
     },
     "Tolima": {
-      "listings": 669,
-      "avg_price_cop": 340600918,
-      "avg_price_per_m2": 3935993
+      "listings": 670,
+      "avg_price_cop": 340510469,
+      "avg_price_per_m2": 3937581
     },
     "Meta": {
-      "listings": 74,
-      "avg_price_cop": 364401959,
-      "avg_price_per_m2": 4404013
+      "listings": 76,
+      "avg_price_cop": 359444013,
+      "avg_price_per_m2": 4388669
     },
     "Boyacá": {
-      "listings": 72,
-      "avg_price_cop": 322694922,
-      "avg_price_per_m2": 4112131
+      "listings": 74,
+      "avg_price_cop": 319777492,
+      "avg_price_per_m2": 4081822
     },
     "Córdoba": {
-      "listings": 22,
-      "avg_price_cop": 404863636,
-      "avg_price_per_m2": 3641576
+      "listings": 24,
+      "avg_price_cop": 403958333,
+      "avg_price_per_m2": 3624209
     },
     "Nariño": {
       "listings": 18,
@@ -95,14 +95,14 @@
       "avg_price_per_m2": 3998156
     },
     "Huila": {
-      "listings": 14,
-      "avg_price_cop": 277526071,
-      "avg_price_per_m2": 3301702
+      "listings": 17,
+      "avg_price_cop": 306197941,
+      "avg_price_per_m2": 3405804
     },
     "Sucre": {
-      "listings": 12,
-      "avg_price_cop": 698555000,
-      "avg_price_per_m2": 6563190
+      "listings": 13,
+      "avg_price_cop": 689435385,
+      "avg_price_per_m2": 6386384
     },
     "Cesar": {
       "listings": 9,
@@ -119,15 +119,15 @@
       "avg_price_cop": 240666667,
       "avg_price_per_m2": 3753676
     },
+    "La Guajira": {
+      "listings": 2,
+      "avg_price_cop": 695000000,
+      "avg_price_per_m2": 10295785
+    },
     "San Andrés y Providencia": {
       "listings": 2,
       "avg_price_cop": 578000000,
       "avg_price_per_m2": 6608516
-    },
-    "La Guajira": {
-      "listings": 1,
-      "avg_price_cop": 690000000,
-      "avg_price_per_m2": 4312500
     }
   }
 }
