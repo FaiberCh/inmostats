@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-22T21:58:45.778271+00:00",
-  "total_listings": 77617,
+  "generated_at": "2026-07-22T23:18:07.117968+00:00",
+  "total_listings": 77618,
   "zones_with_data": 24,
-  "avg_price_cop": 715281093.0,
-  "avg_price_per_m2": 6405521.0,
+  "avg_price_cop": 715282442.0,
+  "avg_price_per_m2": 6405606.0,
   "avg_area_m2": 107.2,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -25,9 +25,9 @@
       "avg_price_per_m2": 4827294
     },
     "Atlántico": {
-      "listings": 5805,
-      "avg_price_cop": 585679882,
-      "avg_price_per_m2": 4756761
+      "listings": 5806,
+      "avg_price_cop": 585720241,
+      "avg_price_per_m2": 4758183
     },
     "Cundinamarca": {
       "listings": 5474,
