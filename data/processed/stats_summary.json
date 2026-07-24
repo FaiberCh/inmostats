@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-24T07:49:12.827013+00:00",
-  "total_listings": 77621,
+  "generated_at": "2026-07-24T10:32:27.791253+00:00",
+  "total_listings": 77734,
   "zones_with_data": 24,
-  "avg_price_cop": 715274894.0,
-  "avg_price_per_m2": 6405600.0,
+  "avg_price_cop": 715065781.0,
+  "avg_price_per_m2": 6405173.0,
   "avg_area_m2": 107.2,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -50,29 +50,29 @@
       "avg_price_per_m2": 4609187
     },
     "Caldas": {
-      "listings": 2810,
-      "avg_price_cop": 486862104,
-      "avg_price_per_m2": 5535253
+      "listings": 2818,
+      "avg_price_cop": 486681144,
+      "avg_price_per_m2": 5533801
     },
     "Magdalena": {
-      "listings": 1794,
-      "avg_price_cop": 746783210,
-      "avg_price_per_m2": 8099817
+      "listings": 1840,
+      "avg_price_cop": 748815317,
+      "avg_price_per_m2": 8105930
     },
     "Quindío": {
-      "listings": 1436,
-      "avg_price_cop": 413875429,
-      "avg_price_per_m2": 5161236
+      "listings": 1451,
+      "avg_price_cop": 413954101,
+      "avg_price_per_m2": 5163775
     },
     "Norte de Santander": {
-      "listings": 858,
-      "avg_price_cop": 314140661,
-      "avg_price_per_m2": 3449963
+      "listings": 872,
+      "avg_price_cop": 313292622,
+      "avg_price_per_m2": 3450217
     },
     "Tolima": {
-      "listings": 670,
-      "avg_price_cop": 340510469,
-      "avg_price_per_m2": 3937581
+      "listings": 700,
+      "avg_price_cop": 344651449,
+      "avg_price_per_m2": 3964524
     },
     "Meta": {
       "listings": 76,
