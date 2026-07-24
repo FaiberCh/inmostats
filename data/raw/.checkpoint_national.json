@@ -34,20 +34,20 @@
     },
     "santander": {
       "name": "Santander",
-      "next_page": 124,
+      "next_page": 140,
       "last_page": 139,
-      "done": false
+      "done": true
     },
     "bolivar": {
       "name": "Bolívar",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 176,
+      "last_page": 175,
+      "done": true
     },
     "risaralda": {
       "name": "Risaralda",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 47,
+      "last_page": 192,
       "done": false
     },
     "cundinamarca": {
