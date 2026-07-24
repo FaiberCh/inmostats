@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-24T20:35:30.336289+00:00",
-  "total_listings": 78451,
+  "generated_at": "2026-07-24T21:58:54.938457+00:00",
+  "total_listings": 78650,
   "zones_with_data": 24,
-  "avg_price_cop": 712740007.0,
-  "avg_price_per_m2": 6392658.0,
+  "avg_price_cop": 712845239.0,
+  "avg_price_per_m2": 6394362.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
@@ -15,14 +15,14 @@
       "avg_price_per_m2": 7364737
     },
     "Bogotá D.C.": {
-      "listings": 18853,
-      "avg_price_cop": 991001962,
-      "avg_price_per_m2": 7598438
+      "listings": 19028,
+      "avg_price_cop": 989235526,
+      "avg_price_per_m2": 7596401
     },
     "Valle del Cauca": {
-      "listings": 8365,
-      "avg_price_cop": 537395242,
-      "avg_price_per_m2": 4827930
+      "listings": 8389,
+      "avg_price_cop": 537085394,
+      "avg_price_per_m2": 4827852
     },
     "Atlántico": {
       "listings": 5944,
