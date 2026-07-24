@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-07-24T14:11:34.782310+00:00",
-  "total_listings": 77895,
+  "generated_at": "2026-07-24T15:46:02.760752+00:00",
+  "total_listings": 77989,
   "zones_with_data": 24,
-  "avg_price_cop": 714754238.0,
-  "avg_price_per_m2": 6404073.0,
-  "avg_area_m2": 107.2,
+  "avg_price_cop": 714376987.0,
+  "avg_price_per_m2": 6402408.0,
+  "avg_area_m2": 107.1,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
@@ -15,9 +15,9 @@
       "avg_price_per_m2": 7364737
     },
     "Bogotá D.C.": {
-      "listings": 18855,
-      "avg_price_cop": 990926889,
-      "avg_price_per_m2": 7598388
+      "listings": 18854,
+      "avg_price_cop": 990963615,
+      "avg_price_per_m2": 7598399
     },
     "Valle del Cauca": {
       "listings": 8182,
@@ -30,14 +30,14 @@
       "avg_price_per_m2": 4757938
     },
     "Cundinamarca": {
-      "listings": 5474,
-      "avg_price_cop": 336417020,
-      "avg_price_per_m2": 4576402
+      "listings": 5535,
+      "avg_price_cop": 336526600,
+      "avg_price_per_m2": 4577539
     },
     "Risaralda": {
-      "listings": 4513,
-      "avg_price_cop": 469272710,
-      "avg_price_per_m2": 5291941
+      "listings": 4547,
+      "avg_price_cop": 469488396,
+      "avg_price_per_m2": 5295056
     },
     "Bolívar": {
       "listings": 3882,
