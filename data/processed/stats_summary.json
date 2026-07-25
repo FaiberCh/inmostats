@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-07-25T13:37:47.723767+00:00",
-  "total_listings": 80450,
+  "generated_at": "2026-07-25T15:07:52.023395+00:00",
+  "total_listings": 80465,
   "zones_with_data": 24,
-  "avg_price_cop": 715957538.0,
-  "avg_price_per_m2": 6420116.0,
+  "avg_price_cop": 715903845.0,
+  "avg_price_per_m2": 6419843.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 20849,
-      "avg_price_cop": 794344430,
-      "avg_price_per_m2": 7365805
+      "listings": 20854,
+      "avg_price_cop": 794297306,
+      "avg_price_per_m2": 7365846
     },
     "Bogotá D.C.": {
-      "listings": 19886,
-      "avg_price_cop": 988111798,
-      "avg_price_per_m2": 7605420
+      "listings": 19887,
+      "avg_price_cop": 988097310,
+      "avg_price_per_m2": 7605300
     },
     "Valle del Cauca": {
       "listings": 8395,
@@ -25,9 +25,9 @@
       "avg_price_per_m2": 4828768
     },
     "Atlántico": {
-      "listings": 5950,
-      "avg_price_cop": 583912495,
-      "avg_price_per_m2": 4759289
+      "listings": 5954,
+      "avg_price_cop": 583690686,
+      "avg_price_per_m2": 4758118
     },
     "Cundinamarca": {
       "listings": 5687,
@@ -75,9 +75,9 @@
       "avg_price_per_m2": 3964631
     },
     "Meta": {
-      "listings": 84,
-      "avg_price_cop": 352830298,
-      "avg_price_per_m2": 4382178
+      "listings": 85,
+      "avg_price_cop": 351973471,
+      "avg_price_per_m2": 4371799
     },
     "Boyacá": {
       "listings": 79,
@@ -85,14 +85,14 @@
       "avg_price_per_m2": 4055248
     },
     "Córdoba": {
-      "listings": 24,
-      "avg_price_cop": 402933333,
-      "avg_price_per_m2": 3608910
+      "listings": 26,
+      "avg_price_cop": 401553846,
+      "avg_price_per_m2": 3598042
     },
     "Nariño": {
-      "listings": 20,
-      "avg_price_cop": 441430800,
-      "avg_price_per_m2": 4170639
+      "listings": 21,
+      "avg_price_cop": 433267429,
+      "avg_price_per_m2": 4186323
     },
     "Huila": {
       "listings": 19,
@@ -105,9 +105,9 @@
       "avg_price_per_m2": 6308785
     },
     "Cesar": {
-      "listings": 9,
-      "avg_price_cop": 286955556,
-      "avg_price_per_m2": 3724071
+      "listings": 10,
+      "avg_price_cop": 297760000,
+      "avg_price_per_m2": 3795235
     },
     "Cauca": {
       "listings": 7,
