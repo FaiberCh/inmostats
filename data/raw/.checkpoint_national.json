@@ -70,14 +70,14 @@
     },
     "bogota-dc": {
       "name": "Bogotá D.C.",
-      "next_page": 896,
+      "next_page": 942,
       "last_page": 941,
-      "done": false
+      "done": true
     },
     "antioquia": {
       "name": "Antioquia",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 197,
+      "last_page": 1080,
       "done": false
     },
     "resto-de-colombia": {
