@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-07-25T19:17:16.324728+00:00",
-  "total_listings": 80470,
+  "generated_at": "2026-07-25T20:30:03.693420+00:00",
+  "total_listings": 80476,
   "zones_with_data": 24,
-  "avg_price_cop": 715889598.0,
-  "avg_price_per_m2": 6419836.0,
+  "avg_price_cop": 715886052.0,
+  "avg_price_per_m2": 6419745.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 20856,
-      "avg_price_cop": 794274838,
-      "avg_price_per_m2": 7365856
+      "listings": 20858,
+      "avg_price_cop": 794233916,
+      "avg_price_per_m2": 7365632
     },
     "Bogotá D.C.": {
-      "listings": 19889,
-      "avg_price_cop": 988054211,
-      "avg_price_per_m2": 7605180
+      "listings": 19890,
+      "avg_price_cop": 988115144,
+      "avg_price_per_m2": 7605300
     },
     "Valle del Cauca": {
       "listings": 8395,
@@ -25,9 +25,9 @@
       "avg_price_per_m2": 4828768
     },
     "Atlántico": {
-      "listings": 5954,
-      "avg_price_cop": 583690686,
-      "avg_price_per_m2": 4758118
+      "listings": 5957,
+      "avg_price_cop": 583577194,
+      "avg_price_per_m2": 4757595
     },
     "Cundinamarca": {
       "listings": 5687,
