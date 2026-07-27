@@ -46,14 +46,14 @@
     },
     "risaralda": {
       "name": "Risaralda",
-      "next_page": 92,
+      "next_page": 190,
       "last_page": 189,
-      "done": false
+      "done": true
     },
     "cundinamarca": {
       "name": "Cundinamarca",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 139,
+      "last_page": 217,
       "done": false
     },
     "atlantico": {
