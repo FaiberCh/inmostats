@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-07-28T15:21:10.351231+00:00",
-  "total_listings": 81771,
+  "generated_at": "2026-07-28T17:02:38.204082+00:00",
+  "total_listings": 82124,
   "zones_with_data": 24,
-  "avg_price_cop": 717130282.0,
-  "avg_price_per_m2": 6430626.0,
+  "avg_price_cop": 717509551.0,
+  "avg_price_per_m2": 6435816.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 21154,
-      "avg_price_cop": 793186729,
-      "avg_price_per_m2": 7364476
+      "listings": 21507,
+      "avg_price_cop": 793386622,
+      "avg_price_per_m2": 7368966
     },
     "Bogotá D.C.": {
       "listings": 20653,
