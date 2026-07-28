@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-07-28T10:49:48.977883+00:00",
-  "total_listings": 81477,
+  "generated_at": "2026-07-28T12:43:17.539696+00:00",
+  "total_listings": 81541,
   "zones_with_data": 24,
-  "avg_price_cop": 717107089.0,
-  "avg_price_per_m2": 6427524.0,
+  "avg_price_cop": 717136594.0,
+  "avg_price_per_m2": 6428431.0,
   "avg_area_m2": 107.0,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
   "by_department": {
     "Antioquia": {
-      "listings": 20860,
-      "avg_price_cop": 794218889,
-      "avg_price_per_m2": 7365580
+      "listings": 20924,
+      "avg_price_cop": 794047349,
+      "avg_price_per_m2": 7366188
     },
     "Bogotá D.C.": {
-      "listings": 20652,
-      "avg_price_cop": 986029916,
-      "avg_price_per_m2": 7607237
+      "listings": 20653,
+      "avg_price_cop": 986042698,
+      "avg_price_per_m2": 7607116
     },
     "Valle del Cauca": {
       "listings": 8446,
@@ -50,9 +50,9 @@
       "avg_price_per_m2": 4607492
     },
     "Caldas": {
-      "listings": 2854,
-      "avg_price_cop": 485798690,
-      "avg_price_per_m2": 5536099
+      "listings": 2853,
+      "avg_price_cop": 485902370,
+      "avg_price_per_m2": 5536681
     },
     "Magdalena": {
       "listings": 1856,
