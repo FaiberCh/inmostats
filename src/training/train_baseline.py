@@ -214,8 +214,13 @@ def build_models() -> dict:
         "XGBoost": XGBRegressor(
             # Hiperparametros de src/training/tune_xgboost.py (RandomizedSearchCV,
             # 30 combinaciones x 3 folds, optimizado por RMSE de log-precio).
-            n_estimators=846, max_depth=6, learning_rate=0.0555,
-            subsample=0.842, colsample_bytree=0.724, min_child_weight=4,
+            # Re-tuneados 2026-07-30 sobre 82k filas (antes 47k) -CV RMSE
+            # log-precio bajo de 0.2163 a 0.1922. max_depth subio de 6 a 9 y
+            # min_child_weight bajo de 4 a 1: con mas datos el modelo puede
+            # permitirse arboles mas profundos/menos regularizados sin
+            # sobreajustar.
+            n_estimators=684, max_depth=9, learning_rate=0.0599,
+            subsample=0.768, colsample_bytree=0.649, min_child_weight=1,
             n_jobs=-1, random_state=42,
         ),
     }
