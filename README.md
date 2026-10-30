@@ -1,25 +1,27 @@
----
-title: InmoStats API
-emoji: 🏠
-colorFrom: blue
-colorTo: green
-sdk: docker
-app_port: 7860
-pinned: false
----
+# 🏠 InmoStats
 
-# InmoStats
+Sistema extremo a extremo de analítica y predicción de precios de vivienda
+en Colombia: scraping nacional de `fincaraiz.com.co`, limpieza y feature
+engineering, EDA con mapas reales y un modelo XGBoost que estima el precio
+de un apartamento. El modelo se sirve con una API (FastAPI) y se explora
+en un dashboard interactivo (Streamlit).
 
-> El bloque YAML de arriba es metadata que requiere Hugging Face Spaces
-> para desplegar la API (ver Fase 5) como Docker Space; GitHub lo ignora
-> y lo muestra como texto plano al inicio del README, no afecta el resto
-> de la documentacion.
+- 📊 **Dashboard:** <https://inmostats-ki4phujg4wjzs9pb88nncc.streamlit.app/>
+- ⚙️ **API (Hugging Face Spaces):** <https://huggingface.co/spaces/fchaparro/inmostats-api>
 
-Sistema extremo a extremo de analítica avanzada y predicción de precios de
-vivienda en Colombia, con datos extraídos de `fincaraiz.com.co`: scraping
-nacional automatizado, limpieza y feature engineering, EDA con mapas
-geográficos reales, un modelo de precio afinado (XGBoost), una API que lo
-sirve y un dashboard interactivo.
+![Dashboard de InmoStats: resumen del mercado](docs/dashboard.png)
+
+## Resultados del modelo
+
+| Métrica (validación cruzada, 5 folds) | Valor |
+|---|---|
+| Modelo | XGBoost sobre `log(price_cop)` |
+| Anuncios usados | 82.336 |
+| MAPE | 13,41 % |
+| R² | 0,8789 |
+
+Detalle completo de la corrida vigente en `models/feature_config.json`
+(ver [Fase 4](#fase-4-modelado)).
 
 ## Estructura
 
@@ -35,9 +37,10 @@ inmostats/
 │   ├── training/         # entrenamiento, tuning y evaluación del modelo
 │   ├── api/               # servicio FastAPI que sirve el modelo
 │   └── dashboard/         # dashboard Streamlit (predicción + resumen)
+├── docs/                  # imágenes del README (captura del dashboard)
 ├── notebooks/             # EDA (01_eda.ipynb)
 ├── models/                # modelo entrenado + config de features (no versionados)
-├── scripts/                # utilidades puntuales (ej. backfill de una zona)
+├── scripts/                # utilidades puntuales (backfill de una zona, deploy_space.sh)
 ├── workers/telegram-bot/    # bot de Telegram (Cloudflare Worker) para consultar progreso
 ├── .github/workflows/       # cron de GitHub Actions para el scraping periódico
 └── requirements.txt
@@ -140,6 +143,9 @@ esté prendida:
   (con reintento automático si otro push se adelantó), y respeta un
   cooldown de 24h entre corridas completas (`MIN_HOURS_BETWEEN_RUNS`) para
   no re-scrapear el sitio completo todos los días sin necesidad.
+  > Estado actual: el workflow está **desactivado manualmente** en GitHub
+  > (el dataset ya alcanzó 82.336 anuncios); se reactiva desde la pestaña
+  > Actions o con `gh workflow enable`.
 - **Notificaciones por Telegram**: inicio de una corrida nueva, resumen al
   terminar (duración total, anuncios nuevos), progreso porcentual, y
   alerta si el workflow falla.
@@ -154,7 +160,7 @@ esté prendida:
 
 ```bash
 python -m src.training.train_baseline   # entrena, evalúa y guarda el modelo
-python -m src.training.tune_xgboost     # busqueda de hiperparametros (lento, aparte)
+python -m src.training.tune_xgboost     # búsqueda de hiperparámetros (lento, aparte)
 ```
 
 Compara `LinearRegression` (baseline simple), `RandomForest` y `XGBoost`
@@ -178,8 +184,8 @@ cuartil de precio y por departamento (un MAPE agregado puede esconder
 sesgos sistemáticos en un segmento específico).
 
 **Resultado actual** (ver `models/feature_config.json` para el detalle
-exacto de la corrida vigente): XGBoost, MAPE ≈ 14.5%, R² ≈ 0.86 en CV
-sobre ~47k anuncios. El modelo subestima sistemáticamente el segmento de
+exacto de la corrida vigente): XGBoost, MAPE ≈ 13,41 %, R² ≈ 0,879 en CV
+sobre 82.336 anuncios. El modelo subestima sistemáticamente el segmento de
 lujo (cuartil más caro) y sobreestima el más barato — se investigó con
 sample weighting, recalibración isotónica y features de texto; la mejora
 real vino de agregar `neighborhood` como feature, no de esas técnicas. El
@@ -241,11 +247,32 @@ departamento, heatmap departamento×estrato y análisis de amenidades.
 
 ## Fase 7: Despliegue
 
-- **API → Hugging Face Spaces** (tipo Docker, `Dockerfile` en la raíz).
-  El build entrena el modelo desde cero (`data/raw/*.csv` sí está
-  versionado) porque `models/*.joblib` y `feature_config.json` son
-  gitignored a propósito. No requiere tarjeta de crédito, a diferencia de
-  la mayoría de plataformas con "free tier" (Render, Railway).
+- **API → Hugging Face Spaces** (tipo Docker). No requiere tarjeta de
+  crédito, a diferencia de la mayoría de plataformas con "free tier"
+  (Render, Railway). Como `models/*.joblib` y `feature_config.json` son
+  gitignored a propósito, el `Dockerfile` de la raíz (`master`) entrena el
+  modelo desde cero en el build, ya que `data/raw/*.csv` sí está
+  versionado.
+  El Space, sin embargo, **no se construye desde `master`** sino desde la
+  rama `space-deploy`, que nunca se mergea a `master`: Hugging Face rechaza
+  archivos de más de 10 MB por push (varios CSV de `data/raw/` los superan),
+  así que esa rama solo lleva `src/`, su propio `Dockerfile` (que descarga
+  el modelo ya entrenado del release `model-v1` de GitHub en vez de
+  entrenarlo) y un `README.md` con el bloque YAML que Hugging Face exige
+  para configurar el Space. Por eso el README de `master` no lleva ese
+  bloque.
+
+  Para publicar la rama en el Space (remoto `space`, rama `main`):
+
+  ```bash
+  bash scripts/deploy_space.sh
+  ```
+
+  El script comprueba que el remoto `space` y la rama `space-deploy`
+  existan y que no haya cambios sin confirmar, muestra los commits que se
+  van a subir y pide escribir `si` antes de empujar. Nunca fuerza el push:
+  si `space/main` tiene commits que `space-deploy` no incluye, aborta.
+  Cada push dispara un rebuild del Space.
 - **Dashboard → Streamlit Community Cloud**, apuntando a la API vía el
   secret `INMOSTATS_API_URL` (`src/dashboard/app.py` lo lee de
   `st.secrets` si no hay variable de entorno). Como Streamlit Cloud no
