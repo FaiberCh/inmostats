@@ -76,7 +76,7 @@ Puntos clave del diseño:
   real (el propio sitio embebe `lastPage`/`total` en cada respuesta), no
   hasta un número fijo. Algunas zonas grandes (Bogotá D.C., Antioquia,
   "resto de Colombia") tienen cientos o miles de páginas, así que una
-  corrida completa puede tardar **varias horas** — es intencional, dado
+  corrida completa puede tardar **varias horas**; es intencional, dado
   que se pidió cobertura exhaustiva en vez de una muestra acotada.
 - **Resumible**: el progreso se guarda en `data/raw/.checkpoint_national.json`
   después de cada página. Si el proceso se interrumpe (Ctrl+C, corte de
@@ -174,7 +174,7 @@ antigüedad, garajes, lat/lon), categóricas de baja cardinalidad
 (`department_final`, `owner_type`, one-hot) y de alta cardinalidad
 (`city`, `neighborhood`, target encoding), flags binarios de las 15
 amenidades más frecuentes, y flags de palabras clave de lujo/acabados
-detectadas en el texto libre del anuncio (`title`/`description`) — ej.
+detectadas en el texto libre del anuncio (`title`/`description`), por ejemplo
 "penthouse", "chimenea", "techos altos", elegidas comparando qué palabras
 son más frecuentes en el cuartil de precio más caro que en el más barato.
 
@@ -186,7 +186,7 @@ sesgos sistemáticos en un segmento específico).
 **Resultado actual** (ver `models/feature_config.json` para el detalle
 exacto de la corrida vigente): XGBoost, MAPE ≈ 13,41 %, R² ≈ 0,879 en CV
 sobre 82.336 anuncios. El modelo subestima sistemáticamente el segmento de
-lujo (cuartil más caro) y sobreestima el más barato — se investigó con
+lujo (cuartil más caro) y sobreestima el más barato. Se investigó con
 sample weighting, recalibración isotónica y features de texto; la mejora
 real vino de agregar `neighborhood` como feature, no de esas técnicas. El
 sesgo remanente es una limitación conocida y documentada, no un bug: es
@@ -196,7 +196,7 @@ fotos (calidad real de acabados).
 
 Guarda `models/price_model.joblib` (pipeline completo: preprocesamiento +
 modelo) y `models/feature_config.json` (vocabulario de amenidades/keywords,
-métricas, features usadas) — ambos gitignored, se regeneran localmente.
+métricas, features usadas); ambos están en .gitignore y se regeneran localmente.
 
 ## Fase 5: API
 
@@ -208,10 +208,10 @@ uvicorn src.api.main:app --reload
 
 Documentación interactiva en `http://localhost:8000/docs`.
 
-- `GET /health` — chequeo básico.
-- `GET /model-info` — modelo activo, fecha de entrenamiento y métricas.
-- `GET /amenities` — vocabulario de amenidades reconocidas por el modelo.
-- `POST /predict` — recibe características de un apartamento (ver
+- `GET /health`: chequeo básico.
+- `GET /model-info`: modelo activo, fecha de entrenamiento y métricas.
+- `GET /amenities`: vocabulario de amenidades reconocidas por el modelo.
+- `POST /predict`: recibe características de un apartamento (ver
   `src/api/schemas.py::ApartmentInput`) y devuelve el precio estimado.
   Reconstruye internamente las columnas `amenity_*`/`txt_*` que el
   pipeline espera a partir de `amenities` (lista) y `description` (texto
@@ -240,7 +240,7 @@ Requiere la API corriendo (`INMOSTATS_API_URL`, default
 
 ## Notebooks
 
-`notebooks/01_eda.ipynb`: EDA completo — distribuciones de precio, análisis
+`notebooks/01_eda.ipynb`: EDA completo: distribuciones de precio, análisis
 por departamento/ciudad/estrato, correlaciones, mapas interactivos
 (scatter y coropletas reales con `plotly`), regresión precio-vs-área por
 departamento, heatmap departamento×estrato y análisis de amenidades.

@@ -48,9 +48,9 @@ export default {
         env,
         chatId,
         "👋 Hola, soy el bot de <b>InmoStats</b>.\n\n" +
-          "/status — progreso del scraping nacional\n" +
-          "/stats — promedios y anuncios por zona\n" +
-          "/variables — que campos se estan extrayendo"
+          "/status: progreso del scraping nacional\n" +
+          "/stats: promedios y anuncios por zona\n" +
+          "/variables: que campos se estan extrayendo"
       );
     } else if (text === "/status" || text === "/estado") {
       await sendTelegramMessage(env, chatId, await buildStatusMessage());
@@ -93,7 +93,7 @@ async function buildStatusMessage() {
     const duration = formatDuration(checkpoint.started_at, checkpoint.finished_at);
 
     return (
-      `🎉 <b>InmoStats</b> — ultima corrida nacional: completa\n${divider}\n` +
+      `🎉 <b>InmoStats</b>: ultima corrida nacional: completa\n${divider}\n` +
       `✅ ${doneCount}/${total} zonas cubiertas\n` +
       `⏱ Tiempo total: ${duration}\n` +
       `${cooldownLine}\n${divider}`
@@ -105,7 +105,7 @@ async function buildStatusMessage() {
   if (current && current.last_page) {
     const pagesDone = current.next_page - 1;
     const pct = Math.round((pagesDone / current.last_page) * 100);
-    zonaLinea = `📍 Zona actual: <b>${current.name}</b> (pag. ${pagesDone}/${current.last_page} — ${pct}%)\n`;
+    zonaLinea = `📍 Zona actual: <b>${current.name}</b> (pag. ${pagesDone}/${current.last_page}, ${pct}%)\n`;
   } else if (current) {
     zonaLinea = `📍 Zona actual: <b>${current.name}</b> (aun sin iniciar, calculando total de paginas...)\n`;
   }
@@ -132,7 +132,7 @@ async function buildStatusMessage() {
     : "";
 
   return (
-    `🏗️ <b>InmoStats</b> — Scraping en progreso\n${divider}\n` +
+    `🏗️ <b>InmoStats</b>: scraping en progreso\n${divider}\n` +
     zonaLinea +
     `📊 Zonas completadas: ${bar} ${doneCount}/${total} (${zonesPct}%)\n` +
     `📈 Avance nacional por paginas: ${nationalPct}%${nationalNote}\n${divider}\n` +
@@ -176,7 +176,7 @@ async function buildStatsMessage() {
     .join("\n");
 
   return (
-    `📈 <b>InmoStats</b> — Estadisticas del dataset\n${divider}\n` +
+    `📈 <b>InmoStats</b>: estadisticas del dataset\n${divider}\n` +
     `🏠 Total anuncios: ${stats.total_listings.toLocaleString("es-CO")}\n` +
     `🗺 Zonas con datos: ${stats.zones_with_data}\n` +
     `💰 Precio promedio: ${formatCOP(stats.avg_price_cop)}\n` +
@@ -195,7 +195,7 @@ async function buildStatsMessage() {
 function buildVariablesMessage() {
   const divider = "━".repeat(21);
   return (
-    `🧬 <b>InmoStats</b> — Variables extraidas por anuncio\n${divider}\n` +
+    `🧬 <b>InmoStats</b>: variables extraidas por anuncio\n${divider}\n` +
     `<b>Identificacion</b>\n` +
     `listing_id, title, description, address, detail_url\n\n` +
     `<b>Ubicacion</b>\n` +

@@ -392,7 +392,7 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
     if is_fresh:
         divider = "━" * 21
         send_telegram_message(
-            f"🚀 <b>InmoStats</b> — Corrida nacional iniciada\n"
+            f"🚀 <b>InmoStats</b>: corrida nacional iniciada\n"
             f"{divider}\n"
             f"🗺 {len(checkpoint['departments'])} zonas por cubrir\n"
             f"{divider}\n"
@@ -524,7 +524,7 @@ def build_summary_message(checkpoint: dict, output_path: Path, rows_written: int
     if checkpoint["done"]:
         duration = _format_duration(checkpoint["started_at"], checkpoint["finished_at"])
         return (
-            f"🎉 <b>InmoStats</b> — ¡Corrida nacional completa!\n"
+            f"🎉 <b>InmoStats</b>: ¡corrida nacional completa!\n"
             f"{divider}\n"
             f"✅ {done_count}/{total_count} zonas cubiertas\n"
             f"⏱ Tiempo total: {duration}\n"
@@ -540,7 +540,7 @@ def build_summary_message(checkpoint: dict, output_path: Path, rows_written: int
         pct = round(pages_done / current["last_page"] * 100)
         zona_linea = (
             f"📍 Zona actual: <b>{current['name']}</b> "
-            f"(pag. {pages_done}/{current['last_page']} — {pct}%)\n"
+            f"(pag. {pages_done}/{current['last_page']}, {pct}%)\n"
         )
     elif current:
         zona_linea = f"📍 Zona actual: <b>{current['name']}</b> (aun sin iniciar)\n"
@@ -559,7 +559,7 @@ def build_summary_message(checkpoint: dict, output_path: Path, rows_written: int
     zones_pct = round(done_count / total_count * 100) if total_count else 0
 
     return (
-        f"🏗️ <b>InmoStats</b> — Scraping en progreso\n"
+        f"🏗️ <b>InmoStats</b>: scraping en progreso\n"
         f"{divider}\n"
         f"{zona_linea}"
         f"📊 Zonas completadas: {_progress_bar(done_count, total_count)} {done_count}/{total_count} ({zones_pct}%)\n"
@@ -576,7 +576,7 @@ def main() -> None:
         scrape_national()
     except Exception as exc:
         send_telegram_message(
-            f"🚨 <b>InmoStats</b> — Algo fallo en el scraping\n"
+            f"🚨 <b>InmoStats</b>: algo fallo en el scraping\n"
             f"{'━' * 21}\n"
             f"⚠️ <code>{exc}</code>\n"
             f"{'━' * 21}\n"

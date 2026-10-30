@@ -77,7 +77,7 @@ def fetch_amenities() -> list[str]:
         return []
 
 
-st.title("🏠 InmoStats — Apartamentos en venta en Colombia")
+st.title("🏠 InmoStats: apartamentos en venta en Colombia")
 
 tab_pred, tab_resumen = st.tabs(["Predicción de precio", "Resumen del mercado"])
 
