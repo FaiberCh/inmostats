@@ -16,12 +16,41 @@ function weeksBetween(from: string, to: string) {
 export default async function Page() {
   const { kpis, histogram, byDepartment, byCity, topCities, amenities, byStratum, places, meta, model, dynamics } = await loadAll();
 
-  const priciest = [...byDepartment].filter((d) => d.listings >= 100).sort((a, b) => b.price_m2_median - a.price_m2_median)[0];
+  const ranked = [...byDepartment].filter((d) => d.listings >= 100).sort((a, b) => b.price_m2_median - a.price_m2_median);
+  const [first, second, third] = ranked;
   const t = dynamics.turnover;
   const pc = dynamics.price_changes;
   const lvl = dynamics.price_level;
   const weeks = weeksBetween(dynamics.date_from, dynamics.date_to);
   const gen = new Date(meta.generated_at);
+
+  // Tres hallazgos para leer en 20 segundos. Todo sale de los datos: nada esta escrito a mano.
+  const shortLabel = (name: string) => featureLabel(name).replace(/ \(m²\)$/, "");
+  const [f1, f2, f3] = model.top_features.map(([name, weight]) => ({ label: shortLabel(name), pct: weight * 100 }));
+  const bigTwoShare = topCities.length > 1 ? (100 * (topCities[0].listings + topCities[1].listings)) / kpis.listings : null;
+  const findings = [
+    {
+      label: "Dónde está más caro el m²",
+      figure: first.department,
+      text: `${millions(first.price_m2_median, 1)} por m², seguido de ${second.department} y ${third.department}. La mediana nacional es ${millions(kpis.price_m2_median_cop, 1)}.${
+        bigTwoShare !== null ? ` ${topCities[0].city} y ${topCities[1].city} reúnen el ${pct(bigTwoShare, 0)} de los anuncios.` : ""
+      }`,
+    },
+    {
+      label: "Qué pesa más en el precio",
+      figure: `${f1.label} y ${f2.label.toLowerCase()}`,
+      text: `Para el modelo, ${f1.label.toLowerCase()} (${pct(f1.pct, 0)}) y ${f2.label.toLowerCase()} (${pct(f2.pct, 0)}) pesan más que ${f3.label.toLowerCase()} (${pct(f3.pct, 0)}). El estimador se equivoca, en promedio, ${pct(model.metrics_cv["MAPE_%"], 1)}.`,
+    },
+    ...(pc
+      ? [
+          {
+            label: "Cuánto se mueve el mercado",
+            figure: pct(pc.changed_pct, 1),
+            text: `de los anuncios cambió de precio en unas ${weeks} semanas y el nivel de precios quedó plano. Los precios de oferta casi no se mueven en el corto plazo.`,
+          },
+        ]
+      : []),
+  ];
 
   // Vista sin filtros: es lo que trae el HTML y lo que se ve hasta que cargan los anuncios para filtrar.
   const initial: Summary = {
@@ -49,15 +78,27 @@ export default async function Page() {
           <div>
             <h1>Apartamentos en venta en Colombia</h1>
             <p className="lede">
-              {int(kpis.listings)} anuncios capturados entre el {shortDate(meta.data_from)} y el {shortDate(meta.data_to)}. El metro cuadrado
-              mediano del país vale {millions(kpis.price_m2_median_cop, 1)}; {priciest.department} es el departamento más caro, con{" "}
-              {millions(priciest.price_m2_median, 1)} por m².
+              Precios de oferta de {int(kpis.listings)} apartamentos, capturados entre el {shortDate(meta.data_from)} y el {shortDate(meta.data_to)}.
+              Todas las cifras son medianas.
             </p>
           </div>
           <a className="btn" href="#estimador">
             Estimar el precio de un apartamento
           </a>
         </div>
+
+        <section className="exec" aria-labelledby="h-esencial">
+          <h2 id="h-esencial">Lo esencial</h2>
+          <ol className="exec-grid" style={{ ["--cols" as string]: findings.length }}>
+            {findings.map((f) => (
+              <li key={f.label} className="exec-item">
+                <p className="exec-label">{f.label}</p>
+                <p className="exec-figure">{f.figure}</p>
+                <p className="exec-text">{f.text}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
 
         <MarketScope initial={initial} mapCities={byCity.map((c) => ({ city: c.city, department: c.department }))} />
 

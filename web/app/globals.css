@@ -1431,3 +1431,71 @@ body {
     font-size: 24px;
   }
 }
+
+/* --- Resumen ejecutivo: tres hallazgos antes del detalle ------------------------------------- */
+.exec {
+  padding-top: 4px;
+  margin-bottom: 20px;
+}
+.exec h2 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+.exec-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.exec-item {
+  min-width: 0;
+  padding: 14px 16px 16px;
+  background: var(--surface);
+}
+.exec-label {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+.exec-figure {
+  margin-top: 4px;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.exec-text {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+@media (min-width: 900px) {
+  .exec-grid {
+    grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  }
+  .exec-item {
+    padding: 18px 20px 20px;
+  }
+  .exec-figure {
+    font-size: 26px;
+  }
+}
+
+/* --- Lectura rapida bajo los filtros ---------------------------------------------------------- */
+.callout {
+  padding: 10px 14px;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.scope-body > .callout {
+  margin-top: var(--gap);
+}

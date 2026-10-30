@@ -65,6 +65,7 @@ export default function MarketScope({ initial, mapCities }: Props) {
   const count = summary.count;
   const pending = filters !== deferred;
   const k = summary.kpis;
+  const deltaVsNational = (k.price_m2_median_cop / initial.kpis.price_m2_median_cop - 1) * 100;
   const clear = () => setFilters(NO_FILTERS);
 
   return (
@@ -84,6 +85,16 @@ export default function MarketScope({ initial, mapCities }: Props) {
         {active && count > 0 && count < FEW_LISTINGS && (
           <p className="notice">
             Solo {int(count)} {count === 1 ? "anuncio cumple" : "anuncios cumplen"} los filtros: las medianas son poco confiables con tan pocos datos.
+          </p>
+        )}
+
+        {active && count > 0 && (
+          <p className="callout">
+            <strong>Lectura rápida.</strong> Con estos filtros hay {int(count)} anuncios y el m² mediano es {millions(k.price_m2_median_cop, 1)},{" "}
+            {Math.abs(deltaVsNational) < 1
+              ? "igual que"
+              : `${dec(Math.abs(deltaVsNational), 0)} % ${deltaVsNational > 0 ? "por encima de" : "por debajo de"}`}{" "}
+            la mediana nacional ({millions(initial.kpis.price_m2_median_cop, 1)}).
           </p>
         )}
 

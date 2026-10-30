@@ -7,7 +7,7 @@ export const dec = (n: number, digits = 1) =>
   n.toLocaleString(LOCALE, { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
 /** Millones de pesos: "$499 M". */
-export const millions = (cop: number, digits = 0) => `$${dec(cop / 1e6, digits)} M`;
+export const millions = (cop: number, digits = 0) => `$${dec(cop / 1e6, digits)}00a0M`;
 
 /** Pesos completos con separador de miles: "$499.000.000". */
 export const pesos = (cop: number) => `$${int(cop)}`;
