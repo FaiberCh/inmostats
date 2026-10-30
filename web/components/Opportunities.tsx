@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { dec, int, millions, pesos, shortDate } from "@/lib/format";
+import { dec, int, millions, pct, pesos, shortDate } from "@/lib/format";
 import { listingUrl, type Points } from "@/lib/points";
 import { niceStep, ticks } from "@/lib/scale";
 import {
@@ -241,9 +241,15 @@ function ScatterCanvas({ points, rows, classified, mode, selection, onSelect }: 
       areas[k] = points.area[rows[k]];
       prices[k] = points.price[rows[k]] * unit;
     }
+    const unsorted = { areas: Float64Array.from(areas), prices: Float64Array.from(prices) };
     areas.sort();
     prices.sort();
-    return { xMax: niceCeil(quantileSorted(areas, 0.99) * 1.03), yMax: niceCeil(quantileSorted(prices, 0.99) * 1.03) };
+    const xMax = niceCeil(quantileSorted(areas, 0.99) * 1.03);
+    const yMax = niceCeil(quantileSorted(prices, 0.99) * 1.03);
+    // Los que quedan fuera del dibujo se cuentan para avisarlo: recortar en silencio seria enganoso.
+    let omitted = 0;
+    for (let k = 0; k < m; k++) if (unsorted.areas[k] > xMax || unsorted.prices[k] > yMax) omitted++;
+    return { xMax, yMax, omitted };
   }, [points, rows, unit]);
 
   const xOf = (area: number) => M.left + (area / domain.xMax) * plotW;
@@ -459,6 +465,12 @@ function ScatterCanvas({ points, rows, classified, mode, selection, onSelect }: 
           />
         )}
       </div>
+      {domain.omitted > 0 && (
+        <p className="foot muted">
+          El gráfico llega hasta {int(domain.xMax)} m² y {millions(domain.yMax)}. Quedan fuera {int(domain.omitted)} anuncios (
+          {pct((100 * domain.omitted) / rows.length, 1)}) por ser más grandes o más caros; siguen contando en las cifras y en las listas.
+        </p>
+      )}
       {selection && selRow !== null && !floating && (
         <TipCard
           points={points}
