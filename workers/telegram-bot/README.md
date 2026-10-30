@@ -1,9 +1,24 @@
 # InmoStats Telegram Bot (webhook)
 
-Cloudflare Worker que responde a `/status` con el progreso actual del
-scraper nacional, leyendo el checkpoint publico del repo en tiempo real.
-No requiere token de GitHub: lee `data/raw/.checkpoint_national.json` via
-`raw.githubusercontent.com` (el repo es publico).
+Cloudflare Worker que responde comandos de Telegram leyendo archivos
+publicos en tiempo real. No requiere token de GitHub (el repo es publico).
+
+| Comando | Responde | Fuente |
+|---|---|---|
+| `/status` (`/estado`) | progreso del scraper nacional | `data/raw/.checkpoint_national.json` via `raw.githubusercontent.com` |
+| `/stats` (`/promedios`) | promedios y anuncios por zona | `data/processed/stats_summary.json` via `raw.githubusercontent.com` |
+| `/variables` (`/campos`) | campos que se extraen por anuncio | texto fijo en el worker |
+| `/modelo` (`/model`) | resumen del modelo: metricas de validacion cruzada, parametros clave y variables mas influyentes | `feature_config.json` del release `model-v1` de GitHub |
+
+`/modelo` muestra la ultima version publicada como asset del release
+`model-v1` (la misma que descarga el Space de Hugging Face al construirse),
+no el archivo local. Si ese `feature_config.json` es anterior a que el
+entrenamiento guardara `hyperparameters` y `top_features`, el bot lo indica
+en vez de fallar. Para actualizarlo despues de reentrenar:
+
+```bash
+gh release upload model-v1 models/price_model.joblib models/feature_config.json --clobber
+```
 
 ## Deploy
 

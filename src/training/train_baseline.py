@@ -205,6 +205,19 @@ def top_feature_importances(pipe: Pipeline, top_n: int = 15) -> list[tuple[str, 
     return ranked[:top_n]
 
 
+KEY_HYPERPARAMETERS = (
+    "n_estimators", "max_depth", "learning_rate", "subsample",
+    "colsample_bytree", "min_child_weight", "min_samples_leaf",
+)
+
+
+def key_hyperparameters(pipe: Pipeline) -> dict:
+    """Hiperparametros que describen al modelo final (los que aplican al
+    tipo de modelo elegido), en tipos serializables a JSON."""
+    params = pipe.named_steps["model"].get_params()
+    return {k: params[k] for k in KEY_HYPERPARAMETERS if params.get(k) is not None}
+
+
 def build_models() -> dict:
     return {
         "LinearRegression": LinearRegression(),
@@ -297,6 +310,10 @@ def main() -> None:
         "n_rows": len(X),
         "metrics_holdout": results[best_name],
         "metrics_cv": cv_metrics,
+        # Parametros clave y variables mas importantes: los lee el bot de
+        # Telegram (/modelo) para resumir el modelo sin cargar el joblib.
+        "hyperparameters": key_hyperparameters(fitted[best_name]),
+        "top_features": [[name, round(float(value), 4)] for name, value in importances[:8]],
         "amenities": amenities,
         "luxury_keywords": LUXURY_KEYWORDS,
         "numeric_features": NUMERIC_FEATURES,

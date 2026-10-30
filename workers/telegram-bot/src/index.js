@@ -1,16 +1,20 @@
 /**
  * Webhook de Telegram para InmoStats.
  *
- * Responde a /status, /stats y /variables leyendo archivos publicos del
- * repo directamente desde raw.githubusercontent.com (sin token, sin llamar
- * a la API de GitHub) para mantenerlo simple y sin credenciales extra en
- * este worker.
+ * Responde a /status, /stats, /variables y /modelo leyendo archivos
+ * publicos directamente (raw.githubusercontent.com y los assets del release
+ * de GitHub), sin token y sin llamar a la API de GitHub, para mantenerlo
+ * simple y sin credenciales extra en este worker.
  */
 
 const CHECKPOINT_URL =
   "https://raw.githubusercontent.com/FaiberCh/inmostats/master/data/raw/.checkpoint_national.json";
 const STATS_URL =
   "https://raw.githubusercontent.com/FaiberCh/inmostats/master/data/processed/stats_summary.json";
+// feature_config.json esta gitignored en el repo; la copia vigente vive como
+// asset del release model-v1 (el mismo que descarga el Space al construirse).
+const MODEL_CONFIG_URL =
+  "https://github.com/FaiberCh/inmostats/releases/download/model-v1/feature_config.json";
 
 export default {
   async fetch(request, env) {
@@ -50,7 +54,8 @@ export default {
         "👋 Hola, soy el bot de <b>InmoStats</b>.\n\n" +
           "/status: progreso del scraping nacional\n" +
           "/stats: promedios y anuncios por zona\n" +
-          "/variables: que campos se estan extrayendo"
+          "/variables: que campos se estan extrayendo\n" +
+          "/modelo: resumen del modelo, sus metricas y parametros clave"
       );
     } else if (text === "/status" || text === "/estado") {
       await sendTelegramMessage(env, chatId, await buildStatusMessage());
@@ -58,6 +63,8 @@ export default {
       await sendTelegramMessage(env, chatId, await buildStatsMessage());
     } else if (text === "/variables" || text === "/campos") {
       await sendTelegramMessage(env, chatId, buildVariablesMessage());
+    } else if (text === "/modelo" || text === "/model") {
+      await sendTelegramMessage(env, chatId, await buildModelMessage());
     }
 
     return new Response("OK");
@@ -211,7 +218,74 @@ function buildVariablesMessage() {
   );
 }
 
-export { buildStatusMessage, buildStatsMessage, buildVariablesMessage };
+function formatDecimal(value, digits) {
+  return Number(value).toFixed(digits).replace(".", ",");
+}
+
+function formatMillionsCOP(amount) {
+  if (amount === null || amount === undefined) return "N/D";
+  return "$" + Math.round(amount / 1e6).toLocaleString("es-CO") + " M";
+}
+
+// Nombres como "num__area_m2" o "onehot__department_final_Bogota" salen del
+// ColumnTransformer; se quita el prefijo del paso para leerlos mejor.
+function cleanFeatureName(name) {
+  return String(name).replace(/^[a-z_]+?__/, "");
+}
+
+async function buildModelMessage() {
+  const divider = "━".repeat(21);
+
+  let config;
+  try {
+    const res = await fetch(MODEL_CONFIG_URL, { cf: { cacheTtl: 0 } });
+    if (!res.ok) {
+      return "⚠️ Todavía no hay un modelo publicado (no encontré feature_config.json en el release).";
+    }
+    config = await res.json();
+  } catch {
+    return "⚠️ No pude leer los datos del modelo ahora mismo. Intenta de nuevo en un momento.";
+  }
+
+  const cv = config.metrics_cv || {};
+  const trainedAt = config.trained_at
+    ? new Date(config.trained_at).toLocaleString("es-CO", { timeZone: "America/Bogota" })
+    : "N/D";
+
+  const params = config.hyperparameters;
+  const paramsLines = params
+    ? Object.entries(params).map(([k, v]) => `  • ${k}: ${v}`).join("\n")
+    : "  (este modelo se publicó antes de guardar los parámetros)";
+
+  const topFeatures = Array.isArray(config.top_features) && config.top_features.length
+    ? config.top_features
+        .slice(0, 5)
+        .map(([name, importance]) => `  • ${cleanFeatureName(name)}: ${formatDecimal(importance * 100, 1)} %`)
+        .join("\n")
+    : "  (no disponible en esta versión del modelo)";
+
+  const count = (key) => (Array.isArray(config[key]) ? config[key].length : 0);
+
+  return (
+    `🤖 <b>InmoStats</b>: resumen del modelo\n${divider}\n` +
+    `Modelo: <b>${config.model_name ?? "N/D"}</b>, predice el precio de venta (en log) de un apartamento\n` +
+    `📚 Entrenado con ${(config.n_rows ?? 0).toLocaleString("es-CO")} anuncios el ${trainedAt}\n${divider}\n` +
+    `<b>Métricas (validación cruzada, 5 folds)</b>\n` +
+    `🎯 MAPE: ${formatDecimal(cv["MAPE_%"], 2)} %\n` +
+    `📈 R²: ${formatDecimal(cv["R2"], 4)}\n` +
+    `💰 Error absoluto medio: ${formatMillionsCOP(cv["MAE_COP"])} COP\n` +
+    `📏 RMSE: ${formatMillionsCOP(cv["RMSE_COP"])} COP\n${divider}\n` +
+    `<b>Parámetros clave</b>\n${paramsLines}\n${divider}\n` +
+    `<b>Variables más influyentes</b>\n${topFeatures}\n${divider}\n` +
+    `<b>Entradas del modelo</b>\n` +
+    `${count("numeric_features")} numéricas, ${count("onehot_features")} categóricas (one-hot), ` +
+    `${count("target_encode_features")} de alta cardinalidad (target encoding), ` +
+    `${count("amenities")} amenidades y ${count("luxury_keywords")} palabras clave de lujo\n${divider}\n` +
+    `⚠️ Limitación conocida: subestima el cuartil de precio más alto (lujo) y sobreestima el más barato.`
+  );
+}
+
+export { buildStatusMessage, buildStatsMessage, buildVariablesMessage, buildModelMessage };
 
 async function sendTelegramMessage(env, chatId, text) {
   const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
