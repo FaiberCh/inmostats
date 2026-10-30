@@ -61,10 +61,11 @@ export default async function Page() {
 
         <MarketScope initial={initial} mapCities={byCity.map((c) => ({ city: c.city, department: c.department }))} />
 
-        <section id="estimador" className="sec" aria-labelledby="h-estimador">
+        <section id="estimador" className="sec sec-feature" aria-labelledby="h-estimador">
           <h2 id="h-estimador">Estimador de precio</h2>
           <p className="sec-note">
-            Describe el apartamento y el modelo calcula un precio de referencia comparándolo con los {int(model.n_rows)} anuncios con los que se entrenó.
+            <strong>¿Cuánto vale tu apartamento?</strong> Descríbelo y el modelo calcula un precio de referencia comparándolo con los{" "}
+            {int(model.n_rows)} anuncios con los que se entrenó.
           </p>
           <Estimator places={places} cities={byCity} amenities={model.amenities} mape={model.metrics_cv["MAPE_%"]} />
         </section>

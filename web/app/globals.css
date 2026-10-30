@@ -1374,3 +1374,60 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* --- Seccion destacada: el estimador ---------------------------------------------------- */
+.sec-feature {
+  position: relative;
+  isolation: isolate;
+  margin-top: 44px;
+  padding-top: 32px;
+  padding-bottom: 36px;
+}
+.sec-feature::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--accent) 7%, var(--ground));
+  border-top: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.sec-feature h2 {
+  font-size: 22px;
+}
+.sec-feature .sec-note {
+  font-size: 15px;
+}
+.sec-feature .sec-note strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+.sec-feature .card {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+}
+.sec-feature .est-result {
+  border-width: 2px;
+  border-color: var(--accent);
+}
+.bar-nav a.feat {
+  color: var(--accent);
+  font-weight: 600;
+}
+.bar-nav a.feat:hover,
+.bar-nav a.feat.on {
+  color: var(--accent);
+}
+@media (min-width: 900px) {
+  .sec-feature {
+    margin-top: 56px;
+    padding-top: 40px;
+    padding-bottom: 44px;
+  }
+  .sec-feature h2 {
+    font-size: 24px;
+  }
+}

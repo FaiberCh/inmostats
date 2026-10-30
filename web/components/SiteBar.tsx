@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 const SECTIONS = [
   { id: "mercado", label: "Mercado" },
   { id: "oportunidades", label: "Oportunidades" },
-  { id: "estimador", label: "Estimador" },
+  { id: "estimador", label: "Estimador", featured: true },
   { id: "dinamica", label: "Dinámica" },
   { id: "modelo", label: "Modelo" },
 ];
@@ -86,7 +86,7 @@ export default function SiteBar() {
         </a>
         <nav ref={navRef} className="bar-nav" aria-label="Secciones">
           {SECTIONS.map((s) => (
-            <a key={s.id} href={`#${s.id}`} className={active === s.id ? "on" : ""} aria-current={active === s.id ? "location" : undefined}>
+            <a key={s.id} href={`#${s.id}`} className={[active === s.id ? "on" : "", "featured" in s ? "feat" : ""].join(" ").trim()} aria-current={active === s.id ? "location" : undefined}>
               {s.label}
             </a>
           ))}
