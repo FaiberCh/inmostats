@@ -22,3 +22,6 @@ models/feature_config.json
 # OS / IDE
 .DS_Store
 .vscode/
+
+# Archivos de trabajo de la skill de diseno (capturas del inspector)
+.taste-skill/

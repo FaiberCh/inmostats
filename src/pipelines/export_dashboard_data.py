@@ -105,6 +105,21 @@ def _simplify_ring(ring: list, tolerance: float) -> list:
     return [[round(float(x), COORD_DECIMALS), round(float(y), COORD_DECIMALS)] for x, y in simplified]
 
 
+def _signed_area(ring: list) -> float:
+    """Area con signo (formula del cordon): negativa si el anillo va en sentido horario con x a la derecha e y arriba."""
+    return sum(x0 * y1 - x1 * y0 for (x0, y0), (x1, y1) in zip(ring, ring[1:])) / 2
+
+
+def _orient(polygon: list) -> list:
+    """d3-geo espera anillos exteriores en sentido horario e interiores en antihorario; con el sentido contrario
+    interpreta el poligono como el complemento de la esfera y el mapa sale como un bloque solido."""
+    oriented = []
+    for i, ring in enumerate(polygon):
+        clockwise = _signed_area(ring) < 0
+        oriented.append(ring if clockwise == (i == 0) else ring[::-1])
+    return oriented
+
+
 def simplify_geometry(geometry: dict, tolerance: float) -> dict:
     if geometry["type"] == "Polygon":
         polygons = [geometry["coordinates"]]
@@ -112,7 +127,7 @@ def simplify_geometry(geometry: dict, tolerance: float) -> dict:
         polygons = geometry["coordinates"]
     else:
         raise ValueError(f"Geometria no soportada: {geometry['type']}")
-    simplified = [[_simplify_ring(ring, tolerance) for ring in polygon] for polygon in polygons]
+    simplified = [_orient([_simplify_ring(ring, tolerance) for ring in polygon]) for polygon in polygons]
     if geometry["type"] == "Polygon":
         return {"type": "Polygon", "coordinates": simplified[0]}
     return {"type": "MultiPolygon", "coordinates": simplified}

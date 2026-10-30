@@ -37,6 +37,7 @@ inmostats/
 │   ├── training/         # entrenamiento, tuning y evaluación del modelo
 │   ├── api/               # servicio FastAPI que sirve el modelo
 │   └── dashboard/         # dashboard Streamlit (predicción + resumen)
+├── web/                   # dashboard web (Next.js para Vercel), ver web/README.md
 ├── docs/                  # imágenes del README (captura del dashboard)
 ├── notebooks/             # EDA (01_eda.ipynb)
 ├── models/                # modelo entrenado + config de features (no versionados)

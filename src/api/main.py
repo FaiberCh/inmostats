@@ -6,6 +6,7 @@ Correr localmente: uvicorn src.api.main:app --reload
 """
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.model_service import ModelService, get_model_service
 from src.api.schemas import ApartmentInput, ModelInfo, PredictionResponse
@@ -14,6 +15,16 @@ app = FastAPI(
     title="InmoStats API",
     description="Prediccion de precio de apartamentos en Colombia a partir de datos de fincaraiz.com.co",
     version="1.0.0",
+)
+
+# El frontend web (Vercel) llama a la API desde el navegador, asi que necesita
+# CORS. La API es publica, sin cookies ni credenciales, por eso se permite
+# cualquier origen y solo los metodos que usa.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
 
 
