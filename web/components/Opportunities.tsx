@@ -467,8 +467,10 @@ function ScatterCanvas({ points, rows, classified, mode, selection, onSelect }: 
       </div>
       {domain.omitted > 0 && (
         <p className="foot muted">
-          El gráfico llega hasta {int(domain.xMax)} m² y {millions(domain.yMax)}. Quedan fuera {int(domain.omitted)} anuncios (
-          {pct((100 * domain.omitted) / rows.length, 1)}) por ser más grandes o más caros; siguen contando en las cifras y en las listas.
+          <strong>Recorte por percentil.</strong> Cada eje llega hasta su percentil 99, el valor por debajo del cual está el 99 % de los anuncios,
+          redondeado hacia arriba: {int(domain.xMax)} m² y {millions(domain.yMax)}. Se hace para que unos pocos anuncios enormes no aplasten al
+          resto. Quedan fuera {int(domain.omitted)} anuncios ({pct((100 * domain.omitted) / rows.length, 1)}) por ser más grandes o más caros; siguen
+          contando en las cifras y en las listas.
         </p>
       )}
       {selection && selRow !== null && !floating && (
