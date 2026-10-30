@@ -40,7 +40,7 @@ inmostats/
 ├── docs/                  # imágenes del README (captura del dashboard)
 ├── notebooks/             # EDA (01_eda.ipynb)
 ├── models/                # modelo entrenado + config de features (no versionados)
-├── scripts/                # utilidades puntuales (backfill de una zona, deploy_space.sh)
+├── scripts/                # utilidades puntuales (backfill, deploy_space.sh, scraper_ctl.sh)
 ├── workers/telegram-bot/    # bot de Telegram (Cloudflare Worker) para consultar progreso
 ├── .github/workflows/       # cron de GitHub Actions para el scraping periódico
 └── requirements.txt
@@ -144,17 +144,24 @@ esté prendida:
   cooldown de 24h entre corridas completas (`MIN_HOURS_BETWEEN_RUNS`) para
   no re-scrapear el sitio completo todos los días sin necesidad.
   > Estado actual: el workflow está **desactivado manualmente** en GitHub
-  > (el dataset ya alcanzó 82.336 anuncios); se reactiva desde la pestaña
-  > Actions o con `gh workflow enable`.
+  > (el dataset ya alcanzó 82.336 anuncios). Se controla con
+  > `bash scripts/scraper_ctl.sh status|start|stop`: `status` muestra el
+  > estado del workflow, los secrets y el checkpoint público; `start` y
+  > `stop` piden confirmación antes de activar o desactivar el cron. Una
+  > corrida completa tarda varios días y suma unos 235 MB a `data/raw/`, y
+  > el cron no se detiene solo al terminar: al llegar el aviso de Telegram
+  > de corrida completa conviene ejecutar `stop`.
 - **Notificaciones por Telegram**: inicio de una corrida nueva, resumen al
   terminar (duración total, anuncios nuevos), progreso porcentual, y
   alerta si el workflow falla.
 - **`workers/telegram-bot/`**: bot interactivo (Cloudflare Worker, sin
   servidor propio) que responde a `/status` (progreso del scraping),
   `/stats` (promedios y anuncios por zona, calculados por
-  `src/pipelines/compute_stats.py` en `data/processed/stats_summary.json`)
-  y `/variables` (qué campos se están extrayendo), leyendo archivos
-  públicos del repo vía `raw.githubusercontent.com`.
+  `src/pipelines/compute_stats.py` en `data/processed/stats_summary.json`),
+  `/variables` (qué campos se están extrayendo) y `/modelo` (resumen del
+  modelo: métricas de validación cruzada, parámetros clave y variables más
+  influyentes, leídos del `feature_config.json` del release `model-v1`),
+  leyendo archivos públicos vía `raw.githubusercontent.com` y GitHub Releases.
 
 ## Fase 4: Modelado
 
@@ -196,7 +203,9 @@ fotos (calidad real de acabados).
 
 Guarda `models/price_model.joblib` (pipeline completo: preprocesamiento +
 modelo) y `models/feature_config.json` (vocabulario de amenidades/keywords,
-métricas, features usadas); ambos están en .gitignore y se regeneran localmente.
+métricas, features usadas, hiperparámetros clave e importancia de las
+variables más influyentes); ambos están en .gitignore y se regeneran
+localmente.
 
 ## Fase 5: API
 
@@ -244,6 +253,12 @@ Requiere la API corriendo (`INMOSTATS_API_URL`, default
 por departamento/ciudad/estrato, correlaciones, mapas interactivos
 (scatter y coropletas reales con `plotly`), regresión precio-vs-área por
 departamento, heatmap departamento×estrato y análisis de amenidades.
+
+`notebooks/02_dinamica_mercado.ipynb`: dinámica del mercado en el tiempo a
+partir de las capturas repetidas de `data/raw/` (8 corridas de julio de
+2026): rotación de anuncios (separando rotación real de cobertura incompleta
+del scraper), frecuencia y tamaño de los cambios de precio de un mismo
+anuncio y evolución del nivel de precios con los mismos anuncios.
 
 ## Fase 7: Despliegue
 
