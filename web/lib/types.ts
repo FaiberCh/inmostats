@@ -2,6 +2,9 @@ export type Kpis = {
   listings: number;
   price_mean_cop: number;
   price_median_cop: number;
+  price_p25_cop: number;
+  price_p75_cop: number;
+  area_median_m2: number;
   area_mean_m2: number;
   price_m2_median_cop: number;
 };

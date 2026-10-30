@@ -1,46 +1,13 @@
-import BarList from "@/components/BarList";
 import Estimator from "@/components/Estimator";
-import Histogram from "@/components/Histogram";
 import LineChart from "@/components/LineChart";
-import MarketMap from "@/components/MarketMap";
+import BarList from "@/components/BarList";
+import Histogram from "@/components/Histogram";
+import MarketScope from "@/components/MarketScope";
 import SiteBar from "@/components/SiteBar";
-import StratumRange from "@/components/StratumRange";
+import { Card, KpiStrip } from "@/components/ui";
 import { loadAll } from "@/lib/data";
 import { dayMonth, dec, featureLabel, int, millions, pct, shortDate } from "@/lib/format";
-
-type KpiCell = { label: string; value: string; unit?: string; caption: string };
-
-function KpiStrip({ cells, label }: { cells: KpiCell[]; label: string }) {
-  return (
-    <dl className="kpis" aria-label={label} style={{ ["--cols" as string]: cells.length }}>
-      {cells.map((c) => (
-        <div key={c.label} className="kpi">
-          <dt>{c.label}</dt>
-          <dd className="num">
-            {c.value}
-            {c.unit && <span className="unit"> {c.unit}</span>}
-          </dd>
-          <dd className="cap">{c.caption}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-function Card({ title, note, children, legend }: { title: string; note?: string; children: React.ReactNode; legend?: React.ReactNode }) {
-  return (
-    <section className="card">
-      <header className="card-h">
-        <div>
-          <h3 className="sub">{title}</h3>
-          {note && <p className="note">{note}</p>}
-        </div>
-        {legend}
-      </header>
-      {children}
-    </section>
-  );
-}
+import type { Summary } from "@/lib/stats";
 
 function weeksBetween(from: string, to: string) {
   return Math.max(1, Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000 / 7));
@@ -55,6 +22,24 @@ export default async function Page() {
   const lvl = dynamics.price_level;
   const weeks = weeksBetween(dynamics.date_from, dynamics.date_to);
   const gen = new Date(meta.generated_at);
+
+  // Vista sin filtros: es lo que trae el HTML y lo que se ve hasta que cargan los anuncios para filtrar.
+  const initial: Summary = {
+    count: kpis.listings,
+    kpis: {
+      price_median_cop: kpis.price_median_cop,
+      price_p25_cop: kpis.price_p25_cop,
+      price_p75_cop: kpis.price_p75_cop,
+      price_m2_median_cop: kpis.price_m2_median_cop,
+      area_median_m2: kpis.area_median_m2,
+    },
+    histogram,
+    byDepartment,
+    byCity,
+    topCities,
+    amenities,
+    byStratum,
+  };
 
   return (
     <>
@@ -74,65 +59,7 @@ export default async function Page() {
           </a>
         </div>
 
-        <KpiStrip
-          label="Cifras del mercado"
-          cells={[
-            { label: "Anuncios", value: int(kpis.listings), caption: "apartamentos únicos, ya depurados" },
-            { label: "Precio mediano", value: millions(kpis.price_median_cop), caption: "la mitad de los anuncios cuesta menos" },
-            { label: "Precio promedio", value: millions(kpis.price_mean_cop), caption: "lo sube la cola de inmuebles caros" },
-            { label: "Precio por m² mediano", value: millions(kpis.price_m2_median_cop, 1), caption: "por metro cuadrado, nacional" },
-            { label: "Área promedio", value: dec(kpis.area_mean_m2, 0), unit: "m²", caption: "área privada del apartamento" },
-          ]}
-        />
-
-        <section id="mercado" className="sec" aria-labelledby="h-mercado">
-          <h2 id="h-mercado">Mercado</h2>
-          <p className="sec-note">Dónde está caro el metro cuadrado, cómo se distribuyen los precios y qué ofrecen los anuncios.</p>
-
-          <Card title="Precio por m² mediano" note="Elige el nivel del mapa; la lista de al lado ordena los más caros.">
-            <MarketMap departments={byDepartment} cities={byCity} />
-          </Card>
-
-          <div className="grid2">
-            <Card title="Distribución de precios" note="Anuncios por rango de precio, hasta el percentil 99.">
-              <Histogram
-                edges={histogram.edges_cop}
-                counts={histogram.counts}
-                xFormat="millions"
-                marker={{ value: kpis.price_median_cop, label: `Mediana ${millions(kpis.price_median_cop)}` }}
-                label="Histograma del precio de los anuncios en millones de pesos"
-              />
-            </Card>
-            <Card title="Precio por estrato" note="Mitad central de los anuncios (caja), mediana (marca) y rango sin atípicos (línea).">
-              <StratumRange rows={byStratum} />
-            </Card>
-          </div>
-
-          <div className="grid2">
-            <Card title="Ciudades con más anuncios" note="Número de anuncios y su peso en el total.">
-              <BarList
-                label="Ciudades con más anuncios"
-                rows={topCities.map((c) => ({
-                  label: c.city,
-                  value: c.listings,
-                  display: int(c.listings),
-                  note: `· ${pct((100 * c.listings) / kpis.listings, 1)}`,
-                }))}
-              />
-            </Card>
-            <Card title="Amenidades más frecuentes" note="Parte de los anuncios que la menciona.">
-              <BarList
-                label="Amenidades más frecuentes"
-                rows={amenities.map((a) => ({
-                  label: a.amenity,
-                  value: a.listings,
-                  display: pct(a.share_pct, 1),
-                  note: `· ${int(a.listings)}`,
-                }))}
-              />
-            </Card>
-          </div>
-        </section>
+        <MarketScope initial={initial} mapCities={byCity.map((c) => ({ city: c.city, department: c.department }))} />
 
         <section id="estimador" className="sec" aria-labelledby="h-estimador">
           <h2 id="h-estimador">Estimador de precio</h2>

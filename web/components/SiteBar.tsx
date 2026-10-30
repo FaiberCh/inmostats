@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const SECTIONS = [
   { id: "mercado", label: "Mercado" },
+  { id: "oportunidades", label: "Oportunidades" },
   { id: "estimador", label: "Estimador" },
   { id: "dinamica", label: "Dinámica" },
   { id: "modelo", label: "Modelo" },
@@ -38,15 +39,24 @@ function ThemeIcons() {
 
 export default function SiteBar() {
   const [active, setActive] = useState("mercado");
+  const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const targets = SECTIONS.map((s) => document.getElementById(s.id)).filter((el): el is HTMLElement => el !== null);
     // La seccion activa es la ultima cuyo borde superior ya paso por debajo de la barra.
     const update = () => {
       const line = 56 + 24;
       let current = SECTIONS[0].id;
-      for (const el of targets) if (el.getBoundingClientRect().top - line <= 0) current = el.id;
+      // Se busca por id en cada scroll: una seccion puede reemplazarse (la de oportunidades pasa de marcador a grafico).
+      for (const s of SECTIONS) {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top - line <= 0) current = s.id;
+      }
       setActive(current);
+      const nav = navRef.current;
+      const link = nav?.querySelector<HTMLElement>(`a[href="#${current}"]`);
+      if (nav && link && nav.scrollWidth > nav.clientWidth) {
+        nav.scrollTo({ left: link.offsetLeft - (nav.clientWidth - link.offsetWidth) / 2, behavior: "smooth" });
+      }
     };
     update();
     window.addEventListener("scroll", update, { passive: true });
@@ -74,7 +84,7 @@ export default function SiteBar() {
           <Mark />
           <span className="brand-name">InmoStats</span>
         </a>
-        <nav className="bar-nav" aria-label="Secciones">
+        <nav ref={navRef} className="bar-nav" aria-label="Secciones">
           {SECTIONS.map((s) => (
             <a key={s.id} href={`#${s.id}`} className={active === s.id ? "on" : ""} aria-current={active === s.id ? "location" : undefined}>
               {s.label}

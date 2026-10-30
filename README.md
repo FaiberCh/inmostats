@@ -269,10 +269,13 @@ corrida nueva.
 `python -m src.pipelines.export_dashboard_data` escribe en `web/public/data/`
 los agregados del tablero (KPIs, histograma, mapas con geometrías
 simplificadas, listas de departamento, ciudad y barrio, métricas del modelo y
-dinámica del mercado) como JSON estáticos de unos 500 KB en total. Se
-versionan porque el frontend se construye desde GitHub y no tiene el CSV
-procesado. Con `--skip-dynamics` se omite el recálculo de la dinámica
-(unos 20 s).
+dinámica del mercado) como JSON estáticos de unos 500 KB en total. Además
+genera `points.bin.gz` (1,1 MB, todos los anuncios en formato columnar, con el
+precio que esperaba el modelo fuera de muestra) y las direcciones de los
+anuncios en 64 archivos, que el frontend usa para filtrar y para el gráfico de
+oportunidades. Todo se versiona porque el frontend se construye desde GitHub y
+no tiene el CSV procesado. Con `--skip-dynamics` se omite el recálculo de la
+dinámica (unos 20 s); el resto de opciones está en `web/README.md`.
 
 ## Fase 7: Despliegue
 

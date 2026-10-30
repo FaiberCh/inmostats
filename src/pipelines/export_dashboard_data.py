@@ -12,6 +12,7 @@ data/processed/*.csv (gitignored).
 """
 
 import argparse
+import gzip
 import json
 import logging
 from datetime import datetime, timezone
@@ -48,6 +49,12 @@ DEPARTMENT_TOLERANCE = 0.004
 CITY_TOLERANCE = 0.0015
 COORD_DECIMALS = 4
 UNKNOWN_PLACE = "sin especificar"
+
+# Puntos para los filtros y el grafico de dispersion del frontend.
+SITE_BASE = "https://www.fincaraiz.com.co"
+URL_SHARDS = 64
+PRICE_UNIT = 1000  # el precio se guarda en miles de COP (cabe en uint32 hasta 4,2 billones)
+EXPECTED_CACHE = PROCESSED_DIR / "oof_expected_price.csv"
 
 
 def write_json(path: Path, data) -> None:
@@ -157,6 +164,9 @@ def export_summary(df: pd.DataFrame) -> None:
         "listings": int(len(df)),
         "price_mean_cop": int(round(df["price_cop"].mean())),
         "price_median_cop": int(round(df["price_cop"].median())),
+        "price_p25_cop": int(round(df["price_cop"].quantile(0.25))),
+        "price_p75_cop": int(round(df["price_cop"].quantile(0.75))),
+        "area_median_m2": round(float(df["area_m2"].median()), 1),
         "area_mean_m2": round(float(df["area_m2"].mean()), 1),
         "price_m2_median_cop": int(round(df["price_per_m2"].median())),
     })
@@ -264,6 +274,128 @@ def export_places(df: pd.DataFrame) -> None:
     write_json(OUTPUT_DIR / "places" / "index.json", index)
 
 
+def expected_prices(df: pd.DataFrame, refresh: bool = False) -> pd.Series | None:
+    """Precio que el modelo espera para cada anuncio, calculado fuera de muestra:
+    validacion cruzada de 5 particiones, donde cada anuncio se predice con un
+    modelo que no lo vio al entrenar (si no, el modelo "recordaria" su precio y
+    casi ningun anuncio saldria atipico). Tarda unos minutos, asi que se guarda
+    en data/processed/ y solo se recalcula si cambian los anuncios o con --refresh-expected."""
+    ids = df["listing_id"]
+    if EXPECTED_CACHE.exists() and not refresh:
+        cached = pd.read_csv(EXPECTED_CACHE)
+        if len(cached) == len(df) and (cached["listing_id"].values == ids.values).all():
+            logger.info("Precios esperados leidos de %s", EXPECTED_CACHE.name)
+            return pd.Series(cached["expected_price_cop"].values, index=df.index)
+
+    try:
+        from src.training import train_baseline as tb
+    except ImportError as exc:  # sklearn o xgboost no instalados
+        logger.warning("No se pudo importar el entrenamiento (%s): se omiten los precios esperados", exc)
+        return None
+
+    amenities = tb.top_amenities(df)
+    if CONFIG_PATH.exists():
+        amenities = json.loads(CONFIG_PATH.read_text(encoding="utf-8")).get("amenities", amenities)
+    amenity_df = tb.add_amenity_flags(df, amenities)
+    text_df = tb.add_text_keyword_flags(df, tb.LUXURY_KEYWORDS)
+    features = tb.NUMERIC_FEATURES + tb.ONEHOT_FEATURES + tb.TARGET_ENCODE_FEATURES + tb.BOOL_FEATURES
+    X = pd.concat([df[features].copy(), amenity_df, text_df], axis=1)
+    X["is_new_project"] = X["is_new_project"].astype(int)
+    extra_columns = amenity_df.columns.tolist() + text_df.columns.tolist()
+
+    logger.info("Calculando precios esperados fuera de muestra (5 particiones, tarda unos minutos)")
+    predicted = np.round(
+        tb.cross_val_predictions(tb.build_models()["XGBoost"], X, np.log1p(df["price_cop"]), extra_columns)
+    )
+    pd.DataFrame({"listing_id": ids.values, "expected_price_cop": predicted}).to_csv(EXPECTED_CACHE, index=False)
+    return pd.Series(predicted, index=df.index)
+
+
+def export_points(df: pd.DataFrame, expected: pd.Series | None) -> None:
+    """Un archivo binario columnar con todos los anuncios (para filtrar y graficar en el navegador sin
+    servidor), su diccionario en JSON, y las direcciones de los anuncios repartidas en 64 archivos que
+    el frontend pide solo al abrir uno (no se pueden armar a partir del id: llevan el nombre del proyecto)."""
+    config_amenities = []
+    if CONFIG_PATH.exists():
+        config_amenities = json.loads(CONFIG_PATH.read_text(encoding="utf-8")).get("amenities", [])
+
+    departments = sorted(df["department_final"].dropna().unique(), key=_normalize_key)
+    dept_index = {name: i for i, name in enumerate(departments)}
+    dept = df["department_final"].map(dept_index).fillna(0).astype(np.uint8)
+
+    city_pairs = sorted(
+        {(d, c) for d, c in zip(df["department_final"], df["city"]) if isinstance(d, str) and isinstance(c, str)},
+        key=lambda p: (_normalize_key(p[0]), _normalize_key(p[1])),
+    )
+    city_lookup = {pair: i for i, pair in enumerate(city_pairs)}
+    city = pd.Series(
+        [city_lookup.get((d, c), 0) for d, c in zip(df["department_final"], df["city"])], index=df.index
+    ).astype(np.uint16)
+
+    hoods = sorted({n for n in df["neighborhood"].dropna().unique() if n != UNKNOWN_PLACE}, key=_normalize_key)
+    hood_lookup = {name: i + 1 for i, name in enumerate(hoods)}  # 0 = sin barrio
+    hood = df["neighborhood"].map(hood_lookup).fillna(0).astype(np.uint16)
+
+    amenity_text = df["amenities"].fillna("")
+    mask = np.zeros(len(df), dtype=np.uint16)
+    for bit, name in enumerate(config_amenities):
+        mask |= amenity_text.str.contains(name, regex=False).values.astype(np.uint16) << bit
+
+    def thousands(series: pd.Series) -> np.ndarray:
+        return (series.fillna(0) / PRICE_UNIT).round().clip(lower=0).astype(np.uint32).values
+
+    columns = [
+        ("id", pd.to_numeric(df["listing_id"]).astype(np.uint32).values),
+        ("area", df["area_m2"].round(1).astype(np.float32).values),
+        ("price", thousands(df["price_cop"])),
+        ("expected", thousands(expected) if expected is not None else np.zeros(len(df), dtype=np.uint32)),
+        ("dept", dept.values),
+        ("city", city.values),
+        ("hood", hood.values),
+        ("beds", df["bedrooms"].fillna(0).astype(np.uint8).values),
+        ("baths", df["bathrooms"].fillna(0).astype(np.uint8).values),
+        ("stratum", df["stratum"].fillna(0).astype(np.uint8).values),
+        ("amen", mask),
+    ]
+    buffer, layout = bytearray(), []
+    for name, array in columns:
+        buffer += b"\x00" * (-len(buffer) % 4)  # cada columna alineada a 4 bytes (lo exigen los typed arrays)
+        layout.append({"name": name, "type": array.dtype.name, "offset": len(buffer)})
+        buffer += np.ascontiguousarray(array).tobytes()
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    # gzip con mtime fijo: la salida es identica entre corridas y git no ve cambios donde no los hay.
+    packed = gzip.compress(bytes(buffer), compresslevel=9, mtime=0)
+    (OUTPUT_DIR / "points.bin.gz").write_bytes(packed)
+    logger.info("%-28s %8.1f KB (%.1f KB sin comprimir)", "points.bin.gz", len(packed) / 1024, len(buffer) / 1024)
+
+    scraped = pd.to_datetime(df["scraped_at"], utc=True, errors="coerce")
+    write_json(OUTPUT_DIR / "points.json", {
+        "n": int(len(df)),
+        "price_unit": PRICE_UNIT,
+        "has_expected": expected is not None,
+        "captured_to": scraped.max().strftime("%Y-%m-%d"),
+        "columns": layout,
+        "departments": departments,
+        "cities": [[c, dept_index[d]] for d, c in city_pairs],
+        "neighborhoods": hoods,
+        "amenities": config_amenities,
+    })
+
+    shards: dict[int, dict[str, str]] = {i: {} for i in range(URL_SHARDS)}
+    ids = pd.to_numeric(df["listing_id"]).astype(np.int64)
+    for listing_id, url in zip(ids, df["detail_url"]):
+        if isinstance(url, str) and url.startswith(SITE_BASE):
+            shards[int(listing_id) % URL_SHARDS][str(listing_id)] = url[len(SITE_BASE):]
+    total = 0
+    for shard, mapping in shards.items():
+        path = OUTPUT_DIR / "urls" / f"{shard:02d}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(mapping, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        total += path.stat().st_size
+    logger.info("%-28s %8.1f KB (%d archivos)", "urls/*.json", total / 1024, URL_SHARDS)
+
+
 def export_model() -> dict | None:
     if not CONFIG_PATH.exists():
         logger.warning("No existe %s: se omite model.json (corre train_baseline primero)", CONFIG_PATH)
@@ -279,6 +411,9 @@ def export_model() -> dict | None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--skip-dynamics", action="store_true", help="no recalcula dynamics.json")
+    parser.add_argument("--skip-points", action="store_true", help="no genera points.bin ni las direcciones de los anuncios")
+    parser.add_argument("--skip-expected", action="store_true", help="genera los puntos sin precio esperado del modelo")
+    parser.add_argument("--refresh-expected", action="store_true", help="recalcula los precios esperados aunque haya cache")
     args = parser.parse_args()
 
     df = load_processed()
@@ -288,6 +423,12 @@ def main() -> None:
     n_cities = export_maps(df)
     export_places(df)
     export_model()
+
+    if args.skip_points:
+        logger.info("Se omiten los puntos (--skip-points)")
+    else:
+        expected = None if args.skip_expected else expected_prices(df, refresh=args.refresh_expected)
+        export_points(df, expected)
 
     if args.skip_dynamics:
         logger.info("Se omite dynamics.json (--skip-dynamics)")

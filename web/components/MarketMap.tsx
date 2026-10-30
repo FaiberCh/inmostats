@@ -9,7 +9,7 @@ import { useWidth } from "./useWidth";
 
 type Mode = "departments" | "cities";
 
-type Props = { departments: DepartmentStat[]; cities: CityStat[] };
+type Props = { departments: DepartmentStat[]; cities: CityStat[]; minListings?: number };
 
 type Selected = { name: string; listings: number; price_m2_median: number; price_median: number; extra?: string };
 
@@ -20,7 +20,7 @@ const ASPECT = 1.18;
 /** Color de la escala: mezcla del tono claro al oscuro del acento, segun t en [0, 1]. Cambia solo con el tema (variables CSS). */
 const ramp = (t: number) => `color-mix(in srgb, var(--map-hi) ${Math.round(t * 100)}%, var(--map-lo))`;
 
-export default function MarketMap({ departments, cities }: Props) {
+export default function MarketMap({ departments, cities, minListings = 100 }: Props) {
   const [mode, setMode] = useState<Mode>("departments");
   const [deptGeo, setDeptGeo] = useState<GeoCollection | null>(null);
   const [failed, setFailed] = useState(false);
@@ -48,12 +48,13 @@ export default function MarketMap({ departments, cities }: Props) {
   const [lo, hi] = useMemo(() => {
     const values = (mode === "departments" ? departments : cities).map((d) => d.price_m2_median).sort((a, b) => a - b);
     // Se recorta al percentil 5 y 95 para que un valor extremo no aplane la escala.
+    if (values.length === 0) return [0, 1];
     return [values[Math.floor(values.length * 0.05)], values[Math.floor(values.length * 0.95)]];
   }, [mode, departments, cities]);
 
-  const t = (v: number) => Math.min(1, Math.max(0, (v - lo) / (hi - lo)));
+  const t = (v: number) => (hi > lo ? Math.min(1, Math.max(0, (v - lo) / (hi - lo))) : 0.5);
 
-  const maxCityListings = Math.max(...cities.map((c) => c.listings));
+  const maxCityListings = Math.max(1, ...cities.map((c) => c.listings));
   // El centroide de cada ciudad sale de su poligono municipal exportado; se carga solo al abrir esa vista.
   const [cityGeo, setCityGeo] = useState<GeoCollection | null>(null);
   useEffect(() => {
@@ -80,10 +81,10 @@ export default function MarketMap({ departments, cities }: Props) {
   const ranking = useMemo(() => {
     const source: (DepartmentStat | CityStat)[] = mode === "departments" ? departments : cities;
     return [...source]
-      .filter((d) => d.listings >= 100)
+      .filter((d) => d.listings >= minListings)
       .sort((a, b) => b.price_m2_median - a.price_m2_median)
       .slice(0, RANK_ROWS);
-  }, [mode, departments, cities]);
+  }, [mode, departments, cities, minListings]);
 
   const nameOf = (d: DepartmentStat | CityStat) => ("city" in d ? d.city : d.department);
   const select = (d: DepartmentStat | CityStat) =>
@@ -196,7 +197,7 @@ export default function MarketMap({ departments, cities }: Props) {
       <div className="map-rank">
         <h3 className="sub">
           Más caros por m²{" "}
-          <span className="muted">({mode === "departments" ? "departamentos" : "ciudades"} con 100 anuncios o más)</span>
+          <span className="muted">({mode === "departments" ? "departamentos" : "ciudades"} con {minListings} anuncios o más)</span>
         </h3>
         <ol className="rank">
           {ranking.map((d, i) => (
