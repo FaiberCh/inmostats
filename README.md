@@ -33,7 +33,7 @@ inmostats/
 │   └── reference/        # geojson de departamentos/municipios (geoBoundaries)
 ├── src/
 │   ├── scraper/          # extracción de datos (fincaraiz_scraper.py)
-│   ├── pipelines/        # limpieza, feature engineering, utilidades geo
+│   ├── pipelines/        # limpieza, feature engineering, utilidades geo, dinámica del mercado, exportador web
 │   ├── training/         # entrenamiento, tuning y evaluación del modelo
 │   ├── api/               # servicio FastAPI que sirve el modelo
 │   └── dashboard/         # dashboard Streamlit (predicción + resumen)
@@ -258,7 +258,20 @@ departamento, heatmap departamento×estrato y análisis de amenidades.
 partir de las capturas repetidas de `data/raw/` (8 corridas de julio de
 2026): rotación de anuncios (separando rotación real de cobertura incompleta
 del scraper), frecuencia y tamaño de los cambios de precio de un mismo
-anuncio y evolución del nivel de precios con los mismos anuncios.
+anuncio y evolución del nivel de precios con los mismos anuncios. El cálculo
+vive en `src/pipelines/market_dynamics.py`, que comparten el notebook y el
+exportador del dashboard web, así que las cifras se recalculan solas con cada
+corrida nueva.
+
+### Datos del dashboard web
+
+`python -m src.pipelines.export_dashboard_data` escribe en `web/public/data/`
+los agregados del tablero (KPIs, histograma, mapas con geometrías
+simplificadas, listas de departamento, ciudad y barrio, métricas del modelo y
+dinámica del mercado) como JSON estáticos de unos 500 KB en total. Se
+versionan porque el frontend se construye desde GitHub y no tiene el CSV
+procesado. Con `--skip-dynamics` se omite el recálculo de la dinámica
+(unos 20 s).
 
 ## Fase 7: Despliegue
 
