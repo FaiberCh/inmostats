@@ -2,7 +2,7 @@
 # Control del cron de scraping (workflow "Scraper InmoStats" de GitHub Actions).
 #
 # Uso (desde cualquier carpeta del repo):
-#     bash scripts/scraper_ctl.sh status   # estado del workflow, secrets y checkpoint publico
+#     bash scripts/scraper_ctl.sh status   # estado del workflow, secrets y checkpoint del repo
 #     bash scripts/scraper_ctl.sh start    # comprueba requisitos, pide confirmacion y activa el cron
 #     bash scripts/scraper_ctl.sh stop     # pide confirmacion y desactiva el cron
 #
@@ -19,7 +19,7 @@ set -euo pipefail
 
 WORKFLOW="Scraper InmoStats"
 REPO="FaiberCh/inmostats"
-CHECKPOINT_URL="https://raw.githubusercontent.com/$REPO/master/data/raw/.checkpoint_national.json"
+CHECKPOINT_PATH="data/raw/.checkpoint_national.json"
 
 cd "$(git rev-parse --show-toplevel)"
 
@@ -50,7 +50,7 @@ missing_secrets() {
 }
 
 checkpoint_summary() {
-    # Lee el checkpoint publico (el mismo que consulta el bot de Telegram).
+    # Lee el checkpoint del repo por la API de GitHub (sirve tambien si es privado).
     local py code
     py="$(command -v python3 || command -v python)"
     code="$(cat <<'PY'
@@ -73,7 +73,7 @@ else:
     print("Estado: en curso (%d/%d zonas completas)" % (hechas, len(zonas)))
 PY
 )"
-    curl -fsS "$CHECKPOINT_URL" | "$py" -c "$code"
+    gh api "repos/$REPO/contents/$CHECKPOINT_PATH?ref=master" -H "Accept: application/vnd.github.raw+json" | "$py" -c "$code"
 }
 
 confirm() {
@@ -98,7 +98,7 @@ case "$cmd" in
         fi
         echo "Últimas ejecuciones:"
         gh run list --workflow "$(workflow_id)" --repo "$REPO" --limit 5 || true
-        echo "Checkpoint público:"
+        echo "Checkpoint del repo:"
         checkpoint_summary
         ;;
     start)

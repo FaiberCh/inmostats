@@ -286,8 +286,6 @@ export default async function Page() {
             {shortDate(gen.toISOString())}. Precios de oferta, no de cierre.
           </p>
           <p>
-            <a href="https://github.com/FaiberCh/inmostats">Código en GitHub</a>
-            <span aria-hidden> · </span>
             <a href="https://fchaparro-inmostats-api.hf.space/docs">API del modelo</a>
           </p>
         </div>
