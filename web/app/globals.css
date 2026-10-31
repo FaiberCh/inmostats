@@ -116,7 +116,7 @@ a {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--ground);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 .bar-in {
@@ -942,7 +942,7 @@ body {
   left: 50%;
   width: 100vw;
   transform: translateX(-50%);
-  background: var(--ground);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 .fbar-in {
@@ -1377,24 +1377,11 @@ body {
 
 /* --- Seccion destacada: el estimador ---------------------------------------------------- */
 .sec-feature {
-  position: relative;
-  isolation: isolate;
   margin-top: 44px;
-  padding-top: 32px;
-  padding-bottom: 36px;
-}
-.sec-feature::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
+  padding: 20px 16px 24px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  border-radius: var(--radius-card);
   background: color-mix(in srgb, var(--accent) 7%, var(--ground));
-  border-top: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
-  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
 }
 .sec-feature h2 {
   font-size: 22px;
@@ -1424,8 +1411,7 @@ body {
 @media (min-width: 900px) {
   .sec-feature {
     margin-top: 56px;
-    padding-top: 40px;
-    padding-bottom: 44px;
+    padding: 28px 28px 32px;
   }
   .sec-feature h2 {
     font-size: 24px;
