@@ -1,20 +1,40 @@
 /**
  * Webhook de Telegram para InmoStats.
  *
- * Responde a /status, /stats, /variables y /modelo leyendo archivos
- * publicos directamente (raw.githubusercontent.com y los assets del release
- * de GitHub), sin token y sin llamar a la API de GitHub, para mantenerlo
- * simple y sin credenciales extra en este worker.
+ * Responde a /status, /stats, /variables y /modelo. El estado del scraper y
+ * las estadisticas se leen del repositorio de GitHub: con el secreto
+ * GITHUB_READ_TOKEN (token de solo lectura) por la API de GitHub, que sirve
+ * tambien si el repositorio es privado; sin ese secreto, por
+ * raw.githubusercontent.com, que solo sirve si es publico. La configuracion
+ * del modelo se lee de su repositorio publico en Hugging Face.
  */
 
-const CHECKPOINT_URL =
-  "https://raw.githubusercontent.com/FaiberCh/inmostats/master/data/raw/.checkpoint_national.json";
-const STATS_URL =
-  "https://raw.githubusercontent.com/FaiberCh/inmostats/master/data/processed/stats_summary.json";
-// feature_config.json esta gitignored en el repo; la copia vigente vive como
-// asset del release model-v1 (el mismo que descarga el Space al construirse).
-const MODEL_CONFIG_URL =
-  "https://github.com/FaiberCh/inmostats/releases/download/model-v1/feature_config.json";
+const REPO = "FaiberCh/inmostats";
+const CHECKPOINT_PATH = "data/raw/.checkpoint_national.json";
+const STATS_PATH = "data/processed/stats_summary.json";
+// feature_config.json esta gitignored en el repo; la copia vigente vive en el
+// repositorio de modelo publico de Hugging Face (el mismo que descarga el Space al construirse).
+const MODEL_CONFIG_URL = "https://huggingface.co/fchaparro/inmostats-model/resolve/main/feature_config.json";
+
+/** Argumentos de fetch para leer un archivo del repo: por la API con token si hay secreto, o por la direccion publica. */
+function githubFile(path, env) {
+  const token = env && env.GITHUB_READ_TOKEN;
+  if (token) {
+    return [
+      `https://api.github.com/repos/${REPO}/contents/${path}?ref=master`,
+      {
+        cf: { cacheTtl: 0 },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github.raw+json",
+          "User-Agent": "inmostats-telegram-bot",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      },
+    ];
+  }
+  return [`https://raw.githubusercontent.com/${REPO}/master/${path}`, { cf: { cacheTtl: 0 } }];
+}
 
 export default {
   async fetch(request, env) {
@@ -58,9 +78,9 @@ export default {
           "/modelo: resumen del modelo, sus metricas y parametros clave"
       );
     } else if (text === "/status" || text === "/estado") {
-      await sendTelegramMessage(env, chatId, await buildStatusMessage());
+      await sendTelegramMessage(env, chatId, await buildStatusMessage(env));
     } else if (text === "/stats" || text === "/promedios") {
-      await sendTelegramMessage(env, chatId, await buildStatsMessage());
+      await sendTelegramMessage(env, chatId, await buildStatsMessage(env));
     } else if (text === "/variables" || text === "/campos") {
       await sendTelegramMessage(env, chatId, buildVariablesMessage());
     } else if (text === "/modelo" || text === "/model") {
@@ -71,12 +91,12 @@ export default {
   },
 };
 
-async function buildStatusMessage() {
+async function buildStatusMessage(env) {
   const divider = "━".repeat(21);
 
   let checkpoint;
   try {
-    const res = await fetch(CHECKPOINT_URL, { cf: { cacheTtl: 0 } });
+    const res = await fetch(...githubFile(CHECKPOINT_PATH, env));
     if (!res.ok) {
       return "⚠️ Todavia no hay ninguna corrida registrada (checkpoint no encontrado).";
     }
@@ -164,12 +184,12 @@ function formatDuration(startIso, endIso) {
   return parts.join(" ");
 }
 
-async function buildStatsMessage() {
+async function buildStatsMessage(env) {
   const divider = "━".repeat(21);
 
   let stats;
   try {
-    const res = await fetch(STATS_URL, { cf: { cacheTtl: 0 } });
+    const res = await fetch(...githubFile(STATS_PATH, env));
     if (!res.ok) {
       return "⚠️ Todavia no hay estadisticas calculadas (se generan despues de la primera corrida).";
     }
@@ -240,7 +260,7 @@ async function buildModelMessage() {
   try {
     const res = await fetch(MODEL_CONFIG_URL, { cf: { cacheTtl: 0 } });
     if (!res.ok) {
-      return "⚠️ Todavía no hay un modelo publicado (no encontré feature_config.json en el release).";
+      return "⚠️ Todavía no hay un modelo publicado (no encontré feature_config.json en Hugging Face).";
     }
     config = await res.json();
   } catch {

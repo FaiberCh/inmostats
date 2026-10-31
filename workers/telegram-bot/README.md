@@ -1,24 +1,27 @@
 # InmoStats Telegram Bot (webhook)
 
-Cloudflare Worker que responde comandos de Telegram leyendo archivos
-publicos en tiempo real. No requiere token de GitHub (el repo es publico).
+Cloudflare Worker que responde comandos de Telegram leyendo archivos en
+tiempo real. El estado del scraper y las estadisticas se leen del repo de
+GitHub: con el secreto opcional `GITHUB_READ_TOKEN` (token de solo lectura,
+ver mas abajo) por la API de GitHub, que sirve aunque el repo sea privado; sin
+el secreto, por `raw.githubusercontent.com`, que solo sirve si el repo es
+publico. El modelo se lee de su repositorio publico en Hugging Face.
 
 | Comando | Responde | Fuente |
 |---|---|---|
-| `/status` (`/estado`) | progreso del scraper nacional | `data/raw/.checkpoint_national.json` via `raw.githubusercontent.com` |
-| `/stats` (`/promedios`) | promedios y anuncios por zona | `data/processed/stats_summary.json` via `raw.githubusercontent.com` |
+| `/status` (`/estado`) | progreso del scraper nacional | `data/raw/.checkpoint_national.json` del repo (API con token, o `raw.githubusercontent.com`) |
+| `/stats` (`/promedios`) | promedios y anuncios por zona | `data/processed/stats_summary.json` del repo (API con token, o `raw.githubusercontent.com`) |
 | `/variables` (`/campos`) | campos que se extraen por anuncio | texto fijo en el worker |
-| `/modelo` (`/model`) | resumen del modelo: metricas de validacion cruzada, parametros clave y variables mas influyentes | `feature_config.json` del release `model-v1` de GitHub |
+| `/modelo` (`/model`) | resumen del modelo: metricas de validacion cruzada, parametros clave y variables mas influyentes | `feature_config.json` de `fchaparro/inmostats-model` en Hugging Face |
 
-`/modelo` muestra la ultima version publicada como asset del release
-`model-v1` (la misma que descarga el Space de Hugging Face al construirse),
+`/modelo` muestra la ultima version publicada en el repositorio de modelo
+`fchaparro/inmostats-model` (la misma que descarga el Space al construirse),
 no el archivo local. Si ese `feature_config.json` es anterior a que el
 entrenamiento guardara `hyperparameters` y `top_features`, el bot lo indica
-en vez de fallar. Para actualizarlo despues de reentrenar:
-
-```bash
-gh release upload model-v1 models/price_model.joblib models/feature_config.json --clobber
-```
+en vez de fallar. Para actualizarlo despues de reentrenar, se suben los dos
+archivos a ese repositorio (por ejemplo con `huggingface_hub.HfApi.upload_file`)
+y, para que el Space reconstruya con el modelo nuevo, se cambia el texto del
+`RUN` del Dockerfile de la rama `space-deploy`.
 
 ## Deploy
 
@@ -36,6 +39,7 @@ corrido `npx wrangler login` de forma interactiva antes).
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
 npx wrangler secret put AUTHORIZED_CHAT_ID
+npx wrangler secret put GITHUB_READ_TOKEN
 ```
 
 - `TELEGRAM_BOT_TOKEN`: el mismo token del bot usado en el scraper.
@@ -44,6 +48,11 @@ npx wrangler secret put AUTHORIZED_CHAT_ID
   el Worker pueda verificar que la peticion es autentica.
 - `AUTHORIZED_CHAT_ID`: tu chat_id de Telegram; el bot ignora mensajes de
   cualquier otro chat.
+- `GITHUB_READ_TOKEN` (opcional mientras el repo sea publico, necesario si es
+  privado): token de GitHub de grano fino, limitado al repo `inmostats` y con
+  un solo permiso, **Contents: Read-only**. Se crea en Settings, Developer
+  settings, Personal access tokens, Fine-grained tokens. Caduca (maximo 1 ano),
+  asi que hay que renovarlo y volver a ejecutar `wrangler secret put`.
 
 ## Registrar el webhook en Telegram
 
