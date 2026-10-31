@@ -332,7 +332,7 @@ export default function Estimator({ places, cities, amenities, mape }: Props) {
         <h3 className="sub">Resultado</h3>
         {status.kind === "idle" && (
           <p className="muted">
-            Completa los datos y pulsa <strong>Estimar precio</strong>. El modelo (XGBoost) se entrenó con anuncios reales de Fincaraíz.
+            Completa los datos y pulsa <strong>Estimar precio</strong>.
           </p>
         )}
         {status.kind === "loading" && <p className="muted">Calculando el estimado…</p>}
@@ -368,7 +368,7 @@ export default function Estimator({ places, cities, amenities, mape }: Props) {
               )}
             </dl>
             <p className="muted small">
-              El margen usa el error típico del modelo en validación ({dec(mape, 1)} %). En inmuebles de lujo el error suele ser mayor.
+              Margen: error típico del modelo ({dec(mape, 1)} %); mayor en inmuebles de lujo.
             </p>
           </div>
         )}
@@ -398,7 +398,7 @@ function WakingNotice({ since }: { since: number }) {
   return (
     <div className="notice">
       <p>
-        <strong>El servicio estaba dormido y se está despertando.</strong> Suele tardar de 1 a 3 minutos la primera vez. Tu estimado saldrá solo en cuanto esté listo.
+        <strong>El servicio estaba dormido y se está despertando</strong> (1 a 3 minutos la primera vez). Tu estimado saldrá solo.
       </p>
       <p className="muted small num">Esperando {int(seconds)} s…</p>
     </div>

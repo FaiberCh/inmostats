@@ -70,8 +70,8 @@ export default function Opportunities({ points, rows, filtered }: Props) {
     <section id="oportunidades" className="sec" aria-labelledby="h-oportunidades">
       <h2 id="h-oportunidades">Oportunidades de mercado</h2>
       <p className="sec-note">
-        Cada punto es un anuncio: su área y su precio. Los que cuestan bastante menos o bastante más que la referencia se resaltan.
-        {filtered ? " Se muestran solo los anuncios que cumplen los filtros." : " Filtra por ciudad para comparar apartamentos de una misma zona."}
+        Cada punto es un anuncio. Se resaltan los que cuestan bastante menos o más que la referencia.
+        {filtered ? " Solo los que cumplen los filtros." : " Filtra por ciudad para una comparación más justa."}
       </p>
 
       {total === 0 ? (
@@ -81,7 +81,7 @@ export default function Opportunities({ points, rows, filtered }: Props) {
       ) : (
         <Card
           title="Precio frente al área"
-          note={`${int(total)} anuncios. El eje vertical va en millones de pesos y el horizontal en metros cuadrados.`}
+          note={`${int(total)} anuncios. Precio en millones de pesos y área en m².`}
           legend={<Legend counts={counts} />}
         >
           <div className="map-controls">
@@ -110,10 +110,10 @@ export default function Opportunities({ points, rows, filtered }: Props) {
           />
           <p className="foot muted">
             {mode === "zone"
-              ? `La línea es la mediana de precio por m² de estos anuncios (${millions(classified.medianPpm2, 1)} por m²). Los puntos en azul verdoso cuestan ${Math.round((1 - BELOW_RATIO) * 100)} % o más por debajo de ella; los oscuros, ${Math.round((ABOVE_RATIO - 1) * 100)} % o más por encima.`
-              : `El color compara el precio publicado con el que el modelo esperaba, calculado sin que el modelo hubiera visto ese anuncio (validación cruzada). La línea sigue siendo la mediana por m² (${millions(classified.medianPpm2, 1)}), solo como guía.`}{" "}
+              ? `La línea marca la mediana de ${millions(classified.medianPpm2, 1)} por m². Azul verdoso: ${Math.round((1 - BELOW_RATIO) * 100)} % o más por debajo. Oscuro: ${Math.round((ABOVE_RATIO - 1) * 100)} % o más por encima.`
+              : `El color compara el precio publicado con el que esperaba el modelo, calculado sin haber visto ese anuncio. La línea es solo una guía: la mediana de ${millions(classified.medianPpm2, 1)} por m².`}{" "}
             {counts[Position.Extreme] > 0 &&
-              `Los ${int(counts[Position.Extreme])} puntos huecos están a menos de un tercio o a más del triple de su referencia: casi siempre son errores de captura y no entran en las listas.`}
+              `Los ${int(counts[Position.Extreme])} puntos huecos (menos de un tercio o más del triple de la referencia) suelen ser errores de captura y no entran en las listas.`}
           </p>
         </Card>
       )}
@@ -144,16 +144,14 @@ export default function Opportunities({ points, rows, filtered }: Props) {
           <Card title="Cómo leerlo">
             <div className="prose">
               <p>
-                <strong>Es una señal estadística, no una recomendación.</strong> Un precio bajo puede ser una buena oportunidad, pero también un error de
-                captura, un anuncio desactualizado o algo que los datos no ven: el estado del inmueble, el piso, la ubicación exacta.
+                <strong>Es una señal estadística, no una recomendación.</strong> Un precio bajo puede ser una oportunidad, o un error de captura, un anuncio
+                desactualizado o algo que los datos no ven (estado, piso, ubicación exacta).
               </p>
               <p>
-                <strong>Compara dentro de una zona.</strong> Con todo el país a la vez, la mediana mezcla ciudades muy distintas. Elige un departamento y una
-                ciudad, y la comparación se vuelve mucho más justa.
+                <strong>Compara dentro de una zona.</strong> Con todo el país a la vez, la mediana mezcla ciudades muy distintas: elige departamento y ciudad.
               </p>
               <p>
-                <strong>Dos referencias.</strong> La mediana de la zona es fácil de verificar a mano. El modelo además tiene en cuenta el estrato, el
-                barrio y los garajes, así que no marca como baratos los apartamentos pequeños o de estratos bajos solo por serlo.
+                <strong>Dos referencias.</strong> La mediana de la zona es fácil de verificar; el modelo además tiene en cuenta estrato, barrio y garajes.
               </p>
               <p className="muted small">Anuncios capturados hasta el {shortDate(points.meta.captured_to)}: pueden haber cambiado o haberse retirado.</p>
             </div>
@@ -467,10 +465,9 @@ function ScatterCanvas({ points, rows, classified, mode, selection, onSelect }: 
       </div>
       {domain.omitted > 0 && (
         <p className="foot muted">
-          <strong>Recorte por percentil.</strong> Cada eje llega hasta su percentil 99, el valor por debajo del cual está el 99 % de los anuncios,
-          redondeado hacia arriba: {int(domain.xMax)} m² y {millions(domain.yMax)}. Se hace para que unos pocos anuncios enormes no aplasten al
-          resto. Quedan fuera {int(domain.omitted)} anuncios ({pct((100 * domain.omitted) / rows.length, 1)}) por ser más grandes o más caros; siguen
-          contando en las cifras y en las listas.
+          <strong>Recorte por percentil.</strong> Cada eje llega a su percentil 99 (el valor bajo el cual está el 99 % de los anuncios), redondeado:{" "}
+          {int(domain.xMax)} m² y {millions(domain.yMax)}. Así unos pocos anuncios enormes no aplastan al resto. Quedan fuera {int(domain.omitted)} (
+          {pct((100 * domain.omitted) / rows.length, 1)}), que siguen contando en las cifras y en las listas.
         </p>
       )}
       {selection && selRow !== null && !floating && (

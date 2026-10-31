@@ -84,7 +84,7 @@ export default function MarketScope({ initial, mapCities }: Props) {
       <div className={pending ? "scope-body pending" : "scope-body"}>
         {active && count > 0 && count < FEW_LISTINGS && (
           <p className="notice">
-            Solo {int(count)} {count === 1 ? "anuncio cumple" : "anuncios cumplen"} los filtros: las medianas son poco confiables con tan pocos datos.
+            Solo {int(count)} {count === 1 ? "anuncio cumple" : "anuncios cumplen"} los filtros: las medianas son poco confiables.
           </p>
         )}
 
@@ -120,10 +120,7 @@ export default function MarketScope({ initial, mapCities }: Props) {
 
         <section id="mercado" className="sec" aria-labelledby="h-mercado">
           <h2 id="h-mercado">Mercado</h2>
-          <p className="sec-note">
-            Dónde está caro el metro cuadrado, cómo se distribuyen los precios y qué ofrecen los anuncios. Todas las cifras son medianas, que no se dejan
-            arrastrar por los apartamentos de lujo.
-          </p>
+          <p className="sec-note">Dónde está caro el m², cómo se distribuyen los precios y qué ofrecen los anuncios.</p>
 
           {count === 0 ? (
             <Card title="Sin resultados">
@@ -134,7 +131,7 @@ export default function MarketScope({ initial, mapCities }: Props) {
             </Card>
           ) : (
             <>
-              <Card title="Precio por m² mediano" note="Elige el nivel del mapa; la lista de al lado ordena los más caros.">
+              <Card title="Precio por m² mediano" note="Elige el nivel; la lista ordena los más caros.">
                 <MarketMap departments={summary.byDepartment} cities={summary.byCity} minListings={active ? 10 : 100} />
               </Card>
 
@@ -152,7 +149,7 @@ export default function MarketScope({ initial, mapCities }: Props) {
                     <EmptyNote>Muy pocos anuncios para dibujar la distribución.</EmptyNote>
                   )}
                 </Card>
-                <Card title="Precio por estrato" note="Mitad central de los anuncios (caja), mediana (marca) y rango sin atípicos (línea).">
+                <Card title="Precio por estrato" note="Caja: mitad central. Marca: mediana. Línea: rango sin atípicos.">
                   {summary.byStratum.length ? (
                     <StratumRange rows={summary.byStratum} />
                   ) : (
@@ -162,7 +159,7 @@ export default function MarketScope({ initial, mapCities }: Props) {
               </div>
 
               <div className="grid2">
-                <Card title="Ciudades con más anuncios" note="Número de anuncios y su peso en el total.">
+                <Card title="Ciudades con más anuncios" note="Anuncios y su peso en el total.">
                   <BarList
                     label="Ciudades con más anuncios"
                     rows={summary.topCities.map((c) => ({

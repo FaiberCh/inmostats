@@ -17,7 +17,7 @@ export default async function Page() {
   const { kpis, histogram, byDepartment, byCity, topCities, amenities, byStratum, places, meta, model, dynamics } = await loadAll();
 
   const ranked = [...byDepartment].filter((d) => d.listings >= 100).sort((a, b) => b.price_m2_median - a.price_m2_median);
-  const [first, second, third] = ranked;
+  const [first] = ranked;
   const t = dynamics.turnover;
   const pc = dynamics.price_changes;
   const lvl = dynamics.price_level;
@@ -32,21 +32,21 @@ export default async function Page() {
     {
       label: "Dónde está más caro el m²",
       figure: first.department,
-      text: `${millions(first.price_m2_median, 1)} por m², seguido de ${second.department} y ${third.department}. La mediana nacional es ${millions(kpis.price_m2_median_cop, 1)}.${
+      text: `${millions(first.price_m2_median, 1)} por m², frente a ${millions(kpis.price_m2_median_cop, 1)} a nivel nacional.${
         bigTwoShare !== null ? ` ${topCities[0].city} y ${topCities[1].city} reúnen el ${pct(bigTwoShare, 0)} de los anuncios.` : ""
       }`,
     },
     {
       label: "Qué pesa más en el precio",
       figure: `${f1.label} y ${f2.label.toLowerCase()}`,
-      text: `Para el modelo, ${f1.label.toLowerCase()} (${pct(f1.pct, 0)}) y ${f2.label.toLowerCase()} (${pct(f2.pct, 0)}) pesan más que ${f3.label.toLowerCase()} (${pct(f3.pct, 0)}). El estimador se equivoca, en promedio, ${pct(model.metrics_cv["MAPE_%"], 1)}.`,
+      text: `${pct(f1.pct, 0)} y ${pct(f2.pct, 0)} de la importancia en el modelo, más que ${f3.label.toLowerCase()} (${pct(f3.pct, 0)}). El estimador se equivoca ${pct(model.metrics_cv["MAPE_%"], 1)} en promedio.`,
     },
     ...(pc
       ? [
           {
             label: "Cuánto se mueve el mercado",
             figure: pct(pc.changed_pct, 1),
-            text: `de los anuncios cambió de precio en unas ${weeks} semanas y el nivel de precios quedó plano. Los precios de oferta casi no se mueven en el corto plazo.`,
+            text: `de los anuncios cambió de precio en unas ${weeks} semanas; el nivel de precios quedó plano.`,
           },
         ]
       : []),
@@ -105,8 +105,7 @@ export default async function Page() {
         <section id="estimador" className="sec sec-feature" aria-labelledby="h-estimador">
           <h2 id="h-estimador">Estimador de precio</h2>
           <p className="sec-note">
-            <strong>¿Cuánto vale tu apartamento?</strong> Descríbelo y el modelo calcula un precio de referencia comparándolo con los{" "}
-            {int(model.n_rows)} anuncios con los que se entrenó.
+            <strong>¿Cuánto vale tu apartamento?</strong> Descríbelo y el modelo calcula un precio de referencia.
           </p>
           <Estimator places={places} cities={byCity} amenities={model.amenities} mape={model.metrics_cv["MAPE_%"]} />
         </section>
@@ -114,8 +113,8 @@ export default async function Page() {
         <section id="dinamica" className="sec" aria-labelledby="h-dinamica">
           <h2 id="h-dinamica">Dinámica del mercado</h2>
           <p className="sec-note">
-            Qué cambia entre capturas repetidas del mismo mercado: {dynamics.n_runs} corridas entre el {shortDate(dynamics.date_from)} y el{" "}
-            {shortDate(dynamics.date_to)} (unas {weeks} semanas). Son precios de oferta, no de cierre.
+            {dynamics.n_runs} capturas entre el {shortDate(dynamics.date_from)} y el {shortDate(dynamics.date_to)} (unas {weeks} semanas). Precios de oferta, no de
+            cierre.
           </p>
 
           {t && pc && (
@@ -124,10 +123,10 @@ export default async function Page() {
               cells={[
                 { label: "Persisten entre corridas", value: pct(t.persist_pct_mean), caption: "de los anuncios de una corrida siguen en la siguiente" },
                 ...(t.reappear_pct_mean !== null
-                  ? [{ label: "Reaparecen", value: pct(t.reappear_pct_mean), caption: "de los que faltaron vuelven en la siguiente: es cobertura, no ventas" }]
+                  ? [{ label: "Reaparecen", value: pct(t.reappear_pct_mean), caption: "de los que faltaron vuelven en la siguiente" }]
                   : []),
                 { label: "Cambian de precio", value: pct(pc.changed_pct, 1), caption: `de ${int(pc.comparisons)} comparaciones entre corridas` },
-                { label: "No vuelven a verse", value: `≤ ${pct(t.never_return_pct_upper_bound)}`, caption: "de la primera corrida, cota de los retiros reales" },
+                { label: "No vuelven a verse", value: `≤ ${pct(t.never_return_pct_upper_bound)}`, caption: "de la primera corrida, como máximo" },
               ]}
             />
           )}
@@ -166,7 +165,7 @@ export default async function Page() {
             {pc && (
               <Card
                 title="Cuánto cambian los que cambian"
-                note={`Variación del precio de un mismo anuncio entre corridas (solo los ${int(pc.changed)} que cambiaron; recortada a ±30 %).`}
+                note={`Variación de precio de los ${int(pc.changed)} anuncios que cambiaron (recortada a ±30 %).`}
               >
                 <Histogram
                   edges={pc.histogram.edges_pct}
@@ -208,23 +207,16 @@ export default async function Page() {
             <Card title="Cómo leerlo">
               <div className="prose">
                 <p>
-                  <strong>La rotación aparente es sobre todo cobertura incompleta.</strong> Solo {t ? pct(t.persist_pct_mean, 0) : "una parte"} de los anuncios
-                  persiste entre corridas, pero casi la mitad de los que faltan reaparece en la siguiente
-                  {t?.truly_new_pct_mean != null && `, y solo el ${pct(t.truly_new_pct_mean, 1)} de los “nuevos” se publicó realmente después`}. Una captura
-                  no es un censo del mercado.
+                  <strong>La rotación aparente es cobertura incompleta.</strong> Solo {t ? pct(t.persist_pct_mean, 0) : "una parte"} de los anuncios persiste entre
+                  corridas, pero casi la mitad de los que faltan reaparece en la siguiente. Una captura no es un censo.
                 </p>
                 <p>
-                  <strong>Los retiros reales son pocos.</strong>{" "}
-                  {t ? `Como máximo el ${pct(t.never_return_pct_upper_bound)} de los anuncios de la primera corrida no vuelve a aparecer en ninguna de las siguientes` : "Pocos anuncios desaparecen"}
-                  , y esa cota incluye anuncios que el scraper simplemente no vio.
+                  <strong>Los retiros reales son pocos:</strong>{" "}
+                  {t ? `como máximo el ${pct(t.never_return_pct_upper_bound)} de la primera corrida no vuelve a aparecer.` : "pocos anuncios desaparecen."}
                 </p>
                 <p>
-                  <strong>Los vendedores casi no ajustan el precio.</strong> Menos de uno de cada cien anuncios cambia de precio en unas {weeks} semanas, y
-                  cuando lo hace suele ser una baja.
-                </p>
-                <p>
-                  <strong>Qué falta.</strong> Una ventana tan corta no muestra tendencias ni estacionalidad. Cada corrida nueva alarga la serie, y estas
-                  cifras se recalculan con ella.
+                  <strong>Casi nadie ajusta el precio:</strong> menos de uno de cada cien cambia en unas {weeks} semanas, y suele ser una baja. Una ventana tan corta
+                  no muestra tendencias ni estacionalidad.
                 </p>
               </div>
             </Card>
@@ -241,8 +233,8 @@ export default async function Page() {
             label="Métricas del modelo en validación cruzada"
             cells={[
               { label: "Error porcentual medio", value: pct(model.metrics_cv["MAPE_%"]), caption: `validación cruzada; en reserva ${pct(model.metrics_holdout["MAPE_%"])}` },
-              { label: "R²", value: dec(model.metrics_cv.R2, 3), caption: `parte de la variación del precio que explica; en reserva ${dec(model.metrics_holdout.R2, 3)}` },
-              { label: "Error absoluto medio", value: millions(model.metrics_cv.MAE_COP), caption: "pesos de diferencia típica con el precio publicado" },
+              { label: "R²", value: dec(model.metrics_cv.R2, 3), caption: `variación del precio que explica; en reserva ${dec(model.metrics_holdout.R2, 3)}` },
+              { label: "Error absoluto medio", value: millions(model.metrics_cv.MAE_COP), caption: "diferencia típica con el precio publicado" },
               { label: "Raíz del error cuadrático", value: millions(model.metrics_cv.RMSE_COP), caption: "pesa más los errores grandes" },
             ]}
           />
@@ -258,7 +250,7 @@ export default async function Page() {
                 }))}
               />
             </Card>
-            <Card title="Parámetros" note="Los que más influyen en cómo aprende el modelo.">
+            <Card title="Parámetros" note="Los más influyentes.">
               <dl className="kv">
                 {Object.entries(model.hyperparameters).map(([key, value]) => (
                   <div key={key}>
@@ -268,8 +260,8 @@ export default async function Page() {
                 ))}
               </dl>
               <p className="notice">
-                <strong>Limitación conocida.</strong> El modelo se equivoca más en los inmuebles de lujo y de precio muy alto, donde hay pocos anuncios
-                comparables. Úsalo como referencia, no como avalúo.
+                <strong>Limitación conocida.</strong> El modelo falla más en inmuebles de lujo, donde hay pocos anuncios comparables. Úsalo como referencia, no como
+                avalúo.
               </p>
             </Card>
           </div>
@@ -279,8 +271,8 @@ export default async function Page() {
       <footer className="foot-site">
         <div className="wrap foot-in">
           <p>
-            Datos: anuncios de apartamentos en venta de Fincaraíz capturados entre el {shortDate(meta.data_from)} y el {shortDate(meta.data_to)}. Cifras
-            calculadas el {shortDate(gen.toISOString())}. Son precios de oferta, no de cierre.
+            Datos: anuncios de apartamentos en venta de Fincaraíz, del {shortDate(meta.data_from)} al {shortDate(meta.data_to)}. Cifras calculadas el{" "}
+            {shortDate(gen.toISOString())}. Precios de oferta, no de cierre.
           </p>
           <p>
             <a href="https://github.com/FaiberCh/inmostats">Código en GitHub</a>

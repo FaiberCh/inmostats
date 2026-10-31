@@ -187,8 +187,8 @@ export default function MarketMap({ departments, cities, minListings = 100 }: Pr
           ) : (
             <span className="muted">
               {mode === "departments"
-                ? "Toca o pasa el cursor sobre un departamento para ver su precio por m²."
-                : "Cada punto es una ciudad (30 anuncios o más): el tamaño marca los anuncios y el tono el precio por m²."}
+                ? "Toca un departamento para ver su precio por m²."
+                : "Cada punto es una ciudad (30 anuncios o más): tamaño = anuncios, tono = precio por m²."}
             </span>
           )}
         </p>
@@ -215,7 +215,7 @@ export default function MarketMap({ departments, cities, minListings = 100 }: Pr
             </li>
           ))}
         </ol>
-        <p className="foot muted">Precio mediano por m² en millones de pesos, y número de anuncios.</p>
+        <p className="foot muted">Mediana por m² en millones de pesos y número de anuncios.</p>
       </div>
     </div>
   );

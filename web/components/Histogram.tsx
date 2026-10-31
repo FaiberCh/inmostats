@@ -17,7 +17,7 @@ type Props = {
 
 const formatX = (kind: Props["xFormat"], v: number) => (kind === "millions" ? millions(v) : `${v > 0 ? "+" : ""}${v} %`);
 
-const M = { top: 10, right: 8, bottom: 24, left: 50 };
+const M = { top: 10, right: 24, bottom: 24, left: 50 };
 
 export default function Histogram({ edges, counts, height = 200, xFormat, marker, label }: Props) {
   const [ref, width] = useWidth<HTMLDivElement>();
