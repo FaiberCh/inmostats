@@ -472,7 +472,7 @@ svg text {
 /* --- Listas con barra fina ------------------------------------------------- */
 .barlist {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 .barlist-line {
   display: flex;
@@ -491,15 +491,15 @@ svg text {
   text-align: right;
 }
 .barlist-track {
-  margin-top: 4px;
-  height: 3px;
+  margin-top: 5px;
+  height: 7px;
   background: var(--active);
-  border-radius: 2px;
+  border-radius: 3px;
 }
 .barlist-fill {
   height: 100%;
   background: var(--faint);
-  border-radius: 2px;
+  border-radius: 3px;
 }
 .barlist-fill.first {
   background: var(--text);
