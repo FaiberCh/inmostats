@@ -17,7 +17,10 @@ Frontend del tablero: Next.js (App Router, TypeScript) pensado para Vercel. Es u
   (validación cruzada de 5 particiones) para que el modelo no "recuerde" el precio de un anuncio que vio al entrenar.
   Los valores extremos (menos de un tercio o más del triple de la referencia) se tratan como probables errores y no
   entran en las listas. Al pasar el cursor (o tocar) sale una tarjeta con el detalle; al fijarla aparece el enlace al
-  anuncio original, cuya dirección se pide a uno de 64 archivos pequeños (`urls/NN.json`).
+  anuncio original, cuya dirección se pide a uno de 64 archivos pequeños (`urls/NN.json`). Como más de la mitad de los
+  enlaces guardados ya no existe, el botón solo se habilita si el anuncio sigue publicado: lo comprueba
+  `/api/listing-status` (ruta de servidor de Next que consulta a Fincaraíz solo al fijar una tarjeta, con un agente de
+  usuario honesto y el resultado en caché un día).
 - **Solo el estimador llama a la API** (`POST /predict`, en Hugging Face). Si el Space estaba dormido, el formulario lo
   detecta, avisa que está despertando, sondea `/health` y reintenta solo. Además, al abrir la página se hace un
   `/health` en segundo plano para despertarlo mientras se lee.
