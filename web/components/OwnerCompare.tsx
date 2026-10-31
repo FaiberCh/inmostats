@@ -16,7 +16,8 @@ type Props = {
 };
 
 export default function OwnerCompare({ groups, effects }: Props) {
-  const shown = groups.filter((g) => g.listings > 0 && Number.isFinite(g.price_m2_median));
+  // De mayor a menor precio por m2 (el orden se recalcula con los filtros).
+  const shown = groups.filter((g) => g.listings > 0 && Number.isFinite(g.price_m2_median)).sort((a, b) => b.price_m2_median - a.price_m2_median);
 
   return (
     <>
