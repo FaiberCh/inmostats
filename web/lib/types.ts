@@ -95,3 +95,17 @@ export type GeoCollection = {
   type: "FeatureCollection";
   features: { type: "Feature"; properties: Record<string, string>; geometry: { type: string; coordinates: unknown } }[];
 };
+
+export type OwnerGroup = {
+  code: number;
+  label: string;
+  listings: number;
+  price_m2_median: number;
+  /** Diferencia frente a las empresas a igualdad de condiciones (solo los grupos que no son la referencia). */
+  effect_pct?: number;
+  ci_low?: number;
+  ci_high?: number;
+  n_fit?: number;
+};
+
+export type OwnerSummary = { reference: string; controls: string; groups: OwnerGroup[] };

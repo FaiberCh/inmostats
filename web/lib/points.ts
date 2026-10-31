@@ -11,6 +11,7 @@ export type PointsMeta = {
   cities: [string, number][];
   neighborhoods: string[];
   amenities: string[];
+  owner_groups: string[];
 };
 
 export type Points = {
@@ -32,6 +33,8 @@ export type Points = {
   stratum: Uint8Array;
   /** Un bit por amenidad de meta.amenities. */
   amen: Uint16Array;
+  /** Grupo del anunciante: 0 sin clasificar, 1 empresa, 2 asesor independiente, 3 propietario directo, 4 desarrollador. */
+  owner: Uint8Array;
 };
 
 const ARRAY_TYPES = {

@@ -32,6 +32,7 @@ from src.pipelines.clean_data import (
 )
 from src.pipelines.geo import load_department_geojson, match_city_features
 from src.pipelines.market_dynamics import compute_dynamics, load_snapshots
+from src.pipelines.owner_groups import OWNER_LABELS, owner_codes, owner_summary
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -356,6 +357,7 @@ def export_points(df: pd.DataFrame, expected: pd.Series | None) -> None:
         ("baths", df["bathrooms"].fillna(0).astype(np.uint8).values),
         ("stratum", df["stratum"].fillna(0).astype(np.uint8).values),
         ("amen", mask),
+        ("owner", owner_codes(df)),
     ]
     buffer, layout = bytearray(), []
     for name, array in columns:
@@ -380,6 +382,7 @@ def export_points(df: pd.DataFrame, expected: pd.Series | None) -> None:
         "cities": [[c, dept_index[d]] for d, c in city_pairs],
         "neighborhoods": hoods,
         "amenities": config_amenities,
+        "owner_groups": OWNER_LABELS,
     })
 
     shards: dict[int, dict[str, str]] = {i: {} for i in range(URL_SHARDS)}
@@ -394,6 +397,17 @@ def export_points(df: pd.DataFrame, expected: pd.Series | None) -> None:
         path.write_text(json.dumps(mapping, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
         total += path.stat().st_size
     logger.info("%-28s %8.1f KB (%d archivos)", "urls/*.json", total / 1024, URL_SHARDS)
+
+
+def export_owner_summary(df: pd.DataFrame) -> None:
+    """Precio por m2 segun quien anuncia: medianas nacionales y diferencia frente a las empresas a igualdad de
+    ciudad, estrato, area y habitaciones. Solo salen categorias, nunca nombres."""
+    groups = owner_summary(df, owner_codes(df))
+    write_json(OUTPUT_DIR / "owner_groups.json", {
+        "reference": "Empresas e inmobiliarias",
+        "controls": "ciudad, estrato, área y habitaciones",
+        "groups": groups,
+    })
 
 
 def export_model() -> dict | None:
@@ -423,6 +437,7 @@ def main() -> None:
     n_cities = export_maps(df)
     export_places(df)
     export_model()
+    export_owner_summary(df)
 
     if args.skip_points:
         logger.info("Se omiten los puntos (--skip-points)")

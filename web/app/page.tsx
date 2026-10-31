@@ -14,7 +14,7 @@ function weeksBetween(from: string, to: string) {
 }
 
 export default async function Page() {
-  const { kpis, histogram, byDepartment, byCity, topCities, amenities, byStratum, places, meta, model, dynamics } = await loadAll();
+  const { kpis, histogram, byDepartment, byCity, topCities, amenities, byStratum, places, meta, model, dynamics, owner } = await loadAll();
 
   const ranked = [...byDepartment].filter((d) => d.listings >= 100).sort((a, b) => b.price_m2_median - a.price_m2_median);
   const [first] = ranked;
@@ -68,6 +68,7 @@ export default async function Page() {
     topCities,
     amenities,
     byStratum,
+    byOwner: owner.groups.map((g) => ({ code: g.code, label: g.label, listings: g.listings, price_m2_median: g.price_m2_median })),
   };
 
   return (
@@ -100,7 +101,7 @@ export default async function Page() {
           </ol>
         </section>
 
-        <MarketScope initial={initial} mapCities={byCity.map((c) => ({ city: c.city, department: c.department }))} />
+        <MarketScope initial={initial} ownerEffects={owner} mapCities={byCity.map((c) => ({ city: c.city, department: c.department }))} />
 
         <section id="estimador" className="sec sec-feature" aria-labelledby="h-estimador">
           <h2 id="h-estimador">Estimador de precio</h2>

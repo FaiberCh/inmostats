@@ -4,11 +4,13 @@ import { useDeferredValue, useEffect, useMemo, useState } from "react";
 
 import { dec, int, millions, pct } from "@/lib/format";
 import { loadPoints, type Points } from "@/lib/points";
+import type { OwnerSummary } from "@/lib/types";
 import { NO_FILTERS, computeSummary, isActive, selectRows, type Filters, type Summary } from "@/lib/stats";
 import BarList from "./BarList";
 import FilterBar from "./FilterBar";
 import Histogram from "./Histogram";
 import MarketMap from "./MarketMap";
+import OwnerCompare from "./OwnerCompare";
 import Opportunities from "./Opportunities";
 import StratumRange from "./StratumRange";
 import { Card, EmptyNote, KpiStrip } from "./ui";
@@ -18,12 +20,14 @@ type Props = {
   initial: Summary;
   /** Ciudades que tienen poligono en el mapa. */
   mapCities: { city: string; department: string }[];
+  /** Efecto del tipo de anunciante a igualdad de condiciones (nacional). */
+  ownerEffects: OwnerSummary;
 };
 
 const MIN_CITY_LISTINGS_TO_PICK = 5;
 const FEW_LISTINGS = 30;
 
-export default function MarketScope({ initial, mapCities }: Props) {
+export default function MarketScope({ initial, mapCities, ownerEffects }: Props) {
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const deferred = useDeferredValue(filters);
   const [points, setPoints] = useState<Points | null>(null);
@@ -186,6 +190,10 @@ export default function MarketScope({ initial, mapCities }: Props) {
                   )}
                 </Card>
               </div>
+
+              <Card title="Precio según quién anuncia" note="Mediana de precio por m² por tipo de anunciante, frente a las empresas.">
+                <OwnerCompare groups={summary.byOwner} effects={ownerEffects} total={count} />
+              </Card>
             </>
           )}
         </section>

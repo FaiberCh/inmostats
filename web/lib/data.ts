@@ -10,6 +10,7 @@ import type {
   Kpis,
   Meta,
   ModelInfo,
+  OwnerSummary,
   PlaceIndexEntry,
   StratumBox,
   TopCity,
@@ -25,7 +26,7 @@ async function read<T>(name: string): Promise<T> {
 }
 
 export async function loadAll() {
-  const [kpis, histogram, byDepartment, byCity, topCities, amenities, byStratum, places, meta, model, dynamics] =
+  const [kpis, histogram, byDepartment, byCity, topCities, amenities, byStratum, places, meta, model, dynamics, owner] =
     await Promise.all([
       read<Kpis>("kpis.json"),
       read<Histogram>("histogram.json"),
@@ -38,6 +39,7 @@ export async function loadAll() {
       read<Meta>("meta.json"),
       read<ModelInfo>("model.json"),
       read<Dynamics>("dynamics.json"),
+      read<OwnerSummary>("owner_groups.json"),
     ]);
-  return { kpis, histogram, byDepartment, byCity, topCities, amenities, byStratum, places, meta, model, dynamics };
+  return { kpis, histogram, byDepartment, byCity, topCities, amenities, byStratum, places, meta, model, dynamics, owner };
 }

@@ -100,6 +100,7 @@ export type Summary = {
   topCities: TopCity[];
   amenities: AmenityStat[];
   byStratum: StratumBox[];
+  byOwner: { code: number; label: string; listings: number; price_m2_median: number }[];
 };
 
 const HISTOGRAM_BINS = 60;
@@ -176,6 +177,17 @@ export function computeSummary(p: Points, rows: Uint32Array, mapCities: number[]
   }
   const byDept = groupMedians(deptKeys, p.meta.departments.length, ppm2, price);
   const byCityGroups = groupMedians(cityKeys, mapCities.length, ppm2, price);
+
+  // Por tipo de anunciante (grupos 1 a 4; el 0 es "sin clasificar" y no se muestra).
+  const ownerKeys = new Int32Array(m);
+  for (let k = 0; k < m; k++) ownerKeys[k] = p.owner[rows[k]] >= 1 ? p.owner[rows[k]] - 1 : -1;
+  const byOwnerGroups = groupMedians(ownerKeys, 4, ppm2);
+  const byOwner = [1, 2, 3, 4].map((code, slot) => ({
+    code,
+    label: p.meta.owner_groups[code],
+    listings: byOwnerGroups.count[slot],
+    price_m2_median: Math.round(byOwnerGroups.medians[0][slot]),
+  }));
 
   const byDepartment: DepartmentStat[] = p.meta.departments
     .map((department, d) => ({
@@ -258,6 +270,7 @@ export function computeSummary(p: Points, rows: Uint32Array, mapCities: number[]
     topCities,
     amenities,
     byStratum,
+    byOwner,
   };
 }
 
