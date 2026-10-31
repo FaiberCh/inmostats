@@ -191,9 +191,7 @@ export default function MarketScope({ initial, mapCities, ownerEffects }: Props)
                 </Card>
               </div>
 
-              <Card title="Precio según quién anuncia" note="Mediana de precio por m² por tipo de anunciante, frente a las empresas.">
-                <OwnerCompare groups={summary.byOwner} effects={ownerEffects} total={count} />
-              </Card>
+              <OwnerCompare groups={summary.byOwner} effects={ownerEffects} />
             </>
           )}
         </section>

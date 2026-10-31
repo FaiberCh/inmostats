@@ -21,7 +21,7 @@ Frontend del tablero: Next.js (App Router, TypeScript) pensado para Vercel. Es u
   enlaces guardados ya no existe, el botón solo se habilita si el anuncio sigue publicado: lo comprueba
   `/api/listing-status` (ruta de servidor de Next que consulta a Fincaraíz solo al fijar una tarjeta, con un agente de
   usuario honesto y el resultado en caché un día).
-- **Precio según quién anuncia:** tarjeta en Mercado que compara el precio por m² de empresas, asesores independientes,
+- **Precio según quién anuncia:** dos gráficos en Mercado (barras de medianas e intervalos de la diferencia) que comparan el precio por m² de empresas, asesores independientes,
   propietarios directos y desarrolladores. El grupo se deduce del nombre del anunciante con una heurística
   (`src/pipelines/owner_groups.py`) y al navegador solo llega la categoría, nunca el nombre. Las medianas responden a los
   filtros; la diferencia "a igualdad de condiciones" (ciudad, estrato, área y habitaciones) es nacional y sale de
