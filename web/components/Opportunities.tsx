@@ -110,10 +110,9 @@ export default function Opportunities({ points, rows, filtered }: Props) {
           />
           <p className="foot muted">
             {mode === "zone"
-              ? `La línea marca la mediana de ${millions(classified.medianPpm2, 1)} por m². Azul verdoso: ${Math.round((1 - BELOW_RATIO) * 100)} % o más por debajo. Oscuro: ${Math.round((ABOVE_RATIO - 1) * 100)} % o más por encima.`
-              : `El color compara el precio publicado con el que esperaba el modelo, calculado sin haber visto ese anuncio. La línea es solo una guía: la mediana de ${millions(classified.medianPpm2, 1)} por m².`}{" "}
-            {counts[Position.Extreme] > 0 &&
-              `Los ${int(counts[Position.Extreme])} puntos huecos (menos de un tercio o más del triple de la referencia) suelen ser errores de captura y no entran en las listas.`}
+              ? `Línea: mediana de ${millions(classified.medianPpm2, 1)} por m². Azul verdoso: ${Math.round((1 - BELOW_RATIO) * 100)} % o más por debajo. Oscuro: ${Math.round((ABOVE_RATIO - 1) * 100)} % o más por encima.`
+              : `Color según el precio que esperaba el modelo, sin haber visto ese anuncio. Línea: mediana de ${millions(classified.medianPpm2, 1)} por m².`}{" "}
+            {counts[Position.Extreme] > 0 && `Los ${int(counts[Position.Extreme])} huecos son probables errores y no entran en las listas.`}
           </p>
         </Card>
       )}
@@ -465,9 +464,9 @@ function ScatterCanvas({ points, rows, classified, mode, selection, onSelect }: 
       </div>
       {domain.omitted > 0 && (
         <p className="foot muted">
-          <strong>Recorte por percentil.</strong> Cada eje llega a su percentil 99 (el valor bajo el cual está el 99 % de los anuncios), redondeado:{" "}
-          {int(domain.xMax)} m² y {millions(domain.yMax)}. Así unos pocos anuncios enormes no aplastan al resto. Quedan fuera {int(domain.omitted)} (
-          {pct((100 * domain.omitted) / rows.length, 1)}), que siguen contando en las cifras y en las listas.
+          <strong>Recorte:</strong> ejes hasta el{" "}
+          <abbr title="El valor por debajo del cual está el 99 % de los anuncios">percentil 99</abbr> ({int(domain.xMax)} m² y {millions(domain.yMax)}). Quedan fuera{" "}
+          {int(domain.omitted)} anuncios ({pct((100 * domain.omitted) / rows.length, 1)}), que sí cuentan en las cifras.
         </p>
       )}
       {selection && selRow !== null && !floating && (

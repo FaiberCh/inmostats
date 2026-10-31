@@ -109,15 +109,15 @@ export default function MarketScope({ initial, mapCities, ownerEffects }: Props)
               {
                 label: "Anuncios",
                 value: int(count),
-                caption: active ? `${pct((100 * count) / total, 1)} de los ${int(total)} anuncios` : "apartamentos únicos, ya depurados",
+                caption: active ? `${pct((100 * count) / total, 1)} del total` : "apartamentos únicos",
               },
               {
                 label: "Precio mediano",
                 value: millions(k.price_median_cop),
-                caption: `mitad central de los precios: ${millions(k.price_p25_cop)} a ${millions(k.price_p75_cop)}`,
+                caption: `mitad entre ${millions(k.price_p25_cop)} y ${millions(k.price_p75_cop)}`,
               },
               { label: "Precio por m² mediano", value: millions(k.price_m2_median_cop, 1), caption: "por metro cuadrado" },
-              { label: "Área mediana", value: dec(k.area_median_m2, 0), unit: "m²", caption: "área privada del apartamento" },
+              { label: "Área mediana", value: dec(k.area_median_m2, 0), unit: "m²", caption: "área privada" },
             ]}
           />
         )}

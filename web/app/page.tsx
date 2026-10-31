@@ -9,6 +9,17 @@ import { loadAll } from "@/lib/data";
 import { dayMonth, dec, featureLabel, int, millions, pct, shortDate } from "@/lib/format";
 import type { Summary } from "@/lib/stats";
 
+// Nombres de los hiperparametros del modelo en lenguaje llano (el nombre tecnico queda como tooltip).
+const PARAM_LABELS: Record<string, string> = {
+  n_estimators: "Árboles",
+  max_depth: "Profundidad máxima",
+  learning_rate: "Tasa de aprendizaje",
+  subsample: "Fracción de filas por árbol",
+  colsample_bytree: "Fracción de variables por árbol",
+  min_child_weight: "Peso mínimo por hoja",
+  min_samples_leaf: "Mínimo de anuncios por hoja",
+};
+
 function weeksBetween(from: string, to: string) {
   return Math.max(1, Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000 / 7));
 }
@@ -32,21 +43,21 @@ export default async function Page() {
     {
       label: "Dónde está más caro el m²",
       figure: first.department,
-      text: `${millions(first.price_m2_median, 1)} por m², frente a ${millions(kpis.price_m2_median_cop, 1)} a nivel nacional.${
+      text: `${millions(first.price_m2_median, 1)} por m², frente a ${millions(kpis.price_m2_median_cop, 1)} nacional.${
         bigTwoShare !== null ? ` ${topCities[0].city} y ${topCities[1].city} reúnen el ${pct(bigTwoShare, 0)} de los anuncios.` : ""
       }`,
     },
     {
       label: "Qué pesa más en el precio",
       figure: `${f1.label} y ${f2.label.toLowerCase()}`,
-      text: `${pct(f1.pct, 0)} y ${pct(f2.pct, 0)} de la importancia en el modelo, más que ${f3.label.toLowerCase()} (${pct(f3.pct, 0)}). El estimador se equivoca ${pct(model.metrics_cv["MAPE_%"], 1)} en promedio.`,
+      text: `${pct(f1.pct, 0)} y ${pct(f2.pct, 0)} de la importancia en el modelo, más que ${f3.label.toLowerCase()} (${pct(f3.pct, 0)}). Error promedio: ${pct(model.metrics_cv["MAPE_%"], 1)}.`,
     },
     ...(pc
       ? [
           {
             label: "Cuánto se mueve el mercado",
             figure: pct(pc.changed_pct, 1),
-            text: `de los anuncios cambió de precio en unas ${weeks} semanas; el nivel de precios quedó plano.`,
+            text: `de los anuncios cambió de precio en unas ${weeks} semanas; el nivel quedó plano.`,
           },
         ]
       : []),
@@ -79,8 +90,7 @@ export default async function Page() {
           <div>
             <h1>Apartamentos en venta en Colombia</h1>
             <p className="lede">
-              Precios de oferta de {int(kpis.listings)} apartamentos, capturados entre el {shortDate(meta.data_from)} y el {shortDate(meta.data_to)}.
-              Todas las cifras son medianas.
+              Precios de oferta de {int(kpis.listings)} apartamentos, del {dayMonth(meta.data_from)} al {shortDate(meta.data_to)}. Cifras en medianas.
             </p>
           </div>
           <a className="btn" href="#estimador">
@@ -122,12 +132,12 @@ export default async function Page() {
             <KpiStrip
               label="Indicadores de dinámica"
               cells={[
-                { label: "Persisten entre corridas", value: pct(t.persist_pct_mean), caption: "de los anuncios de una corrida siguen en la siguiente" },
+                { label: "Persisten entre corridas", value: pct(t.persist_pct_mean), caption: "siguen en la corrida siguiente" },
                 ...(t.reappear_pct_mean !== null
-                  ? [{ label: "Reaparecen", value: pct(t.reappear_pct_mean), caption: "de los que faltaron vuelven en la siguiente" }]
+                  ? [{ label: "Reaparecen", value: pct(t.reappear_pct_mean), caption: "de los ausentes vuelven en la siguiente" }]
                   : []),
-                { label: "Cambian de precio", value: pct(pc.changed_pct, 1), caption: `de ${int(pc.comparisons)} comparaciones entre corridas` },
-                { label: "No vuelven a verse", value: `≤ ${pct(t.never_return_pct_upper_bound)}`, caption: "de la primera corrida, como máximo" },
+                { label: "Cambian de precio", value: pct(pc.changed_pct, 1), caption: `de ${int(pc.comparisons)} comparaciones` },
+                { label: "No vuelven a verse", value: `≤ ${pct(t.never_return_pct_upper_bound)}`, caption: "de la primera corrida" },
               ]}
             />
           )}
@@ -233,10 +243,10 @@ export default async function Page() {
           <KpiStrip
             label="Métricas del modelo en validación cruzada"
             cells={[
-              { label: "Error porcentual medio", value: pct(model.metrics_cv["MAPE_%"]), caption: `validación cruzada; en reserva ${pct(model.metrics_holdout["MAPE_%"])}` },
-              { label: "R²", value: dec(model.metrics_cv.R2, 3), caption: `variación del precio que explica; en reserva ${dec(model.metrics_holdout.R2, 3)}` },
-              { label: "Error absoluto medio", value: millions(model.metrics_cv.MAE_COP), caption: "diferencia típica con el precio publicado" },
-              { label: "Raíz del error cuadrático", value: millions(model.metrics_cv.RMSE_COP), caption: "pesa más los errores grandes" },
+              { label: "Error porcentual medio", value: pct(model.metrics_cv["MAPE_%"]), caption: `en reserva: ${pct(model.metrics_holdout["MAPE_%"])}` },
+              { label: "R²", value: dec(model.metrics_cv.R2, 3), caption: `en reserva: ${dec(model.metrics_holdout.R2, 3)}` },
+              { label: "Error absoluto medio", value: millions(model.metrics_cv.MAE_COP), caption: "error típico en pesos" },
+              { label: "Raíz del error cuadrático", value: millions(model.metrics_cv.RMSE_COP), caption: "castiga los errores grandes" },
             ]}
           />
 
@@ -251,11 +261,11 @@ export default async function Page() {
                 }))}
               />
             </Card>
-            <Card title="Parámetros" note="Los más influyentes.">
+            <Card title="Parámetros" note="Con los que se entrenó el modelo.">
               <dl className="kv">
                 {Object.entries(model.hyperparameters).map(([key, value]) => (
                   <div key={key}>
-                    <dt className="mono">{key}</dt>
+                    <dt title={key}>{PARAM_LABELS[key] ?? key.replace(/_/g, " ")}</dt>
                     <dd className="num">{value.toLocaleString("es-CO", { maximumFractionDigits: 4 })}</dd>
                   </div>
                 ))}
