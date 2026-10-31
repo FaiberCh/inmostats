@@ -63,6 +63,20 @@ export function loadPoints(): Promise<Points> {
   return cached;
 }
 
+export type LinkStatus = "alive" | "dead" | "unknown";
+
+/** Pregunta al servidor si el anuncio sigue publicado (el navegador no puede consultar Fincaraiz por CORS). */
+export async function checkListing(url: string): Promise<LinkStatus> {
+  try {
+    const response = await fetch(`/api/listing-status?path=${encodeURIComponent(new URL(url).pathname)}`);
+    if (!response.ok) return "unknown";
+    const body = (await response.json()) as { status?: LinkStatus };
+    return body.status === "alive" || body.status === "dead" ? body.status : "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
 const SITE_BASE = "https://www.fincaraiz.com.co";
 const URL_SHARDS = 64;
 const shardCache = new Map<number, Promise<Record<string, string>>>();

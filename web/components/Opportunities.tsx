@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { dec, int, millions, pct, pesos, shortDate } from "@/lib/format";
-import { listingUrl, type Points } from "@/lib/points";
+import { checkListing, listingUrl, type LinkStatus, type Points } from "@/lib/points";
 import { niceStep, ticks } from "@/lib/scale";
 import {
   ABOVE_RATIO,
@@ -513,16 +513,24 @@ function TipCard({ points, row, ratio, position, mode, medianPpm2, pinned, float
   const diff = (ratio - 1) * 100;
   const tone = position === Position.Below ? "below" : position === Position.Above ? "above" : position === Position.Extreme ? "extreme" : "in";
 
-  // La direccion del anuncio vive en archivos aparte: se pide solo al fijar la tarjeta.
-  const [link, setLink] = useState<{ id: number; url: string | null } | null>(null);
+  // La direccion del anuncio vive en archivos aparte y su estado lo comprueba el servidor: ambas cosas se piden
+  // solo al fijar la tarjeta, y el boton se habilita unicamente si el anuncio sigue publicado.
+  const [link, setLink] = useState<{ id: number; url: string | null; status: LinkStatus } | null>(null);
   useEffect(() => {
     if (!pinned) return;
     let cancelled = false;
-    listingUrl(id).then((url) => !cancelled && setLink({ id, url }));
+    (async () => {
+      const url = await listingUrl(id);
+      if (cancelled) return;
+      if (!url) return setLink({ id, url: null, status: "unknown" });
+      const status = await checkListing(url);
+      if (!cancelled) setLink({ id, url, status });
+    })();
     return () => {
       cancelled = true;
     };
   }, [id, pinned]);
+  const linkState = link?.id === id ? (link.url ? link.status : "missing") : "checking";
 
   return (
     <div className={floating ? "tip tip-float" : "tip"} style={style} role={pinned ? "group" : undefined} aria-label="Detalle del anuncio">
@@ -569,16 +577,32 @@ function TipCard({ points, row, ratio, position, mode, medianPpm2, pinned, float
       </dl>
       {pinned ? (
         <div className="tip-actions">
-          {link?.id === id && link.url ? (
+          {linkState === "alive" && link?.url ? (
             <a className="btn small-btn" href={link.url} target="_blank" rel="noopener noreferrer">
-              Ver detalles
+              Ver anuncio original
             </a>
           ) : (
             <button className="btn small-btn" disabled>
-              {link?.id === id ? "Enlace no disponible" : "Ver detalles"}
+              {linkState === "checking"
+                ? "Verificando el enlace…"
+                : linkState === "dead"
+                  ? "Anuncio ya no disponible"
+                  : linkState === "missing"
+                    ? "Sin enlace"
+                    : "No se pudo verificar"}
             </button>
           )}
-          <span className="muted small">Abre el anuncio original, capturado el {shortDate(points.meta.captured_to)}.</span>
+          <span className="muted small" aria-live="polite">
+            {linkState === "alive"
+              ? `Abre el anuncio original, capturado el ${shortDate(points.meta.captured_to)}.`
+              : linkState === "dead"
+                ? `Fincaraíz ya no lo muestra. Se capturó el ${shortDate(points.meta.captured_to)}.`
+                : linkState === "unknown"
+                  ? "No hubo respuesta de Fincaraíz. Prueba de nuevo más tarde."
+                  : linkState === "missing"
+                    ? "Este anuncio no tiene enlace guardado."
+                    : "Comprobando que el anuncio siga publicado."}
+          </span>
         </div>
       ) : (
         <p className="muted small">Haz clic para fijar y ver el enlace al anuncio.</p>
