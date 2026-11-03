@@ -16,6 +16,7 @@ concurrency:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   scrape:
@@ -71,6 +72,22 @@ jobs:
 
           echo "No se pudo subir tras varios intentos."
           exit 1
+
+      # Al terminar el recorrido completo el cron no se detendria solo (pasado el
+      # cooldown arrancaria otra corrida): se apaga el propio workflow y se avisa.
+      - name: Apagar el scraper si el recorrido esta completo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if python -c "import json,sys; sys.exit(0 if json.load(open('data/raw/.checkpoint_national.json')).get('done') else 1)"; then
+            gh workflow disable "Scraper InmoStats"
+            curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d "parse_mode=HTML" \
+              --data-urlencode $'text=🏁 <b>InmoStats</b>: recorrido nacional completo. El scraper se apago solo.\nYa puedes pasar el repo a privado cuando los datos esten verificados.'
+          else
+            echo "Recorrido en curso, el scraper sigue activo."
+          fi
 
       - name: Notificar fallo por Telegram
         if: failure()
