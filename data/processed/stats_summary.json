@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-11-03T19:37:40.684961+00:00",
-  "total_listings": 82642,
+  "generated_at": "2026-11-03T20:09:59.756695+00:00",
+  "total_listings": 82891,
   "zones_with_data": 24,
-  "avg_price_cop": 715920418.0,
-  "avg_price_per_m2": 6428573.0,
-  "avg_area_m2": 106.9,
+  "avg_price_cop": 714888508.0,
+  "avg_price_per_m2": 6423098.0,
+  "avg_area_m2": 106.8,
   "avg_bedrooms": 2.7,
   "avg_bathrooms": 2.4,
   "avg_stratum": 4.5,
@@ -15,9 +15,9 @@
       "avg_price_per_m2": 7369329
     },
     "Bogotá D.C.": {
-      "listings": 20686,
-      "avg_price_cop": 985342397,
-      "avg_price_per_m2": 7606752
+      "listings": 20685,
+      "avg_price_cop": 985361509,
+      "avg_price_per_m2": 7606776
     },
     "Valle del Cauca": {
       "listings": 8468,
@@ -60,19 +60,19 @@
       "avg_price_per_m2": 8125692
     },
     "Quindío": {
-      "listings": 1474,
-      "avg_price_cop": 413552450,
-      "avg_price_per_m2": 5168240
+      "listings": 1575,
+      "avg_price_cop": 414045830,
+      "avg_price_per_m2": 5194449
     },
     "Tolima": {
-      "listings": 1013,
-      "avg_price_cop": 351732197,
-      "avg_price_per_m2": 4088020
+      "listings": 1060,
+      "avg_price_cop": 351772730,
+      "avg_price_per_m2": 4100684
     },
     "Norte de Santander": {
-      "listings": 874,
-      "avg_price_cop": 313376621,
-      "avg_price_per_m2": 3451961
+      "listings": 976,
+      "avg_price_cop": 315664955,
+      "avg_price_per_m2": 3485780
     },
     "Meta": {
       "listings": 90,
