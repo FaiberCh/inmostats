@@ -25,3 +25,6 @@ models/feature_config.json
 
 # Archivos de trabajo de la skill de diseno (capturas del inspector)
 .taste-skill/
+
+# Dataset limpio generado por build_clean_dataset (se publica en Hugging Face, no en git)
+data/clean/
