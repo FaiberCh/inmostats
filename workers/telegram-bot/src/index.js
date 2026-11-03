@@ -7,9 +7,15 @@
  * tambien si el repositorio es privado; sin ese secreto, por
  * raw.githubusercontent.com, que solo sirve si es publico. La configuracion
  * del modelo se lee de su repositorio publico en Hugging Face.
+ *
+ * /parar y /reanudar (cada uno con su /..._confirmar) desactivan y activan el
+ * workflow del scraper por la API de GitHub. Usan un secreto aparte,
+ * GITHUB_ACTIONS_TOKEN (permiso Actions de lectura y escritura sobre este
+ * repo y nada mas). Sin ese secreto el bot sigue siendo de solo lectura.
  */
 
 const REPO = "FaiberCh/inmostats";
+const WORKFLOW_FILE = "scrape.yml";
 const CHECKPOINT_PATH = "data/raw/.checkpoint_national.json";
 const STATS_PATH = "data/processed/stats_summary.json";
 // feature_config.json esta gitignored en el repo; la copia vigente vive en el
@@ -34,6 +40,89 @@ function githubFile(path, env) {
     ];
   }
   return [`https://raw.githubusercontent.com/${REPO}/master/${path}`, { cf: { cacheTtl: 0 } }];
+}
+
+/** Llama a la API de Actions sobre el workflow del scraper con el token de escritura. */
+function workflowRequest(env, suffix = "", method = "GET") {
+  return fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW_FILE}${suffix}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${env.GITHUB_ACTIONS_TOKEN}`,
+      Accept: "application/vnd.github+json",
+      "User-Agent": "inmostats-telegram-bot",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+}
+
+const NO_CONTROL_MESSAGE =
+  "⚠️ Este bot no tiene permiso para controlar el scraper (falta el secreto GITHUB_ACTIONS_TOKEN).";
+
+/** "active", "disabled_manually", etc., o null si no hay token o la consulta falla. */
+async function getWorkflowState(env) {
+  if (!env || !env.GITHUB_ACTIONS_TOKEN) return null;
+  try {
+    const res = await workflowRequest(env);
+    if (!res.ok) return null;
+    return (await res.json()).state || null;
+  } catch {
+    return null;
+  }
+}
+
+async function workflowStatusLine(env) {
+  const state = await getWorkflowState(env);
+  if (!state) return "";
+  return `\n⚙️ Workflow del scraper: ${state === "active" ? "activo" : "desactivado"}`;
+}
+
+async function buildStopPrompt(env) {
+  if (!env.GITHUB_ACTIONS_TOKEN) return NO_CONTROL_MESSAGE;
+  const state = await getWorkflowState(env);
+  if (state === null) return "⚠️ No pude consultar el estado del scraper ahora mismo. Intenta de nuevo en un momento.";
+  if (state !== "active") return "ℹ️ El scraper ya esta desactivado.";
+  return (
+    "⚠️ Vas a <b>desactivar el scraper</b>. Si hay una ejecucion en curso terminara su tramo y guardara sus datos; " +
+    "despues no saldran mas.\n\nPara confirmar envia /parar_confirmar"
+  );
+}
+
+async function stopScraper(env) {
+  if (!env.GITHUB_ACTIONS_TOKEN) return NO_CONTROL_MESSAGE;
+  try {
+    const res = await workflowRequest(env, "/disable", "PUT");
+    if (res.status === 204) {
+      return "⏹ <b>Scraper desactivado.</b> Una ejecucion en curso terminara su tramo. Para volver a activarlo: /reanudar";
+    }
+    return `⚠️ GitHub rechazo la orden (codigo ${res.status}). El scraper sigue como estaba.`;
+  } catch {
+    return "⚠️ No pude contactar a GitHub. El scraper sigue como estaba.";
+  }
+}
+
+async function buildResumePrompt(env) {
+  if (!env.GITHUB_ACTIONS_TOKEN) return NO_CONTROL_MESSAGE;
+  const state = await getWorkflowState(env);
+  if (state === null) return "⚠️ No pude consultar el estado del scraper ahora mismo. Intenta de nuevo en un momento.";
+  if (state === "active") return "ℹ️ El scraper ya esta activo.";
+  return (
+    "⚠️ Vas a <b>activar el scraper</b>: correra cada ~30 min hasta completar el recorrido. " +
+    "Si el recorrido anterior ya termino y paso el cooldown de 24 h, arrancara una corrida nueva.\n\n" +
+    "Para confirmar envia /reanudar_confirmar"
+  );
+}
+
+async function resumeScraper(env) {
+  if (!env.GITHUB_ACTIONS_TOKEN) return NO_CONTROL_MESSAGE;
+  try {
+    const res = await workflowRequest(env, "/enable", "PUT");
+    if (res.status === 204) {
+      return "▶️ <b>Scraper activado.</b> La proxima ejecucion saldra en menos de 30 minutos. Para detenerlo: /parar";
+    }
+    return `⚠️ GitHub rechazo la orden (codigo ${res.status}). El scraper sigue como estaba.`;
+  } catch {
+    return "⚠️ No pude contactar a GitHub. El scraper sigue como estaba.";
+  }
 }
 
 export default {
@@ -75,7 +164,9 @@ export default {
           "/status: progreso del scraping nacional\n" +
           "/stats: promedios y anuncios por zona\n" +
           "/variables: que campos se estan extrayendo\n" +
-          "/modelo: resumen del modelo, sus metricas y parametros clave"
+          "/modelo: resumen del modelo, sus metricas y parametros clave\n" +
+          "/parar: desactivar el scraper (pide confirmacion)\n" +
+          "/reanudar: activar el scraper (pide confirmacion)"
       );
     } else if (text === "/status" || text === "/estado") {
       await sendTelegramMessage(env, chatId, await buildStatusMessage(env));
@@ -85,6 +176,14 @@ export default {
       await sendTelegramMessage(env, chatId, buildVariablesMessage());
     } else if (text === "/modelo" || text === "/model") {
       await sendTelegramMessage(env, chatId, await buildModelMessage());
+    } else if (text === "/parar" || text === "/stop") {
+      await sendTelegramMessage(env, chatId, await buildStopPrompt(env));
+    } else if (text === "/parar_confirmar") {
+      await sendTelegramMessage(env, chatId, await stopScraper(env));
+    } else if (text === "/reanudar" || text === "/resume") {
+      await sendTelegramMessage(env, chatId, await buildResumePrompt(env));
+    } else if (text === "/reanudar_confirmar") {
+      await sendTelegramMessage(env, chatId, await resumeScraper(env));
     }
 
     return new Response("OK");
@@ -105,6 +204,7 @@ async function buildStatusMessage(env) {
     return "⚠️ No pude leer el estado del scraper ahora mismo. Intenta de nuevo en un momento.";
   }
 
+  const wfLine = await workflowStatusLine(env);
   const departments = Object.values(checkpoint.departments);
   const doneCount = departments.filter((d) => d.done).length;
   const total = departments.length;
@@ -123,7 +223,7 @@ async function buildStatusMessage(env) {
       `🎉 <b>InmoStats</b>: ultima corrida nacional: completa\n${divider}\n` +
       `✅ ${doneCount}/${total} zonas cubiertas\n` +
       `⏱ Tiempo total: ${duration}\n` +
-      `${cooldownLine}\n${divider}`
+      `${cooldownLine}${wfLine}\n${divider}`
     );
   }
 
@@ -163,7 +263,7 @@ async function buildStatusMessage(env) {
     zonaLinea +
     `📊 Zonas completadas: ${bar} ${doneCount}/${total} (${zonesPct}%)\n` +
     `📈 Avance nacional por paginas: ${nationalPct}%${nationalNote}\n${divider}\n` +
-    `🔁 El checkpoint se actualiza cada ~30 min via GitHub Actions`
+    `🔁 El checkpoint se actualiza cada ~30 min via GitHub Actions${wfLine}`
   );
 }
 
@@ -305,7 +405,16 @@ async function buildModelMessage() {
   );
 }
 
-export { buildStatusMessage, buildStatsMessage, buildVariablesMessage, buildModelMessage };
+export {
+  buildStatusMessage,
+  buildStatsMessage,
+  buildVariablesMessage,
+  buildModelMessage,
+  buildStopPrompt,
+  stopScraper,
+  buildResumePrompt,
+  resumeScraper,
+};
 
 async function sendTelegramMessage(env, chatId, text) {
   const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;

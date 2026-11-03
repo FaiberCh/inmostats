@@ -13,6 +13,13 @@ publico. El modelo se lee de su repositorio publico en Hugging Face.
 | `/stats` (`/promedios`) | promedios y anuncios por zona | `data/processed/stats_summary.json` del repo (API con token, o `raw.githubusercontent.com`) |
 | `/variables` (`/campos`) | campos que se extraen por anuncio | texto fijo en el worker |
 | `/modelo` (`/model`) | resumen del modelo: metricas de validacion cruzada, parametros clave y variables mas influyentes | `feature_config.json` de `fchaparro/inmostats-model` en Hugging Face |
+| `/parar` y `/parar_confirmar` | desactivan el workflow del scraper (el primero solo pide confirmar y no cambia nada) | API de Actions de GitHub, con `GITHUB_ACTIONS_TOKEN` |
+| `/reanudar` y `/reanudar_confirmar` | activan el workflow del scraper, con la misma confirmacion en dos pasos | API de Actions de GitHub, con `GITHUB_ACTIONS_TOKEN` |
+
+Con `GITHUB_ACTIONS_TOKEN` configurado, `/status` agrega ademas una linea con el
+estado del workflow (activo o desactivado). Desactivar no cancela la ejecucion
+en curso: termina su tramo y guarda sus datos. Todos los comandos responden
+solo al chat autorizado.
 
 `/modelo` muestra la ultima version publicada en el repositorio de modelo
 `fchaparro/inmostats-model` (la misma que descarga el Space al construirse),
@@ -40,6 +47,7 @@ npx wrangler secret put TELEGRAM_BOT_TOKEN
 npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
 npx wrangler secret put AUTHORIZED_CHAT_ID
 npx wrangler secret put GITHUB_READ_TOKEN
+npx wrangler secret put GITHUB_ACTIONS_TOKEN
 ```
 
 - `TELEGRAM_BOT_TOKEN`: el mismo token del bot usado en el scraper.
@@ -53,6 +61,13 @@ npx wrangler secret put GITHUB_READ_TOKEN
   un solo permiso, **Contents: Read-only**. Se crea en Settings, Developer
   settings, Personal access tokens, Fine-grained tokens. Caduca (maximo 1 ano),
   asi que hay que renovarlo y volver a ejecutar `wrangler secret put`.
+- `GITHUB_ACTIONS_TOKEN` (opcional; sin el, el bot sigue siendo de solo
+  lectura y `/parar` y `/reanudar` avisan que no tienen permiso): otro token de
+  grano fino, tambien limitado al repo `inmostats`, con el permiso **Actions:
+  Read and write** (Metadata queda en solo lectura). No sirve para leer ni
+  modificar codigo o datos del repo, pero si para activar, desactivar y lanzar
+  workflows, asi que se mantiene separado del token de lectura. Caduca y hay
+  que renovarlo igual.
 
 ## Registrar el webhook en Telegram
 
