@@ -1,91 +1,91 @@
 {
-  "started_at": "2026-07-27T17:19:38.987853+00:00",
-  "done": true,
+  "started_at": "2026-11-03T18:56:20.203874+00:00",
+  "done": false,
   "departments": {
     "tolima": {
       "name": "Tolima",
       "next_page": 29,
-      "last_page": 28,
-      "done": true
+      "last_page": 35,
+      "done": false
     },
     "norte-de-santander": {
       "name": "Norte de Santander",
-      "next_page": 35,
-      "last_page": 34,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "quindio": {
       "name": "Quindío",
-      "next_page": 59,
-      "last_page": 58,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "magdalena": {
       "name": "Magdalena",
-      "next_page": 80,
-      "last_page": 79,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "caldas": {
       "name": "Caldas",
-      "next_page": 128,
-      "last_page": 127,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "santander": {
       "name": "Santander",
-      "next_page": 138,
-      "last_page": 137,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "bolivar": {
       "name": "Bolívar",
-      "next_page": 175,
-      "last_page": 174,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "risaralda": {
       "name": "Risaralda",
-      "next_page": 190,
-      "last_page": 189,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "cundinamarca": {
       "name": "Cundinamarca",
-      "next_page": 218,
-      "last_page": 217,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "atlantico": {
       "name": "Atlántico",
-      "next_page": 257,
-      "last_page": 256,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "valle-del-cauca": {
       "name": "Valle del Cauca",
-      "next_page": 359,
-      "last_page": 358,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "bogota-dc": {
       "name": "Bogotá D.C.",
-      "next_page": 918,
-      "last_page": 917,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "antioquia": {
       "name": "Antioquia",
-      "next_page": 1086,
-      "last_page": 1085,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "resto-de-colombia": {
       "name": "Resto de Colombia",
-      "next_page": 3747,
-      "last_page": 3746,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     }
   },
-  "finished_at": "2026-07-30T07:46:12.669369+00:00"
+  "finished_at": null
 }
