@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - run: pip install requests beautifulsoup4 lxml pandas
+      - run: pip install requests beautifulsoup4 lxml pandas huggingface_hub
 
       - name: Scrapear un tramo de la corrida nacional
         run: python -m src.scraper.fincaraiz_scraper
@@ -37,21 +37,29 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-      - name: Recalcular estadisticas agregadas
-        run: python -m src.pipelines.compute_stats
+      # Las estadisticas las recalcula el workflow diario stats.yml (hacerlo aqui
+      # exigiria bajar todos los CSV en cada corrida).
 
-      - name: Guardar datos y checkpoint nuevos
+      # Primero Hugging Face y despues el checkpoint: si falla el push del
+      # checkpoint, la siguiente corrida repite unas paginas (duplicados que se
+      # quitan por listing_id); al reves se perderian datos sin aviso.
+      - name: Subir los CSV nuevos a Hugging Face
+        run: python scripts/upload_raw_to_hf.py
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
+      - name: Guardar el checkpoint nuevo en git
         run: |
           git config user.name "inmostats-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/raw/ data/processed/stats_summary.json
+          git add data/raw/.checkpoint_national.json
 
           if git diff --cached --quiet; then
             echo "Sin cambios que subir."
             exit 0
           fi
 
-          git commit -m "scrape: actualiza datos crudos y checkpoint"
+          git commit -m "scrape: actualiza checkpoint"
 
           for attempt in 1 2 3; do
             if git push; then

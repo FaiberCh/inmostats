@@ -1,0 +1,67 @@
+name: Estadisticas InmoStats
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: inmostats-stats
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # clean_data importa el modulo del scraper, de ahi requests/bs4/lxml.
+      - run: pip install requests beautifulsoup4 lxml pandas huggingface_hub
+
+      - name: Bajar los CSV crudos desde Hugging Face
+        run: |
+          python - <<'PY'
+          import os
+          from huggingface_hub import snapshot_download
+          snapshot_download(
+              repo_id="fchaparro/inmostats-data",
+              repo_type="dataset",
+              local_dir="data",
+              allow_patterns=["raw/**"],
+              token=os.environ["HF_TOKEN"],
+          )
+          PY
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+
+      - name: Recalcular estadisticas agregadas
+        run: python -m src.pipelines.compute_stats
+
+      - name: Guardar stats_summary.json
+        run: |
+          git config user.name "inmostats-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/processed/stats_summary.json
+
+          if git diff --cached --quiet; then
+            echo "Sin cambios que subir."
+            exit 0
+          fi
+
+          git commit -m "stats: actualiza resumen de estadisticas"
+
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push rechazado (intento $attempt/3), sincronizando con origin..."
+            git pull --rebase origin master
+          done
+          exit 1
