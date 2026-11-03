@@ -8,9 +8,11 @@ venv/
 .venv/
 env/
 
-# data/raw/*.csv and the scraper checkpoint ARE versioned on purpose: the
-# GitHub Actions workflow runs on ephemeral runners and relies on git as the
+# Raw scraper CSVs are no longer versioned: they live in the private dataset
+# fchaparro/inmostats-data on Hugging Face. Only the checkpoints stay in git:
+# the GitHub Actions workflow runs on ephemeral runners and relies on git as the
 # persistence layer to resume the national scrape across scheduled runs.
+data/raw/**/*.csv
 data/processed/*.csv
 models/*.pkl
 models/*.joblib

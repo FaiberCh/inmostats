@@ -1,8 +1,7 @@
-# Imagen para la API (src/api/), pensada para Hugging Face Spaces (tipo
-# Docker). El modelo se entrena durante el build -models/*.joblib y
-# feature_config.json estan gitignored a proposito (son artefactos
-# derivados, no codigo fuente), pero data/raw/*.csv SI esta versionado,
-# asi que el entrenamiento es reproducible dentro de la imagen.
+# Imagen heredada para la API (src/api/). Entrena el modelo durante el build, lo
+# que exigia los CSV de data/raw/ en git; ya no estan versionados (viven en el
+# dataset privado de Hugging Face), asi que esta imagen ya no construye sola.
+# El Space se construye desde la rama space-deploy, que descarga el modelo.
 FROM python:3.12-slim
 
 WORKDIR /app

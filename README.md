@@ -28,7 +28,7 @@ Detalle completo de la corrida vigente en `models/feature_config.json`
 ```text
 inmostats/
 ├── data/
-│   ├── raw/              # CSV crudos por corrida (los históricos están en git; los nuevos van a Hugging Face, ver Fase 3)
+│   ├── raw/              # CSV crudos por corrida (no versionados: viven en un dataset privado de Hugging Face; en git solo el checkpoint)
 │   ├── processed/        # dataset limpio + stats_summary.json
 │   └── reference/        # geojson de departamentos/municipios (geoBoundaries)
 ├── src/
@@ -36,7 +36,7 @@ inmostats/
 │   ├── pipelines/        # limpieza, feature engineering, utilidades geo, dinámica del mercado, exportador web
 │   ├── training/         # entrenamiento, tuning y evaluación del modelo
 │   ├── api/               # servicio FastAPI que sirve el modelo
-│   └── dashboard/         # dashboard anterior en Streamlit (el vigente es web/)
+│   └── dashboard/         # Streamlit: app.py redirige al web; app_anterior.py es la versión histórica
 ├── web/                   # dashboard web (Next.js para Vercel), ver web/README.md
 ├── docs/                  # imágenes del README (captura del dashboard)
 ├── notebooks/             # EDA (01_eda.ipynb)
@@ -257,12 +257,15 @@ No tiene servidor propio: lee JSON estáticos que genera
 
 ### Versión anterior (Streamlit)
 
-El primer dashboard, en Streamlit (`src/dashboard/app.py`), consumía la API y
-los datos procesados. Se conserva en el repositorio como versión histórica y
-fue reemplazado por el web:
+El primer dashboard, en Streamlit, consumía la API y los datos procesados.
+Fue reemplazado por el web: `src/dashboard/app.py` es ahora una página mínima
+que avisa del cambio y enlaza al dashboard nuevo (para que los enlaces
+antiguos sigan llevando a algún sitio), y la versión completa se conserva en
+`src/dashboard/app_anterior.py`. Esa versión necesita los CSV crudos en
+`data/raw/` (ya no están en git) y la API:
 
 ```bash
-streamlit run src/dashboard/app.py   # requiere la API (INMOSTATS_API_URL)
+streamlit run src/dashboard/app_anterior.py   # requiere la API (INMOSTATS_API_URL)
 ```
 
 ## Notebooks
@@ -299,12 +302,12 @@ dinámica (unos 20 s); el resto de opciones está en `web/README.md`.
 - **API → Hugging Face Spaces** (tipo Docker). No requiere tarjeta de
   crédito, a diferencia de la mayoría de plataformas con "free tier"
   (Render, Railway). Como `models/*.joblib` y `feature_config.json` son
-  gitignored a propósito, el `Dockerfile` de la raíz (`master`) entrena el
-  modelo desde cero en el build, ya que `data/raw/*.csv` sí está
-  versionado.
-  El Space, sin embargo, **no se construye desde `master`** sino desde la
+  gitignored a propósito, el `Dockerfile` de la raíz (`master`) entrenaba el
+  modelo desde cero en el build con los CSV de `data/raw/`; ya no están
+  versionados, así que esa imagen quedó como heredada.
+  El Space **no se construye desde `master`** sino desde la
   rama `space-deploy`, que nunca se mergea a `master`: Hugging Face rechaza
-  archivos de más de 10 MB por push (varios CSV de `data/raw/` los superan),
+  archivos de más de 10 MB por push (los CSV de `data/raw/` los superaban),
   así que esa rama solo lleva `src/`, su propio `Dockerfile` (que descarga
   el modelo ya entrenado del repositorio de modelo `fchaparro/inmostats-model` de Hugging Face en vez de
   entrenarlo) y un `README.md` con el bloque YAML que Hugging Face exige
@@ -325,5 +328,5 @@ dinámica (unos 20 s); el resto de opciones está en `web/README.md`.
 - **Dashboard → Vercel**, desde la carpeta `web/` (framework Next.js). Se
   construye en cada push a `master` con los JSON estáticos versionados en
   `web/public/data/`. El estimador llama a la API del Space desde el navegador
-  (CORS habilitado en `src/api/main.py`). El dashboard anterior en Streamlit
-  Community Cloud ya no es el principal.
+  (CORS habilitado en `src/api/main.py`). La app anterior en Streamlit
+  Community Cloud ahora solo redirige a este dashboard.
