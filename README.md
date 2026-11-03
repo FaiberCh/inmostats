@@ -4,9 +4,9 @@ Sistema extremo a extremo de analítica y predicción de precios de vivienda
 en Colombia: scraping nacional de `fincaraiz.com.co`, limpieza y feature
 engineering, EDA con mapas reales y un modelo XGBoost que estima el precio
 de un apartamento. El modelo se sirve con una API (FastAPI) y se explora
-en un dashboard interactivo (Streamlit).
+en un dashboard web (Next.js, desplegado en Vercel).
 
-- 📊 **Dashboard:** <https://inmostats-ki4phujg4wjzs9pb88nncc.streamlit.app/>
+- 📊 **Dashboard:** <https://inmostats.vercel.app>
 - ⚙️ **API (Hugging Face Spaces):** <https://huggingface.co/spaces/fchaparro/inmostats-api>
 
 ![Dashboard de InmoStats: resumen del mercado](docs/dashboard.png)
@@ -28,7 +28,7 @@ Detalle completo de la corrida vigente en `models/feature_config.json`
 ```text
 inmostats/
 ├── data/
-│   ├── raw/              # CSV crudos por corrida (versionados, ver Fase 1)
+│   ├── raw/              # CSV crudos por corrida (los históricos están en git; los nuevos van a Hugging Face, ver Fase 3)
 │   ├── processed/        # dataset limpio + stats_summary.json
 │   └── reference/        # geojson de departamentos/municipios (geoBoundaries)
 ├── src/
@@ -36,7 +36,7 @@ inmostats/
 │   ├── pipelines/        # limpieza, feature engineering, utilidades geo, dinámica del mercado, exportador web
 │   ├── training/         # entrenamiento, tuning y evaluación del modelo
 │   ├── api/               # servicio FastAPI que sirve el modelo
-│   └── dashboard/         # dashboard Streamlit (predicción + resumen)
+│   └── dashboard/         # dashboard anterior en Streamlit (el vigente es web/)
 ├── web/                   # dashboard web (Next.js para Vercel), ver web/README.md
 ├── docs/                  # imágenes del README (captura del dashboard)
 ├── notebooks/             # EDA (01_eda.ipynb)
@@ -85,7 +85,8 @@ Puntos clave del diseño:
   quedó en vez de reiniciar. Cuando una corrida termina por completo, la
   siguiente ejecución arranca una corrida nueva (nuevo CSV con timestamp).
 - **Ejecución periódica e incremental**: cada corrida crea un CSV nuevo en
-  `data/raw/` (nunca sobreescribe los anteriores). El pipeline de limpieza
+  `data/raw/` (nunca sobreescribe los anteriores; en GitHub Actions ese CSV se
+  sube además a un dataset privado de Hugging Face, ver Fase 3). El pipeline de limpieza
   (fase 2) consolida todos los CSV y deduplica por `listing_id`, así que
   correr el scraper periódicamente solo *añade* anuncios nuevos a la base
   consolidada.
@@ -140,18 +141,23 @@ esté prendida:
 
 - **`.github/workflows/scrape.yml`**: cron cada 30 minutos (más
   `workflow_dispatch` manual). Cada corrida scrapea un tramo acotado
-  (`MAX_RUNTIME_SECONDS`), sube los CSV nuevos y el checkpoint a git
-  (con reintento automático si otro push se adelantó), y respeta un
+  (`MAX_RUNTIME_SECONDS`), sube los CSV nuevos a un dataset privado de
+  Hugging Face y solo el checkpoint a git (con reintento automático si otro
+  push se adelantó), y respeta un
   cooldown de 24h entre corridas completas (`MIN_HOURS_BETWEEN_RUNS`) para
   no re-scrapear el sitio completo todos los días sin necesidad.
   > Estado actual: el workflow está **desactivado manualmente** en GitHub
-  > (el dataset ya alcanzó 82.336 anuncios). Se controla con
+  > (el dataset ya superó los 82.000 anuncios). Se controla con
   > `bash scripts/scraper_ctl.sh status|start|stop`: `status` muestra el
-  > estado del workflow, los secrets y el checkpoint público; `start` y
+  > estado del workflow, los secrets y el checkpoint del repo; `start` y
   > `stop` piden confirmación antes de activar o desactivar el cron. Una
-  > corrida completa tarda varios días y suma unos 235 MB a `data/raw/`, y
-  > el cron no se detiene solo al terminar: al llegar el aviso de Telegram
-  > de corrida completa conviene ejecutar `stop`.
+  > corrida completa tarda varios días y genera unos 235 MB de CSV. Al
+  > terminar el recorrido completo, el propio workflow se desactiva y avisa
+  > por Telegram.
+- **`.github/workflows/stats.yml`**: una vez al día agrega al consolidado
+  (Parquet en el mismo dataset de Hugging Face) los CSV nuevos y recalcula
+  `data/processed/stats_summary.json` leyendo con DuckDB solo las columnas
+  necesarias, sin descargar todos los CSV.
 - **Notificaciones por Telegram**: inicio de una corrida nueva, resumen al
   terminar (duración total, anuncios nuevos), progreso porcentual, y
   alerta si el workflow falla.
@@ -161,8 +167,10 @@ esté prendida:
   `src/pipelines/compute_stats.py` en `data/processed/stats_summary.json`),
   `/variables` (qué campos se están extrayendo) y `/modelo` (resumen del
   modelo: métricas de validación cruzada, parámetros clave y variables más
-  influyentes, leídos del `feature_config.json` del release `model-v1`),
-  leyendo archivos públicos vía `raw.githubusercontent.com` y GitHub Releases.
+  influyentes, leídos del `feature_config.json` del repositorio de modelo
+  `fchaparro/inmostats-model` en Hugging Face). El estado del scraper y las
+  estadísticas se leen del repo con un token de solo lectura (API de GitHub),
+  así que funciona también si el repositorio es privado.
 
 ## Fase 4: Modelado
 
@@ -229,24 +237,33 @@ Documentación interactiva en `http://localhost:8000/docs`.
 
 ## Fase 6: Dashboard
 
-Consume la API (no carga el modelo directo) y los datos procesados para
-un resumen interactivo del mercado:
+El dashboard vigente es una app web (`web/`, Next.js): <https://inmostats.vercel.app>.
+Una sola página con filtros globales (departamento, ciudad, precio,
+habitaciones y área) y estas secciones:
+
+- **Mercado**: mapa de precio por m² por departamento y ciudad, distribución
+  de precios, estratos, ciudades con más anuncios, comodidades y comparación
+  por tipo de anunciante.
+- **Oportunidades**: gráfico de dispersión de todos los anuncios frente a la
+  mediana de su zona o frente al precio que esperaba el modelo (predicciones
+  fuera de muestra).
+- **Estimador**: formulario que llama a la API del modelo.
+- **Dinámica** y **Modelo**: rotación y cambios de precio entre capturas, y
+  métricas de validación del modelo.
+
+No tiene servidor propio: lee JSON estáticos que genera
+`python -m src.pipelines.export_dashboard_data` (ver más abajo y
+`web/README.md`).
+
+### Versión anterior (Streamlit)
+
+El primer dashboard, en Streamlit (`src/dashboard/app.py`), consumía la API y
+los datos procesados. Se conserva en el repositorio como versión histórica y
+fue reemplazado por el web:
 
 ```bash
-streamlit run src/dashboard/app.py
+streamlit run src/dashboard/app.py   # requiere la API (INMOSTATS_API_URL)
 ```
-
-Requiere la API corriendo (`INMOSTATS_API_URL`, default
-`http://localhost:8000`). Dos pestañas:
-
-- **Predicción de precio**: mismo formulario que expone la API, con
-  selección de departamento → ciudad → barrio encadenada a partir de
-  `data/processed/apartamentos_colombia_processed.csv`.
-- **Resumen del mercado**: KPIs generales, distribución de precios,
-  coropletas de precio/m² por departamento y por ciudad (reutilizando el
-  matching geográfico de `src/pipelines/geo.py`, extraído del notebook de
-  EDA), top ciudades por número de anuncios, precio por estrato y
-  amenidades más frecuentes.
 
 ## Notebooks
 
@@ -289,7 +306,7 @@ dinámica (unos 20 s); el resto de opciones está en `web/README.md`.
   rama `space-deploy`, que nunca se mergea a `master`: Hugging Face rechaza
   archivos de más de 10 MB por push (varios CSV de `data/raw/` los superan),
   así que esa rama solo lleva `src/`, su propio `Dockerfile` (que descarga
-  el modelo ya entrenado del release `model-v1` de GitHub en vez de
+  el modelo ya entrenado del repositorio de modelo `fchaparro/inmostats-model` de Hugging Face en vez de
   entrenarlo) y un `README.md` con el bloque YAML que Hugging Face exige
   para configurar el Space. Por eso el README de `master` no lleva ese
   bloque.
@@ -305,9 +322,8 @@ dinámica (unos 20 s); el resto de opciones está en `web/README.md`.
   van a subir y pide escribir `si` antes de empujar. Nunca fuerza el push:
   si `space/main` tiene commits que `space-deploy` no incluye, aborta.
   Cada push dispara un rebuild del Space.
-- **Dashboard → Streamlit Community Cloud**, apuntando a la API vía el
-  secret `INMOSTATS_API_URL` (`src/dashboard/app.py` lo lee de
-  `st.secrets` si no hay variable de entorno). Como Streamlit Cloud no
-  tiene un build command propio, `load_processed_data()` genera
-  `data/processed/*.csv` sola la primera vez que la app arranca sin ese
-  archivo.
+- **Dashboard → Vercel**, desde la carpeta `web/` (framework Next.js). Se
+  construye en cada push a `master` con los JSON estáticos versionados en
+  `web/public/data/`. El estimador llama a la API del Space desde el navegador
+  (CORS habilitado en `src/api/main.py`). El dashboard anterior en Streamlit
+  Community Cloud ya no es el principal.
