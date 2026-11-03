@@ -7,6 +7,8 @@ tener que descargar y parsear los CSV crudos completos).
 
 import json
 import logging
+import os
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -68,8 +70,24 @@ def save_stats(stats: dict, output_path: Path = STATS_PATH) -> Path:
     return output_path
 
 
+# Columnas que usan clean, engineer_features y compute_stats (el resto del consolidado no se lee)
+CONSOLIDATED_COLUMNS = [
+    "price_cop", "area_m2", "bedrooms", "bathrooms", "stratum", "floor", "garages", "admin_fee_cop",
+    "department", "department_real", "city", "neighborhood", "locality", "zone", "owner_type", "is_new_project",
+]
+
+
+def load_from_consolidated() -> pd.DataFrame:
+    """Lee del consolidado Parquet en Hugging Face solo las columnas necesarias (HF_TOKEN en el entorno)."""
+    from src.pipelines.consolidate_raw import consolidated_sources, load_observations
+
+    token = os.environ["HF_TOKEN"]
+    return load_observations(consolidated_sources(token), CONSOLIDATED_COLUMNS, token=token)
+
+
 def main() -> None:
-    df = load_raw_data()
+    # Con --consolidated se lee el Parquet de Hugging Face; sin la bandera, los CSV locales de data/raw.
+    df = load_from_consolidated() if "--consolidated" in sys.argv else load_raw_data()
     df = clean(df)
     df = engineer_features(df)
     stats = compute_stats(df)

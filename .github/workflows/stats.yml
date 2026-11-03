@@ -23,26 +23,17 @@ jobs:
           python-version: "3.12"
 
       # clean_data importa el modulo del scraper, de ahi requests/bs4/lxml.
-      - run: pip install requests beautifulsoup4 lxml pandas huggingface_hub
+      - run: pip install requests beautifulsoup4 lxml pandas huggingface_hub duckdb
 
-      - name: Bajar los CSV crudos desde Hugging Face
-        run: |
-          python - <<'PY'
-          import os
-          from huggingface_hub import snapshot_download
-          snapshot_download(
-              repo_id="fchaparro/inmostats-data",
-              repo_type="dataset",
-              local_dir="data",
-              allow_patterns=["raw/**"],
-              token=os.environ["HF_TOKEN"],
-          )
-          PY
+      - name: Agregar al consolidado los CSV nuevos
+        run: python -c "import os; from src.pipelines.consolidate_raw import update_consolidated; update_consolidated(os.environ['HF_TOKEN'])"
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
-      - name: Recalcular estadisticas agregadas
-        run: python -m src.pipelines.compute_stats
+      - name: Recalcular estadisticas desde el consolidado
+        run: python -m src.pipelines.compute_stats --consolidated
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
 
       - name: Guardar stats_summary.json
         run: |
