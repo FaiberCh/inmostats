@@ -22,7 +22,12 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
+      # ref: master para partir siempre del checkpoint mas reciente. Sin esto, una corrida que espera en
+      # la cola (concurrency) arranca con el commit que habia al encolarla, repite las paginas de la
+      # corrida anterior y choca al guardar el checkpoint.
       - uses: actions/checkout@v4
+        with:
+          ref: master
 
       - uses: actions/setup-python@v5
         with:
