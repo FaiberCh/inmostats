@@ -58,14 +58,14 @@
     },
     "atlantico": {
       "name": "Atlántico",
-      "next_page": 101,
+      "next_page": 272,
       "last_page": 271,
-      "done": false
+      "done": true
     },
     "valle-del-cauca": {
       "name": "Valle del Cauca",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 106,
+      "last_page": 346,
       "done": false
     },
     "bogota-dc": {
