@@ -9,13 +9,26 @@ El dashboard anterior completo se conserva en src/dashboard/app_anterior.py.
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 NEW_URL = "https://inmostats.vercel.app"
 
 st.set_page_config(page_title="InmoStats", page_icon="🏠")
 
-# Intento de redireccion automatica; si el navegador la bloquea, queda el boton de abajo.
-st.markdown(f'<meta http-equiv="refresh" content="3; url={NEW_URL}">', unsafe_allow_html=True)
+# Redireccion automatica. Streamlit no interpreta un <meta refresh> (lo muestra como texto), asi que se
+# hace con JavaScript desde el iframe del componente; si el navegador la bloquea, quedan el boton y el
+# enlace de abajo.
+components.html(
+    f"""<script>
+    const url = "{NEW_URL}";
+    // El iframe del componente esta aislado (sandbox) y no puede cambiar la pagina principal; el script
+    // inyectado en la pagina padre (mismo origen) si.
+    const s = window.parent.document.createElement("script");
+    s.textContent = 'window.top.location.href = "' + url + '";';
+    window.parent.document.head.appendChild(s);
+    </script>""",
+    height=0,
+)
 
 st.title("🏠 InmoStats se movió")
 st.write(
