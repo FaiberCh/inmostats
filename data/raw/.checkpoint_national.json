@@ -16,20 +16,20 @@
     },
     "quindio": {
       "name": "Quindío",
-      "next_page": 10,
+      "next_page": 63,
       "last_page": 62,
-      "done": false
+      "done": true
     },
     "magdalena": {
       "name": "Magdalena",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 109,
+      "last_page": 108,
+      "done": true
     },
     "caldas": {
       "name": "Caldas",
-      "next_page": 1,
-      "last_page": null,
+      "next_page": 108,
+      "last_page": 122,
       "done": false
     },
     "santander": {
