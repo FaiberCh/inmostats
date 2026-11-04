@@ -43,7 +43,7 @@ function githubFile(path, env) {
 }
 
 /** Llama a la API de Actions sobre el workflow del scraper con el token de escritura. */
-function workflowRequest(env, suffix = "", method = "GET") {
+function workflowRequest(env, suffix = "", method = "GET", body = undefined) {
   return fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW_FILE}${suffix}`, {
     method,
     headers: {
@@ -52,7 +52,99 @@ function workflowRequest(env, suffix = "", method = "GET") {
       "User-Agent": "inmostats-telegram-bot",
       "X-GitHub-Api-Version": "2022-11-28",
     },
+    ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
+}
+
+// Disparo automatico del scraper. El cron de GitHub no es fiable (en la practica sale cada 1 a 3 horas
+// y a veces pasa mas de 4 sin salir), asi que el cron de este Worker lanza las corridas. Tras terminar
+// una corrida se espera un tiempo aleatorio entre 8 min 13 s y 16 min 37 s antes de lanzar la siguiente.
+const WAIT_MIN_SECONDS = 8 * 60 + 13;
+const WAIT_MAX_SECONDS = 16 * 60 + 37;
+const CRON_INTERVAL_MS = 5 * 60 * 1000; // el mismo intervalo que "crons" en wrangler.toml
+const MAX_CONSECUTIVE_FAILURES = 3;
+const FAILED_CONCLUSIONS = ["failure", "timed_out", "startup_failure"];
+
+/**
+ * Espera (en segundos) tras una corrida terminada. Se deriva del id de la corrida, asi es la misma en
+ * cada consulta del cron y no hace falta guardar nada: sortearla en cada consulta daria casi siempre
+ * el minimo.
+ */
+function waitSecondsForRun(runId) {
+  const span = BigInt(WAIT_MAX_SECONDS - WAIT_MIN_SECONDS + 1);
+  return WAIT_MIN_SECONDS + Number((BigInt(runId) * 2654435761n) % span);
+}
+
+/**
+ * Decide que hacer con la lista de corridas del workflow (la mas reciente primero).
+ * Devuelve { action: "dispatch" | "wait" | "running" | "failures", ... }.
+ */
+function decideDispatch(runs, nowMs) {
+  if (runs.some((r) => r.status !== "completed")) return { action: "running" };
+  if (runs.length === 0) return { action: "dispatch" };
+
+  const last = runs[0];
+  const endMs = Date.parse(last.updated_at);
+
+  const recent = runs.slice(0, MAX_CONSECUTIVE_FAILURES);
+  if (recent.length === MAX_CONSECUTIVE_FAILURES && recent.every((r) => FAILED_CONCLUSIONS.includes(r.conclusion))) {
+    // Se avisa una sola vez: solo en la consulta del cron que sigue al ultimo fallo.
+    return { action: "failures", notify: nowMs - endMs < CRON_INTERVAL_MS, runId: last.id };
+  }
+
+  const waitMs = waitSecondsForRun(last.id) * 1000;
+  if (nowMs - endMs < waitMs) return { action: "wait", remainingMs: waitMs - (nowMs - endMs) };
+  return { action: "dispatch" };
+}
+
+/** Un ciclo del cron: consulta GitHub y lanza el scraper si toca. Devuelve un texto con lo que hizo. */
+async function runAutoDispatch(env, nowMs = Date.now()) {
+  if (!env.GITHUB_ACTIONS_TOKEN) return "sin token de Actions";
+
+  const state = await getWorkflowState(env);
+  if (state !== "active") return `workflow no activo (${state})`;
+
+  const res = await workflowRequest(env, "/runs?per_page=10");
+  if (!res.ok) return `no pude leer las corridas (${res.status})`;
+  const runs = (await res.json()).workflow_runs || [];
+
+  const decision = decideDispatch(runs, nowMs);
+  if (decision.action === "running") return "hay una corrida en curso";
+  if (decision.action === "wait") return `esperando (${Math.round(decision.remainingMs / 1000)} s)`;
+  if (decision.action === "failures") {
+    if (decision.notify) {
+      await sendTelegramMessage(
+        env,
+        env.AUTHORIZED_CHAT_ID,
+        `🚨 <b>InmoStats</b>: las ultimas ${MAX_CONSECUTIVE_FAILURES} corridas fallaron y el bot dejo de lanzar nuevas.\n` +
+          `Revisa: https://github.com/${REPO}/actions/runs/${decision.runId}\n` +
+          "Cuando lo arregles, lanza una corrida manual; si termina bien, el bot sigue solo."
+      );
+    }
+    return "detenido por fallos seguidos";
+  }
+
+  // Si el recorrido ya termino, el scraper respeta 24 h de cooldown: no tiene sentido lanzarlo antes.
+  try {
+    const cp = await fetch(...githubFile(CHECKPOINT_PATH, env));
+    if (cp.ok) {
+      const checkpoint = await cp.json();
+      if (checkpoint.done && checkpoint.finished_at && nowMs - Date.parse(checkpoint.finished_at) < 24 * 3600 * 1000) {
+        return "recorrido completo, en cooldown";
+      }
+    }
+  } catch {
+    // Sin checkpoint legible se lanza igual: el scraper decide por su cuenta.
+  }
+
+  const dispatch = await workflowRequest(env, "/dispatches", "POST", { ref: "master" });
+  if (dispatch.status === 204) return "corrida lanzada";
+  await sendTelegramMessage(
+    env,
+    env.AUTHORIZED_CHAT_ID,
+    `⚠️ <b>InmoStats</b>: el bot no pudo lanzar el scraper (GitHub respondio ${dispatch.status}).`
+  );
+  return `error al lanzar (${dispatch.status})`;
 }
 
 const NO_CONTROL_MESSAGE =
@@ -106,7 +198,7 @@ async function buildResumePrompt(env) {
   if (state === null) return "⚠️ No pude consultar el estado del scraper ahora mismo. Intenta de nuevo en un momento.";
   if (state === "active") return "ℹ️ El scraper ya esta activo.";
   return (
-    "⚠️ Vas a <b>activar el scraper</b>: correra cada ~30 min hasta completar el recorrido. " +
+    "⚠️ Vas a <b>activar el scraper</b>: el bot lanzara una corrida cada ~40 min hasta completar el recorrido. " +
     "Si el recorrido anterior ya termino y paso el cooldown de 24 h, arrancara una corrida nueva.\n\n" +
     "Para confirmar envia /reanudar_confirmar"
   );
@@ -117,7 +209,7 @@ async function resumeScraper(env) {
   try {
     const res = await workflowRequest(env, "/enable", "PUT");
     if (res.status === 204) {
-      return "▶️ <b>Scraper activado.</b> La proxima ejecucion saldra en menos de 30 minutos. Para detenerlo: /parar";
+      return "▶️ <b>Scraper activado.</b> La proxima ejecucion la lanzara el bot en menos de 5 minutos. Para detenerlo: /parar";
     }
     return `⚠️ GitHub rechazo la orden (codigo ${res.status}). El scraper sigue como estaba.`;
   } catch {
@@ -126,6 +218,10 @@ async function resumeScraper(env) {
 }
 
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runAutoDispatch(env));
+  },
+
   async fetch(request, env) {
     if (request.method !== "POST") {
       return new Response("InmoStats Telegram webhook activo.");
@@ -414,6 +510,9 @@ export {
   stopScraper,
   buildResumePrompt,
   resumeScraper,
+  runAutoDispatch,
+  decideDispatch,
+  waitSecondsForRun,
 };
 
 async function sendTelegramMessage(env, chatId, text) {

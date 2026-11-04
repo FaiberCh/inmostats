@@ -21,6 +21,24 @@ estado del workflow (activo o desactivado). Desactivar no cancela la ejecucion
 en curso: termina su tramo y guarda sus datos. Todos los comandos responden
 solo al chat autorizado.
 
+**Lanzamiento automatico del scraper.** El cron de GitHub Actions no es fiable (en
+la practica sale cada 1 a 3 horas y a veces pasa mas de 4 sin salir), asi que el
+cron de este Worker (`*/5 * * * *`, ver `wrangler.toml`) lanza las corridas con
+`workflow_dispatch`. En cada ciclo consulta la API de GitHub y solo lanza si:
+
+- el workflow esta activo (`/parar` lo detiene todo),
+- no hay una corrida en curso o en cola,
+- paso la espera desde que termino la ultima corrida: un tiempo entre 8 min 13 s y
+  16 min 37 s, derivado del id de esa corrida (es el mismo en cada consulta, no se
+  guarda estado),
+- las ultimas 3 corridas no fallaron seguidas (si fallan, avisa una vez por Telegram
+  y deja de lanzar hasta que una corrida manual termine bien),
+- el recorrido no termino hace menos de 24 h (cooldown del scraper).
+
+Como el cron corre cada 5 minutos, la espera real queda entre 8 min 13 s y unos
+21 min 37 s. Necesita `GITHUB_ACTIONS_TOKEN` con permiso de escritura en Actions.
+`scrape.yml` conserva su propio cron como respaldo.
+
 `/modelo` muestra la ultima version publicada en el repositorio de modelo
 `fchaparro/inmostats-model` (la misma que descarga el Space al construirse),
 no el archivo local. Si ese `feature_config.json` es anterior a que el
