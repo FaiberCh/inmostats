@@ -39,6 +39,12 @@ Como el cron corre cada 5 minutos, la espera real queda entre 8 min 13 s y unos
 21 min 37 s. Necesita `GITHUB_ACTIONS_TOKEN` con permiso de escritura en Actions.
 `scrape.yml` conserva su propio cron como respaldo.
 
+**Resumen diario.** Un segundo cron (`0 13 * * *`, las 8:00 a. m. en Colombia) manda
+al chat autorizado el avance de las ultimas 24 h: porcentaje nacional ahora y hace
+24 h, paginas ganadas, zonas completadas, corridas del scraper (bien y con fallo) y
+cuantos dias faltan al ritmo actual. El checkpoint de hace 24 h se lee del historial
+de git. `/resumen` lo pide en cualquier momento.
+
 `/modelo` muestra la ultima version publicada en el repositorio de modelo
 `fchaparro/inmostats-model` (la misma que descarga el Space al construirse),
 no el archivo local. Si ese `feature_config.json` es anterior a que el

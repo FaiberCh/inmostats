@@ -63,6 +63,8 @@ const WAIT_MIN_SECONDS = 8 * 60 + 13;
 const WAIT_MAX_SECONDS = 16 * 60 + 37;
 const CRON_INTERVAL_MS = 5 * 60 * 1000; // el mismo intervalo que "crons" en wrangler.toml
 const MAX_CONSECUTIVE_FAILURES = 3;
+// Resumen diario: 13:00 UTC = 8:00 a. m. en Colombia. Debe coincidir con "crons" en wrangler.toml.
+const DAILY_CRON = "0 13 * * *";
 const FAILED_CONCLUSIONS = ["failure", "timed_out", "startup_failure"];
 
 /**
@@ -219,7 +221,13 @@ async function resumeScraper(env) {
 
 export default {
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(runAutoDispatch(env));
+    if (event.cron === DAILY_CRON) {
+      ctx.waitUntil(
+        (async () => sendTelegramMessage(env, env.AUTHORIZED_CHAT_ID, await buildDailySummary(env)))()
+      );
+    } else {
+      ctx.waitUntil(runAutoDispatch(env));
+    }
   },
 
   async fetch(request, env) {
@@ -258,6 +266,7 @@ export default {
         chatId,
         "👋 Hola, soy el bot de <b>InmoStats</b>.\n\n" +
           "/status: progreso del scraping nacional\n" +
+          "/resumen: avance de las ultimas 24 h (tambien llega solo a las 8:00 a. m.)\n" +
           "/stats: promedios y anuncios por zona\n" +
           "/variables: que campos se estan extrayendo\n" +
           "/modelo: resumen del modelo, sus metricas y parametros clave\n" +
@@ -266,6 +275,8 @@ export default {
       );
     } else if (text === "/status" || text === "/estado") {
       await sendTelegramMessage(env, chatId, await buildStatusMessage(env));
+    } else if (text === "/resumen") {
+      await sendTelegramMessage(env, chatId, await buildDailySummary(env));
     } else if (text === "/stats" || text === "/promedios") {
       await sendTelegramMessage(env, chatId, await buildStatsMessage(env));
     } else if (text === "/variables" || text === "/campos") {
@@ -360,6 +371,124 @@ async function buildStatusMessage(env) {
     `📊 Zonas completadas: ${bar} ${doneCount}/${total} (${zonesPct}%)\n` +
     `📈 Avance nacional por paginas: ${nationalPct}%${nationalNote}\n${divider}\n` +
     `🔁 El checkpoint se actualiza cada ~30 min via GitHub Actions${wfLine}`
+  );
+}
+
+/** Numeros de avance de un checkpoint: zonas, paginas hechas y totales (solo zonas con total conocido). */
+function progressNumbers(checkpoint) {
+  const departments = Object.values(checkpoint.departments);
+  const known = departments.filter((d) => d.last_page);
+  return {
+    total: departments.length,
+    doneCount: departments.filter((d) => d.done).length,
+    notStarted: departments.filter((d) => !d.done && !d.last_page).length,
+    totalPages: known.reduce((sum, d) => sum + d.last_page, 0),
+    donePages: known.reduce((sum, d) => sum + (d.done ? d.last_page : d.next_page - 1), 0),
+    current: departments.find((d) => !d.done),
+  };
+}
+
+/** Lee un JSON de la API de GitHub (con el token de lectura si hay), o null si falla. */
+async function githubJson(url, env) {
+  try {
+    const headers = { Accept: "application/vnd.github+json", "User-Agent": "inmostats-telegram-bot", "X-GitHub-Api-Version": "2022-11-28" };
+    if (env.GITHUB_READ_TOKEN) headers.Authorization = `Bearer ${env.GITHUB_READ_TOKEN}`;
+    const res = await fetch(url, { headers, cf: { cacheTtl: 0 } });
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** El checkpoint tal como estaba en la ultima version guardada antes de `untilIso`, o null. */
+async function checkpointBefore(env, untilIso) {
+  const commits = await githubJson(
+    `https://api.github.com/repos/${REPO}/commits?sha=master&path=${CHECKPOINT_PATH}&until=${encodeURIComponent(untilIso)}&per_page=1`,
+    env
+  );
+  if (!commits || commits.length === 0) return null;
+  try {
+    const [url, init] = githubFile(CHECKPOINT_PATH, env);
+    const res = await fetch(url.replace("ref=master", `ref=${commits[0].sha}`), init);
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Resumen de las ultimas 24 h: avance nacional, corridas del scraper y cuanto falta al ritmo actual. */
+async function buildDailySummary(env, nowMs = Date.now()) {
+  const divider = "━".repeat(21);
+  const sinceIso = new Date(nowMs - 24 * 3600 * 1000).toISOString().replace(/\.\d+Z$/, "Z");
+
+  let checkpoint;
+  try {
+    const res = await fetch(...githubFile(CHECKPOINT_PATH, env));
+    if (!res.ok) return "⚠️ Resumen diario: no encontre el checkpoint.";
+    checkpoint = await res.json();
+  } catch {
+    return "⚠️ Resumen diario: no pude leer el checkpoint.";
+  }
+
+  const now = progressNumbers(checkpoint);
+  const before = await checkpointBefore(env, sinceIso);
+  const prev = before ? progressNumbers(before) : null;
+
+  const pct = (n) => (n.totalPages ? Math.round((n.donePages / n.totalPages) * 100) : 0);
+  const filled = now.total ? Math.round((now.doneCount / now.total) * 10) : 0;
+  const bar = "▓".repeat(filled) + "░".repeat(10 - filled);
+
+  let runsLine = "";
+  if (env.GITHUB_ACTIONS_TOKEN) {
+    try {
+      const res = await workflowRequest(env, `/runs?per_page=60&created=${encodeURIComponent(">=" + sinceIso)}`);
+      if (res.ok) {
+        const runs = (await res.json()).workflow_runs || [];
+        const ok = runs.filter((r) => r.conclusion === "success").length;
+        const failed = runs.filter((r) => FAILED_CONCLUSIONS.includes(r.conclusion)).length;
+        runsLine = `🔁 Corridas en 24 h: ${runs.length} (${ok} bien, ${failed} con fallo)\n`;
+      }
+    } catch {
+      // Sin la lista de corridas se omite la linea.
+    }
+  }
+
+  let progressLine = `📈 Avance nacional: ${pct(now)}%\n`;
+  let paceLine = "";
+  if (prev) {
+    const gained = now.donePages - prev.donePages;
+    progressLine = `📈 Avance nacional: ${pct(now)}% (hace 24 h: ${pct(prev)}%, +${gained} paginas)\n`;
+    const remaining = now.totalPages - now.donePages;
+    if (checkpoint.done) {
+      paceLine = "🏁 Recorrido completo.\n";
+    } else if (gained > 0) {
+      const days = Math.max(1, Math.round(remaining / gained));
+      paceLine = `⏳ Al ritmo de las ultimas 24 h faltan ~${days} ${days === 1 ? "dia" : "dias"} (aprox.)\n`;
+    } else {
+      paceLine = "⚠️ No hubo avance en las ultimas 24 h.\n";
+    }
+  }
+
+  const zone =
+    now.current && now.current.last_page
+      ? `📍 Zona actual: <b>${now.current.name}</b> (pag. ${now.current.next_page - 1}/${now.current.last_page})\n`
+      : "";
+  const unknown = now.notStarted
+    ? now.notStarted > 1
+      ? `ℹ️ ${now.notStarted} zonas sin iniciar no entran en el porcentaje.\n`
+      : "ℹ️ 1 zona sin iniciar no entra en el porcentaje.\n"
+    : "";
+  const wf = await workflowStatusLine(env);
+
+  return (
+    `🗓 <b>InmoStats</b>: resumen del dia\n${divider}\n` +
+    progressLine +
+    `📊 Zonas completadas: ${bar} ${now.doneCount}/${now.total}\n` +
+    zone +
+    runsLine +
+    paceLine +
+    unknown +
+    `${divider}${wf}`
   );
 }
 
@@ -510,6 +639,7 @@ export {
   stopScraper,
   buildResumePrompt,
   resumeScraper,
+  buildDailySummary,
   runAutoDispatch,
   decideDispatch,
   waitSecondsForRun,

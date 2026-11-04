@@ -5,4 +5,4 @@ account_id = "619ab9baa6de9c5461fe458d7f916b25"
 
 # Lanza el scraper cuando toca (ver runAutoDispatch en src/index.js).
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["*/5 * * * *", "0 13 * * *"]
