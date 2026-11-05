@@ -63,22 +63,28 @@ pip install -r requirements.txt
 
 ## Fase 1: Scraping nacional
 
-Recorre las 14 zonas que fincaraiz reconoce a nivel nacional para
-"apartamento en venta" (13 departamentos + el bucket "resto-de-colombia",
-tomados directamente de su sitemap oficial, no adivinados) y guarda el
-resultado crudo en `data/raw/`:
+Recorre 48 búsquedas de "apartamento en venta" en fincaraiz (departamentos, y
+Bogotá y Antioquia partidas en zonas y ciudades; ver `LOCATIONS` en el scraper)
+y guarda el resultado crudo en `data/raw/`:
 
 ```bash
 python -m src.scraper.fincaraiz_scraper
 ```
 
 Puntos clave del diseño:
-- **Cobertura real, sin cap**: cada zona se pagina hasta su última página
-  real (el propio sitio embebe `lastPage`/`total` en cada respuesta), no
-  hasta un número fijo. Algunas zonas grandes (Bogotá D.C., Antioquia,
-  "resto de Colombia") tienen cientos o miles de páginas, así que una
-  corrida completa puede tardar **varias horas**; es intencional, dado
-  que se pidió cobertura exhaustiva en vez de una muestra acotada.
+- **Cobertura real**: cada búsqueda se pagina hasta su última página real
+  (el propio sitio embebe `lastPage`/`total` en cada respuesta, y se
+  refresca en cada página porque el total cambia mientras se recorre). Una
+  pasada completa son unas 4.000 páginas, del orden de **14 horas**.
+- **El sitio solo entrega ~10.000 resultados distintos por búsqueda**
+  (medido el 2026-11-05: Bogotá, con 21.266 anuncios, dio 21.000
+  observaciones pero solo 9.996 distintas; pasado ese punto las páginas
+  repiten). Por eso Bogotá se parte en 6 zonas, Medellín en 6 zonas y el
+  resto de Antioquia en 11 ciudades, y ninguna búsqueda debe pasar del tope.
+  El scraper avisa por Telegram si alguna se acerca (más de 9.500) o lo
+  pasa, y limita sus páginas a 477. El antiguo bucket "resto-de-colombia"
+  se retiró: resultó ser un cubo nacional que se solapa con todas las
+  demás (84.777 anuncios, de los que solo se alcanzaban 10.000).
 - **Resumible**: el progreso se guarda en `data/raw/.checkpoint_national.json`
   después de cada página. Si el proceso se interrumpe (Ctrl+C, corte de
   red, etc.), volver a correr el mismo comando continúa exactamente donde
@@ -97,12 +103,16 @@ Puntos clave del diseño:
   raspar el HTML visible de la tarjeta. Esto da campos limpios y tipados
   y es más resistente a cambios de diseño del sitio.
 - `department_real` guarda el departamento propio de cada anuncio
-  (`locations.state`), independiente de la zona de búsqueda. Esto importa
-  sobre todo para "resto-de-colombia", un bucket mixto que en la práctica
-  trae anuncios de cualquier departamento.
+  (`locations.state`), independiente de la búsqueda. Esto importa sobre
+  todo en las corridas antiguas de "resto-de-colombia", un bucket mixto que
+  traía anuncios de cualquier departamento.
+
+Pruebas del scraper (sitio simulado, sin red):
+`python -X utf8 -m unittest discover -s tests -t .`
 
 Variables extraídas por anuncio: `listing_id`, `title`, `description`,
-`address`, `detail_url`, `department`/`department_slug` (zona consultada),
+`address`, `detail_url`, `department` (departamento de la búsqueda) y
+`department_slug` (ruta de la búsqueda, por ejemplo `zona-norte/bogota`),
 `department_real`, `city`, `neighborhood`, `locality`, `zone`,
 `latitude`/`longitude`, `price_cop`, `admin_fee_cop`, `bedrooms`,
 `bathrooms`, `area_m2`, `area_built_m2`, `stratum`, `floor`,

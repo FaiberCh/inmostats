@@ -1,20 +1,27 @@
 """
 Scraper nacional de apartamentos en venta - fincaraiz.com.co
 
-Recorre las 14 zonas (13 departamentos + el bucket "resto-de-colombia") que
-el propio sitemap de fincaraiz reconoce como zonas con oferta de apartamentos
-en venta, pagina cada una hasta el final real (segun la metadata de
-paginacion que el sitio embebe en cada pagina) y guarda todo en un CSV
-crudo en data/raw/.
+Recorre una lista de busquedas (ver LOCATIONS: departamentos, y las zonas
+grandes partidas en busquedas mas finas), pagina cada una hasta el final real
+(segun la metadata de paginacion que el sitio embebe en cada pagina) y
+guarda todo en un CSV crudo en data/raw/.
+
+IMPORTANTE: el sitio entrega como maximo ~10.000 resultados distintos por
+busqueda; pasado ese punto las paginas repiten anuncios aunque el paginador
+siga contando. Por eso ninguna busqueda debe pasar de ese tope (ver
+MAX_RESULTS_PER_SEARCH) y el scraper avisa por Telegram si alguna se acerca.
 
 Notas de implementacion:
 - fincaraiz.com.co redirige las URLs con query string (?pagina=N) a rutas
   amigables del tipo /venta/apartamentos/{zona}/paginaN, que es lo que este
   script consume directamente.
-- Las 14 zonas se obtuvieron de https://www.fincaraiz.com.co/cde-sitemap-
-  listings-index.xml (filtrando los sitemaps "apartamento-en-venta-*"), no
-  fueron adivinadas: son las unicas zonas para las que el sitio publica un
-  sitemap de apartamentos en venta.
+- Las 14 zonas originales se obtuvieron de https://www.fincaraiz.com.co/cde-
+  sitemap-listings-index.xml (filtrando los sitemaps "apartamento-en-venta-
+  *"). "resto-de-colombia" resulto ser un cubo nacional que se solapa con
+  todas las demas (84.777 anuncios, el total del pais), no un resto, y solo
+  deja alcanzar 10.000 de ellos: se retiro de LOCATIONS. Las busquedas finas
+  (zonas de Bogota y Medellin, ciudades de Antioquia, otros departamentos)
+  se verificaron una a una contra el sitio el 2026-11-05.
 - Los datos NO se leen de las tarjetas HTML visibles: la pagina es un sitio
   Next.js que embebe, para hidratacion, un bloque JSON completo con cada
   anuncio ya limpio y tipado (script#__NEXT_DATA__ ->
@@ -47,11 +54,23 @@ from bs4 import BeautifulSoup
 BASE_URL = "https://www.fincaraiz.com.co"
 SEARCH_PATH = "/venta/apartamentos"
 
-# Zonas confirmadas via el sitemap oficial de fincaraiz para
-# "apartamento-en-venta-*" (cde-sitemap-listings-index.xml). El orden no
-# importa; se procesan de la mas pequena a la mas grande para tener
-# resultados de varias zonas rapido en vez de quedarse horas en la primera.
+# El sitio entrega como maximo ~10.000 resultados distintos por busqueda (21
+# por pagina). Medido el 2026-11-05: Bogota (21.266 anuncios) dio 21.000
+# observaciones pero solo 9.996 distintas; Antioquia 10.001 de 26.576. Las
+# zonas grandes se parten en busquedas mas finas y ninguna puede pasar de aqui.
+RESULTS_PER_PAGE = 21
+MAX_RESULTS_PER_SEARCH = 10_000
+MAX_PAGES_PER_SEARCH = -(-MAX_RESULTS_PER_SEARCH // RESULTS_PER_PAGE)  # 477
+SEARCH_SPLIT_WARNING_RESULTS = 9_500
+
+# Busquedas a recorrer. Cada entrada es (ruta, nombre para mostrar) o
+# (ruta, nombre para mostrar, departamento): la ruta es lo que va despues de
+# /venta/apartamentos/ y el departamento es el valor de la columna
+# "department" (por defecto, el nombre para mostrar). Se procesan de la mas
+# pequena a la mas grande para tener resultados de varias zonas rapido.
+# Totales medidos el 2026-11-05; las que pasan de ~9.500 hay que partirlas.
 LOCATIONS = [
+    # Departamentos pequenos o medianos (todos por debajo del tope)
     ("tolima", "Tolima"),
     ("norte-de-santander", "Norte de Santander"),
     ("quindio", "Quindío"),
@@ -63,10 +82,52 @@ LOCATIONS = [
     ("cundinamarca", "Cundinamarca"),
     ("atlantico", "Atlántico"),
     ("valle-del-cauca", "Valle del Cauca"),
-    ("bogota-dc", "Bogotá D.C."),
-    ("antioquia", "Antioquia"),
-    ("resto-de-colombia", "Resto de Colombia"),
+    # Departamentos que antes quedaban dentro de "resto-de-colombia" (986 anuncios en total)
+    ("meta", "Meta"),
+    ("boyaca", "Boyacá"),
+    ("cordoba", "Córdoba"),
+    ("huila", "Huila"),
+    ("narino", "Nariño"),
+    ("cesar", "Cesar"),
+    ("cauca", "Cauca"),
+    ("sucre", "Sucre"),
+    ("la-guajira", "La Guajira"),
+    ("casanare", "Casanare"),
+    ("san-andres-y-providencia", "San Andrés y Providencia"),
+    ("arauca", "Arauca"),
+    ("caqueta", "Caquetá"),
+    ("putumayo", "Putumayo"),
+    # Bogota (21.266 anuncios): 6 zonas
+    ("zona-sur/bogota", "Bogotá D.C. (zona sur)", "Bogotá D.C."),
+    ("zona-centro/bogota", "Bogotá D.C. (zona centro)", "Bogotá D.C."),
+    ("zona-noroccidente/bogota", "Bogotá D.C. (zona noroccidente)", "Bogotá D.C."),
+    ("zona-occidental/bogota", "Bogotá D.C. (zona occidental)", "Bogotá D.C."),
+    ("zona-nororiental/bogota", "Bogotá D.C. (zona nororiental)", "Bogotá D.C."),
+    ("zona-norte/bogota", "Bogotá D.C. (zona norte)", "Bogotá D.C."),  # ~9.600: cerca del tope
+    # Antioquia (26.576 anuncios): Medellin (13.350) por zonas y el resto por ciudad
+    ("noroccidente/medellin", "Medellín (noroccidente)", "Antioquia"),
+    ("suroccidente/medellin", "Medellín (suroccidente)", "Antioquia"),
+    ("nororiente/medellin", "Medellín (nororiente)", "Antioquia"),
+    ("centro/medellin", "Medellín (centro)", "Antioquia"),
+    ("occidente/medellin", "Medellín (occidente)", "Antioquia"),
+    ("suroriente/medellin", "Medellín (suroriente)", "Antioquia"),
+    ("caldas/antioquia", "Caldas (Antioquia)", "Antioquia"),
+    ("copacabana/antioquia", "Copacabana", "Antioquia"),
+    ("marinilla/antioquia", "Marinilla", "Antioquia"),
+    ("la-ceja/antioquia", "La Ceja", "Antioquia"),
+    ("la-estrella/antioquia", "La Estrella", "Antioquia"),
+    ("el-retiro/antioquia", "El Retiro", "Antioquia"),
+    ("bello/antioquia", "Bello", "Antioquia"),
+    ("itagui/antioquia", "Itagüí", "Antioquia"),
+    ("rionegro/antioquia", "Rionegro", "Antioquia"),
+    ("sabaneta/antioquia", "Sabaneta", "Antioquia"),
+    ("envigado/antioquia", "Envigado", "Antioquia"),
 ]
+
+
+def _location_fields(entry: tuple) -> tuple[str, str, str]:
+    """(ruta, nombre para mostrar, departamento) de una entrada de LOCATIONS."""
+    return entry[0], entry[1], entry[2] if len(entry) > 2 else entry[1]
 
 REQUEST_TIMEOUT = 15
 MIN_DELAY_SECONDS = 2.0
@@ -372,9 +433,27 @@ def new_checkpoint() -> dict:
         "done": False,
         "departments": {
             slug: {"name": name, "next_page": 1, "last_page": None, "done": False}
-            for slug, name in LOCATIONS
+            for slug, name, _department in map(_location_fields, LOCATIONS)
         },
     }
+
+
+def search_window_alert(name: str, total: Optional[int]) -> Optional[str]:
+    """Texto de aviso si una busqueda se acerca o pasa del tope de resultados
+    que el sitio entrega, o None si esta holgada."""
+    if total is None:
+        return None
+    if total > MAX_RESULTS_PER_SEARCH:
+        return (
+            f"La busqueda «{name}» tiene {total:,} anuncios y el sitio solo entrega ~{MAX_RESULTS_PER_SEARCH:,}: "
+            "se perderan los demas. Hay que partirla en busquedas mas finas."
+        )
+    if total >= SEARCH_SPLIT_WARNING_RESULTS:
+        return (
+            f"La busqueda «{name}» tiene {total:,} anuncios, cerca del tope de ~{MAX_RESULTS_PER_SEARCH:,}. "
+            "Si crece hay que partirla."
+        )
+    return None
 
 
 def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
@@ -394,9 +473,9 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
         send_telegram_message(
             f"🚀 <b>InmoStats</b>: corrida nacional iniciada\n"
             f"{divider}\n"
-            f"🗺 {len(checkpoint['departments'])} zonas por cubrir\n"
+            f"🗺 {len(checkpoint['departments'])} busquedas por cubrir\n"
             f"{divider}\n"
-            f"Te aviso el progreso cada ~30 min y el tiempo total cuando termine."
+            f"Te aviso el progreso al terminar cada tramo y el tiempo total cuando termine."
         )
 
     # Cada invocacion escribe su propio CSV nuevo (nunca se re-abre uno viejo
@@ -431,12 +510,15 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
 
-        for slug, name in LOCATIONS:
+        for entry in LOCATIONS:
+            slug, name, department = _location_fields(entry)
             if time_budget_exceeded() or file_too_big():
                 logger.info("Tiempo maximo o tamano maximo alcanzado; se detiene aqui.")
                 break
 
-            dept_state = checkpoint["departments"][slug]
+            dept_state = checkpoint["departments"].setdefault(
+                slug, {"name": name, "next_page": 1, "last_page": None, "done": False}
+            )
             if dept_state["done"]:
                 logger.info("Zona %s ya completada, se omite.", name)
                 continue
@@ -453,19 +535,39 @@ def scrape_national(output_dir: Path = DATA_RAW_DIR) -> Optional[Path]:
                 html = fetch_page(url)
 
                 if html is None:
+                    if dept_state["last_page"] is None:
+                        # Sin la primera pagina no se sabe cuantas hay, y reintentar indefinidamente
+                        # bloquearia al resto: se marca con error, se avisa y se sigue con la siguiente.
+                        logger.error("[%s] la primera pagina no esta disponible; se marca con error.", name)
+                        dept_state["done"] = True
+                        dept_state["error"] = "primera pagina no disponible"
+                        save_checkpoint(checkpoint)
+                        send_telegram_message(
+                            f"⚠️ <b>InmoStats</b>: la busqueda «{name}» no respondio y se omitio en esta corrida."
+                        )
+                        break
                     logger.warning("Se omite %s pagina %d tras fallos repetidos.", name, page)
                     dept_state["next_page"] = page + 1
                     save_checkpoint(checkpoint)
                     page += 1
                     continue
 
+                # El total cambia mientras se recorre (entran y salen anuncios), asi que el numero de
+                # paginas se refresca en cada pagina; nunca se pasa del tope que el sitio entrega.
+                last_page, total = extract_pagination_info(html)
                 if dept_state["last_page"] is None:
-                    last_page, total = extract_pagination_info(html)
-                    dept_state["last_page"] = last_page or 1
+                    dept_state["total"] = total
+                    alert = search_window_alert(name, total)
+                    if alert:
+                        logger.warning("[%s] %s", name, alert)
+                        send_telegram_message(f"⚠️ <b>InmoStats</b>: {alert}")
+                    dept_state["last_page"] = min(last_page or 1, MAX_PAGES_PER_SEARCH)
                     logger.info("[%s] total anuncios: %s, paginas: %s",
                                 name, total, dept_state["last_page"])
+                elif last_page:
+                    dept_state["last_page"] = min(last_page, MAX_PAGES_PER_SEARCH)
 
-                rows = parse_page(html, page, slug, name, checkpoint["started_at"])
+                rows = parse_page(html, page, slug, department, checkpoint["started_at"])
                 for row in rows:
                     writer.writerow(asdict(row))
                 rows_written += len(rows)
@@ -523,10 +625,13 @@ def build_summary_message(checkpoint: dict, output_path: Path, rows_written: int
 
     if checkpoint["done"]:
         duration = _format_duration(checkpoint["started_at"], checkpoint["finished_at"])
+        failed = [d["name"] for d in departments.values() if d.get("error")]
+        failed_line = f"⚠️ Sin datos por error: {', '.join(failed)}\n" if failed else ""
         return (
             f"🎉 <b>InmoStats</b>: ¡corrida nacional completa!\n"
             f"{divider}\n"
-            f"✅ {done_count}/{total_count} zonas cubiertas\n"
+            f"✅ {done_count - len(failed)}/{total_count} busquedas cubiertas\n"
+            f"{failed_line}"
             f"⏱ Tiempo total: {duration}\n"
             f"🆕 {rows_written} anuncios nuevos en esta corrida\n"
             f"🗂 <code>{output_path.name}</code>\n"

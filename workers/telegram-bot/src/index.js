@@ -370,7 +370,7 @@ async function buildStatusMessage(env) {
     zonaLinea +
     `📊 Zonas completadas: ${bar} ${doneCount}/${total} (${zonesPct}%)\n` +
     `📈 Avance nacional por paginas: ${nationalPct}%${nationalNote}\n${divider}\n` +
-    `🔁 El checkpoint se actualiza cada ~30 min via GitHub Actions${wfLine}`
+    `🔁 El checkpoint se actualiza al terminar cada tramo (GitHub Actions)${wfLine}`
   );
 }
 

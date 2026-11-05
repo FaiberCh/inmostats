@@ -84,7 +84,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if python -c "import json,sys; sys.exit(0 if json.load(open('data/raw/.checkpoint_national.json')).get('done') else 1)"; then
+          # Solo si el recorrido termino hace poco (esta corrida lo cerro). Una corrida que no hace nada
+          # porque el checkpoint viejo sigue en enfriamiento no debe apagar el workflow antes de que arranque
+          # la pasada nueva.
+          if python -c "import json,sys,datetime as d; c=json.load(open('data/raw/.checkpoint_national.json')); f=c.get('finished_at'); sys.exit(0 if c.get('done') and f and (d.datetime.now(d.timezone.utc)-d.datetime.fromisoformat(f)).total_seconds()<43200 else 1)"; then
             gh workflow disable "Scraper InmoStats"
             curl -s "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
               -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
