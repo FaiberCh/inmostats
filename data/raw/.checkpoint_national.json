@@ -46,22 +46,24 @@
     },
     "bolivar": {
       "name": "Bolívar",
-      "next_page": 69,
+      "next_page": 164,
       "last_page": 163,
-      "done": false,
+      "done": true,
       "total": 3420
     },
     "risaralda": {
       "name": "Risaralda",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 142,
+      "last_page": 141,
+      "done": true,
+      "total": 2961
     },
     "cundinamarca": {
       "name": "Cundinamarca",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 59,
+      "last_page": 249,
+      "done": false,
+      "total": 5210
     },
     "atlantico": {
       "name": "Atlántico",
