@@ -32,22 +32,24 @@
     },
     "caldas": {
       "name": "Caldas",
-      "next_page": 63,
+      "next_page": 124,
       "last_page": 123,
-      "done": false,
+      "done": true,
       "total": 2569
     },
     "santander": {
       "name": "Santander",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 166,
+      "last_page": 165,
+      "done": true,
+      "total": 3446
     },
     "bolivar": {
       "name": "Bolívar",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 69,
+      "last_page": 163,
+      "done": false,
+      "total": 3420
     },
     "risaralda": {
       "name": "Risaralda",
