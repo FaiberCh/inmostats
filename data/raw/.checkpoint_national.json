@@ -1,91 +1,300 @@
 {
-  "started_at": "2026-11-03T18:56:20.203874+00:00",
-  "done": true,
+  "started_at": "2026-11-05T22:05:23.744008+00:00",
+  "done": false,
   "departments": {
     "tolima": {
       "name": "Tolima",
       "next_page": 36,
       "last_page": 35,
-      "done": true
+      "done": true,
+      "total": 730
     },
     "norte-de-santander": {
       "name": "Norte de Santander",
       "next_page": 14,
       "last_page": 13,
-      "done": true
+      "done": true,
+      "total": 260
     },
     "quindio": {
       "name": "Quindío",
-      "next_page": 63,
-      "last_page": 62,
-      "done": true
+      "next_page": 64,
+      "last_page": 63,
+      "done": true,
+      "total": 1307
     },
     "magdalena": {
       "name": "Magdalena",
-      "next_page": 109,
-      "last_page": 108,
-      "done": true
+      "next_page": 110,
+      "last_page": 109,
+      "done": true,
+      "total": 2286
     },
     "caldas": {
       "name": "Caldas",
-      "next_page": 123,
-      "last_page": 122,
-      "done": true
+      "next_page": 63,
+      "last_page": 123,
+      "done": false,
+      "total": 2569
     },
     "santander": {
       "name": "Santander",
-      "next_page": 164,
-      "last_page": 163,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "bolivar": {
       "name": "Bolívar",
-      "next_page": 164,
-      "last_page": 163,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "risaralda": {
       "name": "Risaralda",
-      "next_page": 143,
-      "last_page": 142,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "cundinamarca": {
       "name": "Cundinamarca",
-      "next_page": 245,
-      "last_page": 244,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "atlantico": {
       "name": "Atlántico",
-      "next_page": 272,
-      "last_page": 271,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
     "valle-del-cauca": {
       "name": "Valle del Cauca",
-      "next_page": 347,
-      "last_page": 346,
-      "done": true
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
-    "bogota-dc": {
-      "name": "Bogotá D.C.",
-      "next_page": 1001,
-      "last_page": 1000,
-      "done": true
+    "meta": {
+      "name": "Meta",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
-    "antioquia": {
-      "name": "Antioquia",
-      "next_page": 1261,
-      "last_page": 1260,
-      "done": true
+    "boyaca": {
+      "name": "Boyacá",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     },
-    "resto-de-colombia": {
-      "name": "Resto de Colombia",
-      "next_page": 4005,
-      "last_page": 4004,
-      "done": true
+    "cordoba": {
+      "name": "Córdoba",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "huila": {
+      "name": "Huila",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "narino": {
+      "name": "Nariño",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "cesar": {
+      "name": "Cesar",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "cauca": {
+      "name": "Cauca",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "sucre": {
+      "name": "Sucre",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "la-guajira": {
+      "name": "La Guajira",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "casanare": {
+      "name": "Casanare",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "san-andres-y-providencia": {
+      "name": "San Andrés y Providencia",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "arauca": {
+      "name": "Arauca",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "caqueta": {
+      "name": "Caquetá",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "putumayo": {
+      "name": "Putumayo",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "zona-sur/bogota": {
+      "name": "Bogotá D.C. (zona sur)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "zona-centro/bogota": {
+      "name": "Bogotá D.C. (zona centro)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "zona-noroccidente/bogota": {
+      "name": "Bogotá D.C. (zona noroccidente)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "zona-occidental/bogota": {
+      "name": "Bogotá D.C. (zona occidental)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "zona-nororiental/bogota": {
+      "name": "Bogotá D.C. (zona nororiental)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "zona-norte/bogota": {
+      "name": "Bogotá D.C. (zona norte)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "noroccidente/medellin": {
+      "name": "Medellín (noroccidente)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "suroccidente/medellin": {
+      "name": "Medellín (suroccidente)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "nororiente/medellin": {
+      "name": "Medellín (nororiente)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "centro/medellin": {
+      "name": "Medellín (centro)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "occidente/medellin": {
+      "name": "Medellín (occidente)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "suroriente/medellin": {
+      "name": "Medellín (suroriente)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "caldas/antioquia": {
+      "name": "Caldas (Antioquia)",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "copacabana/antioquia": {
+      "name": "Copacabana",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "marinilla/antioquia": {
+      "name": "Marinilla",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "la-ceja/antioquia": {
+      "name": "La Ceja",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "la-estrella/antioquia": {
+      "name": "La Estrella",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "el-retiro/antioquia": {
+      "name": "El Retiro",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "bello/antioquia": {
+      "name": "Bello",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "itagui/antioquia": {
+      "name": "Itagüí",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "rionegro/antioquia": {
+      "name": "Rionegro",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "sabaneta/antioquia": {
+      "name": "Sabaneta",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
+    },
+    "envigado/antioquia": {
+      "name": "Envigado",
+      "next_page": 1,
+      "last_page": null,
+      "done": false
     }
   },
-  "finished_at": "2026-11-04T22:01:43.554868+00:00"
+  "finished_at": null
 }
