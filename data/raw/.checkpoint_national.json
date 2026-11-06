@@ -1,6 +1,6 @@
 {
   "started_at": "2026-11-05T22:05:23.744008+00:00",
-  "done": false,
+  "done": true,
   "departments": {
     "tolima": {
       "name": "Tolima",
@@ -333,11 +333,11 @@
     },
     "envigado/antioquia": {
       "name": "Envigado",
-      "next_page": 143,
+      "next_page": 205,
       "last_page": 204,
-      "done": false,
+      "done": true,
       "total": 4269
     }
   },
-  "finished_at": null
+  "finished_at": "2026-11-06T06:04:48.372565+00:00"
 }
