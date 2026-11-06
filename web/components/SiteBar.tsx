@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 
 const SECTIONS = [
   { id: "mercado", label: "Mercado" },
+  { id: "variacion", label: "Precios" },
   { id: "oportunidades", label: "Oportunidades" },
   { id: "estimador", label: "Estimador", featured: true },
-  { id: "dinamica", label: "Dinámica" },
+  { id: "dinamica", label: "En el tiempo" },
   { id: "modelo", label: "Modelo" },
 ];
 

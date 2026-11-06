@@ -64,6 +64,7 @@ export type Dynamics = {
   repeat_within_run_pct: number | null;
   runs: { date: string; listings: number; median_price_m2: number }[];
   turnover?: {
+    pairs?: { from: string; to: string; persist_pct: number; new_pct: number }[];
     persist_pct_mean: number;
     new_pct_mean: number;
     reappear_pct_mean: number | null;

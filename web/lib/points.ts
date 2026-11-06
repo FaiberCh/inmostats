@@ -35,6 +35,8 @@ export type Points = {
   amen: Uint16Array;
   /** Grupo del anunciante: 0 sin clasificar, 1 empresa, 2 asesor independiente, 3 propietario directo, 4 desarrollador. */
   owner: Uint8Array;
+  /** 1 = sigue publicado (visto en la ultima corrida completa), 0 = retirado. Ausente en datos viejos: todos se toman como vigentes. */
+  active?: Uint8Array;
 };
 
 const ARRAY_TYPES = {

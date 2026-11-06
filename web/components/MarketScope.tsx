@@ -12,6 +12,7 @@ import Histogram from "./Histogram";
 import MarketMap from "./MarketMap";
 import OwnerCompare from "./OwnerCompare";
 import Opportunities from "./Opportunities";
+import PriceVariation, { ActiveChips } from "./PriceVariation";
 import StratumRange from "./StratumRange";
 import { Card, EmptyNote, KpiStrip } from "./ui";
 
@@ -84,6 +85,7 @@ export default function MarketScope({ initial, mapCities, ownerEffects }: Props)
         total={total}
         failed={failed}
       />
+      {points && <ActiveChips points={points} filters={filters} onChange={setFilters} />}
 
       <div className={pending ? "scope-body pending" : "scope-body"}>
         {active && count > 0 && count < FEW_LISTINGS && (
@@ -195,6 +197,17 @@ export default function MarketScope({ initial, mapCities, ownerEffects }: Props)
             </>
           )}
         </section>
+
+        {points ? (
+          <PriceVariation points={points} filters={deferred} onChange={setFilters} />
+        ) : (
+          <section id="variacion" className="sec" aria-labelledby="h-variacion">
+            <h2 id="h-variacion">Cómo varían los precios</h2>
+            <Card title="Precio por grupo">
+              <EmptyNote>{failed ? "No se pudieron cargar los anuncios." : "Cargando los anuncios…"}</EmptyNote>
+            </Card>
+          </section>
+        )}
 
         {points && rows ? (
           <Opportunities points={points} rows={rows} filtered={active} />

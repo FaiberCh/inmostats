@@ -30,6 +30,7 @@ from src.pipelines.clean_data import (
     load_raw_data,
     save_processed,
 )
+from src.pipelines import consolidated_data
 from src.pipelines.geo import load_department_geojson, match_city_features
 from src.pipelines.market_dynamics import compute_dynamics, load_snapshots
 from src.pipelines.owner_groups import OWNER_LABELS, owner_codes, owner_summary
@@ -56,6 +57,7 @@ SITE_BASE = "https://www.fincaraiz.com.co"
 URL_SHARDS = 64
 PRICE_UNIT = 1000  # el precio se guarda en miles de COP (cabe en uint32 hasta 4,2 billones)
 EXPECTED_CACHE = PROCESSED_DIR / "oof_expected_price.csv"
+CONSOLIDATED_PROCESSED_DIR = PROCESSED_DIR / "consolidated"
 
 
 def write_json(path: Path, data) -> None:
@@ -68,7 +70,15 @@ def slugify(text: str) -> str:
     return _normalize_key(text).replace(" ", "-")
 
 
-def load_processed() -> pd.DataFrame:
+def load_processed(source: str = "csv") -> pd.DataFrame:
+    """source "csv": los CSV de data/raw/ (como antes). source "consolidated": el Parquet consolidado de
+    Hugging Face, que ademas trae la marca `vigente` (visto en la ultima corrida completa). Cada fuente
+    guarda su propio CSV procesado para no pisar el de la otra."""
+    if source == "consolidated":
+        path = save_processed(
+            engineer_features(clean(consolidated_data.load_listings())), CONSOLIDATED_PROCESSED_DIR
+        )
+        return pd.read_csv(path, encoding="utf-8-sig")
     if not PROCESSED_PATH.exists():
         logger.info("No existe %s, se genera desde data/raw/", PROCESSED_PATH.name)
         save_processed(engineer_features(clean(load_raw_data())))
@@ -359,6 +369,9 @@ def export_points(df: pd.DataFrame, expected: pd.Series | None) -> None:
         ("amen", mask),
         ("owner", owner_codes(df)),
     ]
+    if "vigente" in df.columns:
+        # 1 = sigue publicado (visto en la ultima corrida completa), 0 = ya no aparece.
+        columns.append(("active", df["vigente"].astype(np.uint8).values))
     buffer, layout = bytearray(), []
     for name, array in columns:
         buffer += b"\x00" * (-len(buffer) % 4)  # cada columna alineada a 4 bytes (lo exigen los typed arrays)
@@ -385,10 +398,13 @@ def export_points(df: pd.DataFrame, expected: pd.Series | None) -> None:
         "owner_groups": OWNER_LABELS,
     })
 
+    # Solo llevan enlace los anuncios vigentes que tienen direccion: un anuncio retirado no debe poder
+    # redirigir a ninguna parte, igual que uno sin URL.
     shards: dict[int, dict[str, str]] = {i: {} for i in range(URL_SHARDS)}
     ids = pd.to_numeric(df["listing_id"]).astype(np.int64)
-    for listing_id, url in zip(ids, df["detail_url"]):
-        if isinstance(url, str) and url.startswith(SITE_BASE):
+    active = df["vigente"].astype(bool) if "vigente" in df.columns else pd.Series(True, index=df.index)
+    for listing_id, url, is_active in zip(ids, df["detail_url"], active):
+        if is_active and isinstance(url, str) and url.startswith(SITE_BASE):
             shards[int(listing_id) % URL_SHARDS][str(listing_id)] = url[len(SITE_BASE):]
     total = 0
     for shard, mapping in shards.items():
@@ -428,10 +444,22 @@ def main() -> None:
     parser.add_argument("--skip-points", action="store_true", help="no genera points.bin ni las direcciones de los anuncios")
     parser.add_argument("--skip-expected", action="store_true", help="genera los puntos sin precio esperado del modelo")
     parser.add_argument("--refresh-expected", action="store_true", help="recalcula los precios esperados aunque haya cache")
+    parser.add_argument("--source", choices=("csv", "consolidated"), default="csv",
+                        help="de donde salen los anuncios: CSV locales (por defecto) o el consolidado de Hugging Face")
+    parser.add_argument("--output-dir", type=Path, default=None,
+                        help="carpeta de salida (por defecto web/public/data); sirve para ensayar sin tocar el sitio")
     args = parser.parse_args()
 
-    df = load_processed()
+    global OUTPUT_DIR, EXPECTED_CACHE
+    if args.output_dir:
+        OUTPUT_DIR = args.output_dir.resolve()
+    if args.source == "consolidated":
+        EXPECTED_CACHE = CONSOLIDATED_PROCESSED_DIR / "oof_expected_price.csv"
+
+    df = load_processed(args.source)
     logger.info("Dataset procesado: %d anuncios", len(df))
+    if "vigente" in df.columns:
+        logger.info("Vigentes (vistos en la ultima corrida completa): %d de %d", int(df["vigente"].sum()), len(df))
 
     export_summary(df)
     n_cities = export_maps(df)
@@ -448,7 +476,9 @@ def main() -> None:
     if args.skip_dynamics:
         logger.info("Se omite dynamics.json (--skip-dynamics)")
     else:
-        snap, raw_rows = load_snapshots()
+        snap, raw_rows = (
+            consolidated_data.load_snapshots() if args.source == "consolidated" else load_snapshots()
+        )
         write_json(OUTPUT_DIR / "dynamics.json", compute_dynamics(snap, raw_rows))
 
     scraped = pd.to_datetime(df["scraped_at"], utc=True, errors="coerce")

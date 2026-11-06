@@ -34,9 +34,24 @@ export type Filters = {
   beds: number[];
   /** Posiciones [minimo, maximo] del slider de area (0 y AREA_STEPS = sin limite). */
   area: [number, number];
+  /** Estratos elegidos (1 a 6); vacio = todos. Se eligen tocando una barra del panel de precios. */
+  stratum: number[];
+  /** Grupos de anunciante elegidos (codigos 1 a 4); vacio = todos. Tambien se eligen desde el panel. */
+  owner: number[];
+  /** Barrio elegido (codigo de points.hood); se usa junto con la ciudad. */
+  hood: number | null;
 };
 
-export const NO_FILTERS: Filters = { dept: null, city: null, price: [0, PRICE_STEPS], beds: [], area: [0, AREA_STEPS] };
+export const NO_FILTERS: Filters = {
+  dept: null,
+  city: null,
+  price: [0, PRICE_STEPS],
+  beds: [],
+  area: [0, AREA_STEPS],
+  stratum: [],
+  owner: [],
+  hood: null,
+};
 
 /** Cuantos grupos de filtro estan activos (para el contador del boton). */
 export function activeCount(f: Filters): number {
@@ -44,7 +59,10 @@ export function activeCount(f: Filters): number {
     Number(f.dept !== null) +
     Number(f.price[0] !== 0 || f.price[1] !== PRICE_STEPS) +
     Number(f.beds.length > 0) +
-    Number(f.area[0] !== 0 || f.area[1] !== AREA_STEPS)
+    Number(f.area[0] !== 0 || f.area[1] !== AREA_STEPS) +
+    Number(f.stratum.length > 0) +
+    Number(f.owner.length > 0) +
+    Number(f.hood !== null)
   );
 }
 
@@ -56,6 +74,10 @@ export function selectRows(p: Points, f: Filters): Uint32Array {
   let m = 0;
   let bedMask = 0;
   for (const b of f.beds) bedMask |= 1 << b;
+  let stratumMask = 0;
+  for (const st of f.stratum) stratumMask |= 1 << st;
+  let ownerMask = 0;
+  for (const o of f.owner) ownerMask |= 1 << o;
   const pMin = f.price[0] === 0 ? -Infinity : priceAt(f.price[0]);
   const pMax = f.price[1] === PRICE_STEPS ? Infinity : priceAt(f.price[1]);
   const aMin = f.area[0] === 0 ? -Infinity : areaAt(f.area[0]);
@@ -63,6 +85,9 @@ export function selectRows(p: Points, f: Filters): Uint32Array {
   for (let i = 0; i < p.n; i++) {
     if (f.dept !== null && p.dept[i] !== f.dept) continue;
     if (f.city !== null && p.city[i] !== f.city) continue;
+    if (f.hood !== null && p.hood[i] !== f.hood) continue;
+    if (stratumMask && !(stratumMask & (1 << p.stratum[i]))) continue;
+    if (ownerMask && !(ownerMask & (1 << p.owner[i]))) continue;
     const price = p.price[i] * unit;
     if (price < pMin || price > pMax) continue;
     const area = p.area[i];

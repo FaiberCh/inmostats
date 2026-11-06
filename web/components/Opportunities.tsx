@@ -514,9 +514,11 @@ function TipCard({ points, row, ratio, position, mode, medianPpm2, pinned, float
 
   // La direccion del anuncio vive en archivos aparte y su estado lo comprueba el servidor: ambas cosas se piden
   // solo al fijar la tarjeta, y el boton se habilita unicamente si el anuncio sigue publicado.
+  // Un anuncio retirado (ya no aparece en la ultima corrida) no tiene enlace ni se consulta.
+  const retired = points.active ? points.active[row] === 0 : false;
   const [link, setLink] = useState<{ id: number; url: string | null; status: LinkStatus } | null>(null);
   useEffect(() => {
-    if (!pinned) return;
+    if (!pinned || retired) return;
     let cancelled = false;
     (async () => {
       const url = await listingUrl(id);
@@ -528,8 +530,8 @@ function TipCard({ points, row, ratio, position, mode, medianPpm2, pinned, float
     return () => {
       cancelled = true;
     };
-  }, [id, pinned]);
-  const linkState = link?.id === id ? (link.url ? link.status : "missing") : "checking";
+  }, [id, pinned, retired]);
+  const linkState = retired ? "retired" : link?.id === id ? (link.url ? link.status : "missing") : "checking";
 
   return (
     <div className={floating ? "tip tip-float" : "tip"} style={style} role={pinned ? "group" : undefined} aria-label="Detalle del anuncio">
@@ -584,7 +586,7 @@ function TipCard({ points, row, ratio, position, mode, medianPpm2, pinned, float
             <button className="btn small-btn" disabled>
               {linkState === "checking"
                 ? "Verificando el enlace…"
-                : linkState === "dead"
+                : linkState === "dead" || linkState === "retired"
                   ? "Anuncio ya no disponible"
                   : linkState === "missing"
                     ? "Sin enlace"
@@ -594,6 +596,8 @@ function TipCard({ points, row, ratio, position, mode, medianPpm2, pinned, float
           <span className="muted small" aria-live="polite">
             {linkState === "alive"
               ? `Abre el anuncio original, capturado el ${shortDate(points.meta.captured_to)}.`
+              : linkState === "retired"
+                ? "Ya no aparecía en Fincaraíz en la última captura completa, así que no se enlaza."
               : linkState === "dead"
                 ? `Fincaraíz ya no lo muestra. Se capturó el ${shortDate(points.meta.captured_to)}.`
                 : linkState === "unknown"

@@ -33,6 +33,22 @@ export default async function Page() {
   const pc = dynamics.price_changes;
   const lvl = dynamics.price_level;
   const weeks = weeksBetween(dynamics.date_from, dynamics.date_to);
+  const lastRun = dynamics.runs[dynamics.runs.length - 1];
+  // Escala de la grafica de nivel: ajustada a los indices (casi planos), no a la mediana que se deja fuera.
+  const levelValues = lvl ? [...lvl.chained, ...(lvl.balanced ?? []), 100] : [100];
+  const levelMin = Math.floor((Math.min(...levelValues) - 0.2) * 10) / 10;
+  const levelMax = Math.ceil((Math.max(...levelValues) + 0.2) * 10) / 10;
+  // Persistencia solo entre capturas comparables: a menos de una semana y con una cobertura parecida (la de noviembre es otra cosa).
+  const listingsByDate = new Map(dynamics.runs.map((r) => [r.date, r.listings]));
+  const comparablePairs = (t?.pairs ?? []).filter((pair) => {
+    const days = (Date.parse(pair.to) - Date.parse(pair.from)) / 86_400_000;
+    const a = listingsByDate.get(pair.from) ?? 0;
+    const b = listingsByDate.get(pair.to) ?? 0;
+    return days <= 7 && a > 0 && Math.abs(b - a) / a < 0.1;
+  });
+  const comparablePersist = comparablePairs.length
+    ? comparablePairs.reduce((sum, pair) => sum + pair.persist_pct, 0) / comparablePairs.length
+    : null;
   const gen = new Date(meta.generated_at);
 
   // Tres hallazgos para leer en 20 segundos. Todo sale de los datos: nada esta escrito a mano.
@@ -122,22 +138,21 @@ export default async function Page() {
         </section>
 
         <section id="dinamica" className="sec" aria-labelledby="h-dinamica">
-          <h2 id="h-dinamica">Dinámica del mercado</h2>
+          <h2 id="h-dinamica">Cambios de precio en el tiempo</h2>
           <p className="sec-note">
-            {dynamics.n_runs} capturas entre el {shortDate(dynamics.date_from)} y el {shortDate(dynamics.date_to)} (unas {weeks} semanas). Precios de oferta, no de
-            cierre.
+            Precios de oferta, no de cierre. {dynamics.n_runs} capturas entre el {shortDate(dynamics.date_from)} y el {shortDate(dynamics.date_to)} (unas{" "}
+            {weeks} semanas).
           </p>
 
-          {t && pc && (
+          {pc && (
             <KpiStrip
-              label="Indicadores de dinámica"
+              label="Cambios de precio de los anuncios"
               cells={[
-                { label: "Persisten entre corridas", value: pct(t.persist_pct_mean), caption: "siguen en la corrida siguiente" },
-                ...(t.reappear_pct_mean !== null
-                  ? [{ label: "Reaparecen", value: pct(t.reappear_pct_mean), caption: "de los ausentes vuelven en la siguiente" }]
-                  : []),
                 { label: "Cambian de precio", value: pct(pc.changed_pct, 1), caption: `de ${int(pc.comparisons)} comparaciones` },
-                { label: "No vuelven a verse", value: `≤ ${pct(t.never_return_pct_upper_bound)}`, caption: "de la primera corrida" },
+                ...(pc.down_pct !== null ? [{ label: "Son bajas", value: pct(pc.down_pct, 0), caption: "de los que cambian" }] : []),
+                ...(pc.median_abs_change_pct !== null
+                  ? [{ label: "Cambio típico", value: pct(pc.median_abs_change_pct, 1), caption: "mediana del tamaño del cambio" }]
+                  : []),
               ]}
             />
           )}
@@ -146,30 +161,29 @@ export default async function Page() {
             {lvl && (
               <Card
                 title="Nivel de precios, base 100"
-                note="Primera corrida igual a 100. Con los mismos anuncios el nivel no se mueve."
+                note="Primera captura igual a 100. Con los mismos anuncios el nivel casi no se mueve."
                 legend={
                   <ul className="legend" aria-label="Series">
-                    <li><i className="sw main" />Mediana por m² (todos)</li>
-                    <li><i className="sw ink" />Anuncios que persisten</li>
+                    <li><i className="sw main" />Anuncios que persisten</li>
                     <li><i className="sw grey" />Panel balanceado</li>
                   </ul>
                 }
               >
                 <LineChart
                   labels={lvl.dates.map(dayMonth)}
-                  yMin={99}
-                  yMax={102}
+                  yMin={levelMin}
+                  yMax={levelMax}
                   reference={100}
                   yDecimals={1}
-                  label="Índice de precios por corrida, base 100"
+                  label="Índice de precios por captura, base 100"
                   series={[
-                    { name: "Mediana por m² (todos)", values: lvl.median_price_m2, tone: "main" },
-                    { name: "Anuncios que persisten", values: lvl.chained, tone: "ink" },
+                    { name: "Anuncios que persisten", values: lvl.chained, tone: "main" },
                     ...(lvl.balanced ? [{ name: "Panel balanceado", values: lvl.balanced, tone: "grey" as const, dashed: true }] : []),
                   ]}
                 />
                 <p className="foot muted">
-                  La mediana por m² sube {dec(lvl.median_price_m2[lvl.median_price_m2.length - 1] - 100, 1)} %: es un cambio de mezcla de anuncios, no un alza de precios.
+                  Entre julio y noviembre pasaron más de tres meses y la cobertura cambió. La mediana de todos los anuncios no se dibuja
+                  porque mezcla zonas distintas.
                 </p>
               </Card>
             )}
@@ -183,55 +197,32 @@ export default async function Page() {
                   counts={pc.histogram.counts}
                   xFormat="signedPct"
                   marker={{ value: 0, label: "Sin cambio" }}
-                  label="Histograma de la variación de precio entre corridas"
+                  label="Histograma de la variación de precio entre capturas"
                 />
                 <p className="foot muted">
-                  {pc.down_pct !== null && `${dec(pc.down_pct, 0)} % son bajas. `}
-                  {pc.median_abs_change_pct !== null && `El cambio mediano es de ${dec(pc.median_abs_change_pct, 1)} %. `}
-                  {pc.p10_pct !== null && pc.p90_pct !== null && `El 80 % central va de ${dec(pc.p10_pct, 1)} % a +${dec(pc.p90_pct, 1)} %.`}
+                  {pc.p10_pct !== null && pc.p90_pct !== null && `El 80 % central va de ${dec(pc.p10_pct, 1)} % a +${dec(pc.p90_pct, 1)} %. `}
+                  Una ventana de {weeks} semanas no muestra tendencias ni estacionalidad.
                 </p>
               </Card>
             )}
           </div>
 
-          <div className="grid2">
-            <Card title="Corridas" note="Anuncios únicos y precio mediano por m² en cada captura.">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th className="r">Anuncios</th>
-                    <th className="r">Mediana por m²</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dynamics.runs.map((r) => (
-                    <tr key={r.date}>
-                      <td>{shortDate(r.date)}</td>
-                      <td className="r num">{int(r.listings)}</td>
-                      <td className="r num">{millions(r.median_price_m2, 2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Card>
-            <Card title="Cómo leerlo">
-              <div className="prose">
+          <Card title="Cómo se recogieron los datos" note="Nota de método: sirve para leer bien las cifras de arriba.">
+            <div className="prose">
                 <p>
-                  <strong>La rotación aparente es cobertura incompleta.</strong> Solo {t ? pct(t.persist_pct_mean, 0) : "una parte"} de los anuncios persiste entre
-                  corridas, pero casi la mitad de los que faltan reaparece en la siguiente. Una captura no es un censo.
+                  <strong>Cada captura es una foto, no un censo.</strong>{" "}
+                  {comparablePersist !== null
+                    ? `En las capturas de julio, que son comparables entre sí, cerca del ${pct(comparablePersist, 0)} de los anuncios de una captura seguía en la siguiente. `
+                    : ""}
+                  Parte de los que faltan no se retiraron: el sitio no los devolvió esa vez.
                 </p>
                 <p>
-                  <strong>Los retiros reales son pocos:</strong>{" "}
-                  {t ? `como máximo el ${pct(t.never_return_pct_upper_bound)} de la primera corrida no vuelve a aparecer.` : "pocos anuncios desaparecen."}
+                  <strong>La de noviembre es la primera captura completa.</strong> Recorre {int(lastRun.listings)} anuncios, muchos más que en julio, sobre todo en
+                  Bogotá y Antioquia. Por eso comparar julio con noviembre mezcla tiempo con cobertura, y los índices de arriba usan solo los anuncios que aparecen
+                  en ambas capturas.
                 </p>
-                <p>
-                  <strong>Casi nadie ajusta el precio:</strong> menos de uno de cada cien cambia en unas {weeks} semanas, y suele ser una baja. Una ventana tan corta
-                  no muestra tendencias ni estacionalidad.
-                </p>
-              </div>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </section>
 
         <section id="modelo" className="sec" aria-labelledby="h-modelo">
