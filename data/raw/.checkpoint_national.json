@@ -200,16 +200,17 @@
     },
     "zona-occidental/bogota": {
       "name": "Bogotá D.C. (zona occidental)",
-      "next_page": 46,
+      "next_page": 170,
       "last_page": 169,
-      "done": false,
+      "done": true,
       "total": 3537
     },
     "zona-nororiental/bogota": {
       "name": "Bogotá D.C. (zona nororiental)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 183,
+      "last_page": 186,
+      "done": false,
+      "total": 3899
     },
     "zona-norte/bogota": {
       "name": "Bogotá D.C. (zona norte)",
