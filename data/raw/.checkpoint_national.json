@@ -81,112 +81,129 @@
     },
     "meta": {
       "name": "Meta",
-      "next_page": 12,
+      "next_page": 13,
       "last_page": 12,
-      "done": false,
+      "done": true,
       "total": 235
     },
     "boyaca": {
       "name": "Boyacá",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 14,
+      "last_page": 13,
+      "done": true,
+      "total": 253
     },
     "cordoba": {
       "name": "Córdoba",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 10,
+      "last_page": 9,
+      "done": true,
+      "total": 172
     },
     "huila": {
       "name": "Huila",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 7,
+      "last_page": 6,
+      "done": true,
+      "total": 118
     },
     "narino": {
       "name": "Nariño",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 5,
+      "last_page": 4,
+      "done": true,
+      "total": 73
     },
     "cesar": {
       "name": "Cesar",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 3,
+      "last_page": 2,
+      "done": true,
+      "total": 24
     },
     "cauca": {
       "name": "Cauca",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 2,
+      "last_page": 1,
+      "done": true,
+      "total": 15
     },
     "sucre": {
       "name": "Sucre",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 5,
+      "last_page": 4,
+      "done": true,
+      "total": 77
     },
     "la-guajira": {
       "name": "La Guajira",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 2,
+      "last_page": 1,
+      "done": true,
+      "total": 4
     },
     "casanare": {
       "name": "Casanare",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 2,
+      "last_page": 1,
+      "done": true,
+      "total": 6
     },
     "san-andres-y-providencia": {
       "name": "San Andrés y Providencia",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 2,
+      "last_page": 1,
+      "done": true,
+      "total": 10
     },
     "arauca": {
       "name": "Arauca",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 2,
+      "last_page": 1,
+      "done": true,
+      "total": 1
     },
     "caqueta": {
       "name": "Caquetá",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 2,
+      "last_page": 1,
+      "done": true,
+      "total": 4
     },
     "putumayo": {
       "name": "Putumayo",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 2,
+      "last_page": 1,
+      "done": true,
+      "total": 1
     },
     "zona-sur/bogota": {
       "name": "Bogotá D.C. (zona sur)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 49,
+      "last_page": 48,
+      "done": true,
+      "total": 995
     },
     "zona-centro/bogota": {
       "name": "Bogotá D.C. (zona centro)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 51,
+      "last_page": 50,
+      "done": true,
+      "total": 1043
     },
     "zona-noroccidente/bogota": {
       "name": "Bogotá D.C. (zona noroccidente)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 98,
+      "last_page": 97,
+      "done": true,
+      "total": 2019
     },
     "zona-occidental/bogota": {
       "name": "Bogotá D.C. (zona occidental)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 46,
+      "last_page": 169,
+      "done": false,
+      "total": 3537
     },
     "zona-nororiental/bogota": {
       "name": "Bogotá D.C. (zona nororiental)",
