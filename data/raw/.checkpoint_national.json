@@ -256,34 +256,38 @@
     },
     "suroriente/medellin": {
       "name": "Medellín (suroriente)",
-      "next_page": 57,
+      "next_page": 320,
       "last_page": 319,
-      "done": false,
+      "done": true,
       "total": 6688
     },
     "caldas/antioquia": {
       "name": "Caldas (Antioquia)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 5,
+      "last_page": 4,
+      "done": true,
+      "total": 79
     },
     "copacabana/antioquia": {
       "name": "Copacabana",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 7,
+      "last_page": 6,
+      "done": true,
+      "total": 106
     },
     "marinilla/antioquia": {
       "name": "Marinilla",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 11,
+      "last_page": 10,
+      "done": true,
+      "total": 197
     },
     "la-ceja/antioquia": {
       "name": "La Ceja",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 2,
+      "last_page": 18,
+      "done": false,
+      "total": 370
     },
     "la-estrella/antioquia": {
       "name": "La Estrella",
