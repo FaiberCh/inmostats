@@ -67,16 +67,17 @@
     },
     "atlantico": {
       "name": "Atlántico",
-      "next_page": 85,
+      "next_page": 273,
       "last_page": 272,
-      "done": false,
+      "done": true,
       "total": 5700
     },
     "valle-del-cauca": {
       "name": "Valle del Cauca",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 83,
+      "last_page": 347,
+      "done": false,
+      "total": 7269
     },
     "meta": {
       "name": "Meta",
