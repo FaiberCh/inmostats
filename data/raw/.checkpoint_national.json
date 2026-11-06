@@ -60,16 +60,17 @@
     },
     "cundinamarca": {
       "name": "Cundinamarca",
-      "next_page": 59,
+      "next_page": 250,
       "last_page": 249,
-      "done": false,
+      "done": true,
       "total": 5210
     },
     "atlantico": {
       "name": "Atlántico",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 85,
+      "last_page": 272,
+      "done": false,
+      "total": 5700
     },
     "valle-del-cauca": {
       "name": "Valle del Cauca",
