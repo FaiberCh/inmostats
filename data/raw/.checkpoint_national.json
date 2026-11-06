@@ -207,16 +207,17 @@
     },
     "zona-nororiental/bogota": {
       "name": "Bogotá D.C. (zona nororiental)",
-      "next_page": 183,
+      "next_page": 187,
       "last_page": 186,
-      "done": false,
+      "done": true,
       "total": 3899
     },
     "zona-norte/bogota": {
       "name": "Bogotá D.C. (zona norte)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 272,
+      "last_page": 459,
+      "done": false,
+      "total": 9618
     },
     "noroccidente/medellin": {
       "name": "Medellín (noroccidente)",
