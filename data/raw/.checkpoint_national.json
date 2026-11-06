@@ -235,28 +235,31 @@
     },
     "nororiente/medellin": {
       "name": "Medellín (nororiente)",
-      "next_page": 30,
+      "next_page": 45,
       "last_page": 44,
-      "done": false,
+      "done": true,
       "total": 915
     },
     "centro/medellin": {
       "name": "Medellín (centro)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 50,
+      "last_page": 49,
+      "done": true,
+      "total": 1013
     },
     "occidente/medellin": {
       "name": "Medellín (occidente)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 153,
+      "last_page": 152,
+      "done": true,
+      "total": 3193
     },
     "suroriente/medellin": {
       "name": "Medellín (suroriente)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 57,
+      "last_page": 319,
+      "done": false,
+      "total": 6688
     },
     "caldas/antioquia": {
       "name": "Caldas (Antioquia)",
