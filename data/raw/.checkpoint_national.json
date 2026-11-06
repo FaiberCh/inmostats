@@ -214,28 +214,31 @@
     },
     "zona-norte/bogota": {
       "name": "Bogotá D.C. (zona norte)",
-      "next_page": 272,
+      "next_page": 460,
       "last_page": 459,
-      "done": false,
+      "done": true,
       "total": 9618
     },
     "noroccidente/medellin": {
       "name": "Medellín (noroccidente)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 18,
+      "last_page": 17,
+      "done": true,
+      "total": 354
     },
     "suroccidente/medellin": {
       "name": "Medellín (suroccidente)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 44,
+      "last_page": 43,
+      "done": true,
+      "total": 894
     },
     "nororiente/medellin": {
       "name": "Medellín (nororiente)",
-      "next_page": 1,
-      "last_page": null,
-      "done": false
+      "next_page": 30,
+      "last_page": 44,
+      "done": false,
+      "total": 915
     },
     "centro/medellin": {
       "name": "Medellín (centro)",
